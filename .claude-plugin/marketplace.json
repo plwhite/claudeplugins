@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "local-plugins",
+  "version": "1.0.0",
+  "owner": {
+    "name": "plw"
+  },
+  "plugins": [
+    {
+      "name": "demo",
+      "source": "./demo"
+    }
+  ]
+}

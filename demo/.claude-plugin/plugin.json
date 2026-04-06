@@ -1,0 +1,5 @@
+{
+  "name": "demo",
+  "description": "A deliberately minimal demo plugin with one skill and one agent, used to verify plugin discovery and wiring.",
+  "version": "0.1.0"
+}

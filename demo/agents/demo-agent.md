@@ -1,9 +1,6 @@
 ---
 name: demo-agent
-type: agent
-version: 0.1.0
-skills:
-  - demo-skill
+description: A minimal placeholder agent that responds with a fixed sentence. Use for testing agent discovery and wiring.
 ---
 
 # demo-agent
