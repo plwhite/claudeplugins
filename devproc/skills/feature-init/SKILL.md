@@ -1,0 +1,59 @@
+---
+name: feature-init
+description: Initialises the feature model for this project. Run this once to enable feature workflows.
+disable-model-invocation: true
+---
+
+Make updates to CLAUDE.md, FEATURES.md, and plans directory as required - see below for details. Do not change the structure defined here.
+
+Add the following section to CLAUDE.md if it is not already present. If it is already present, update it to match the text below.:
+
+~~~markdown
+## Feature model
+
+Major pieces of work are organised into features. Each phase has a concise entry in `FEATURES.md` and a detailed plan file in `plans/`.
+
+Use these slash commands (defined in this plugin) to manage phases:
+
+- `/feature-create` — add a new feature to `FEATURES.md` (Pending section)
+- `/feature-start` — move a feature to In Progress and create its plan file
+- `/feature-checkpoint` — sync all feature documentation, plans and user documentation to the current state
+- `/feature-end` — mark a feature complete and move it to Completed
+
+`NOTES.md` is maintained continuously. Any non-obvious technical finding — page structure quirks, API behaviour, design decisions, scope changes — goes there as it is discovered.
+~~~
+
+If the file `FEATURES.md` does not exist, create it with the following content. If it does exist, update it to match the headings and structure below, though without deleting or modifying existing feature entries.
+
+~~~markdown
+# Project features
+
+Features being developed for this project. Each feature has a level three (`###`) heading and a short, normally one-paragraph description that explains what the feature is. The feature heading should have a slug (such as `initial-development` or `code-coverage-00` so the plan can be found when created.
+
+---
+
+## In progress
+
+*There should normally be only one feature here, and it should have a plan matching the slug in the plans directory. In some cases there may be no feature in progress, or in very rare cases more than one at once.*
+
+---
+
+## Pending
+
+*Features that are waiting for development.*
+
+---
+
+## Explicitly deferred
+
+*Features that are explicitly deferred; these are not expected to happen but may be resurrected.*
+
+---
+
+## Completed
+
+*Features that have been completed, updated to reflect what was developed. Headings must end with the date of completion in YYYY-MM-DD format.*
+
+~~~
+
+Finally, create the `plans/` directory if it does not exist.

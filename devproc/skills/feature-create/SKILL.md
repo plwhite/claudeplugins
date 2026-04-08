@@ -6,6 +6,9 @@ argument-hint: <feature description>
 
 Create a new feature in the project.
 
+Before proceeding, check that CLAUDE.md contains a Feature Model section.
+If it doesn't, tell the user to run /feature-init first and stop.
+
 The user has described the feature as: $ARGUMENTS
 
 Steps:

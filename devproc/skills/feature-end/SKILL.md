@@ -6,6 +6,9 @@ argument-hint: [feature name or slug]
 
 Mark a feature as complete and bring all documentation up to date.
 
+Before proceeding, check that CLAUDE.md contains a Feature Model section.
+If it doesn't, tell the user to run /feature-init first and stop.
+
 The feature to end is: $ARGUMENTS (if blank, use whichever feature is currently In Progress in `FEATURES.md`)
 
 Steps:

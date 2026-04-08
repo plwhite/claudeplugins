@@ -6,6 +6,9 @@ argument-hint: [feature name or slug]
 
 Bring all project documentation up to date with the current state of the feature.
 
+Before proceeding, check that CLAUDE.md contains a Feature Model section.
+If it doesn't, tell the user to run /feature-init first and stop.
+
 The feature to checkpoint is: $ARGUMENTS (if blank, use whichever feature is currently In Progress in `FEATURES.md`)
 
 Steps:
