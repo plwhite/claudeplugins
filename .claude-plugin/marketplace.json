@@ -9,6 +9,10 @@
     {
       "name": "demo",
       "source": "./demo"
+    },
+    {
+      "name": "devproc",
+      "source": "./devproc"
     }
   ]
 }

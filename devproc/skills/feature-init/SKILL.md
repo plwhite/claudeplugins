@@ -13,7 +13,7 @@ Add the following section to CLAUDE.md if it is not already present. If it is al
 
 Major pieces of work are organised into features. Each phase has a concise entry in `FEATURES.md` and a detailed plan file in `plans/`.
 
-Use these slash commands (defined in this plugin) to manage phases:
+Use these slash commands (defined in the `devproc` plugin) to manage features:
 
 - `/feature-create` — add a new feature to `FEATURES.md` (Pending section)
 - `/feature-start` — move a feature to In Progress and create its plan file
@@ -21,6 +21,33 @@ Use these slash commands (defined in this plugin) to manage phases:
 - `/feature-end` — mark a feature complete and move it to Completed
 
 `NOTES.md` is maintained continuously. Any non-obvious technical finding — page structure quirks, API behaviour, design decisions, scope changes — goes there as it is discovered.
+
+### Documents to support the model
+
+These apply at all times, not just when completing features:
+
+- **`FEATURES.md`**
+
+    List of features.
+
+    - Level 3 (`###`) heading with name and slug for the feature.
+
+    — One entry per feature, with one paragraph max. No sub-task lists, no implementation detail, no tables. Link to the plan file for detail.
+
+- **`plans/<slug>.md`**
+
+    Plan for a feature. Should have sections for :
+
+    - Requirements (potentially more detail than in `FEATURES.md`)
+
+    - Design (implementation strategy)
+
+    - Subtask list with short and status markers (`✓`, `▶ NEXT:`)
+
+
+- **`NOTES.md`** — non-obvious findings only. Do not record things derivable from reading the code.
+
+- **`CLAUDE.md`** — high-level status only. No plan detail, no implementation notes.
 ~~~
 
 If the file `FEATURES.md` does not exist, create it with the following content. If it does exist, update it to match the headings and structure below, though without deleting or modifying existing feature entries.

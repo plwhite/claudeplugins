@@ -1,6 +1,6 @@
 # Workspace guide (Claude plugins)
 
-This repository contains small “plugin” folders that package:
+This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
 - agents (agent definitions)
 
@@ -20,18 +20,23 @@ plugin-name/
 
 Location: `demo/`
 
+Trivial demo plugin to test plugin structure.
+
 Contents:
 - `demo/.claude-plugin/plugin.json`
 - `demo/skills/demo-skill/SKILL.md`
 - `demo/agents/demo-agent.md`
-- `demo/test.sh`
 
-### Smoke test
+## devproc plugin
 
-From the repo root:
+Location: `devproc/`
 
-```bash
-bash demo/test.sh
-```
+Dev process skills for managing features through their lifecycle.
 
-This test only checks that the files exist and contain the expected minimal frontmatter markers.
+Contents:
+- `devproc/.claude-plugin/plugin.json`
+- `devproc/skills/feature-init/SKILL.md` — one-time setup: writes feature model to CLAUDE.md, creates FEATURES.md and plans/
+- `devproc/skills/feature-create/SKILL.md` — add a new feature to FEATURES.md
+- `devproc/skills/feature-start/SKILL.md` — move a feature to In Progress and create its plan file
+- `devproc/skills/feature-checkpoint/SKILL.md` — sync all documentation to current state
+- `devproc/skills/feature-end/SKILL.md` — mark a feature complete and move it to Completed
