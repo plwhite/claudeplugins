@@ -22,6 +22,14 @@ Use these slash commands (defined in the `devproc` plugin) to manage features:
 
 `NOTES.md` is maintained continuously. Any non-obvious technical finding — page structure quirks, API behaviour, design decisions, scope changes — goes there as it is discovered.
 
+### Resuming after a session restart
+
+When starting a new session on a feature that is already in progress:
+
+1. Read `FEATURES.md` to find the current in-progress feature and its plan file.
+2. Open the plan file and read the `## Handoff` section first — it contains the session summary, current sub-task state, and the specific first action to take.
+3. Do not begin implementation until you have read the Handoff section.
+
 ### Documents to support the model
 
 These apply at all times, not just when completing features:

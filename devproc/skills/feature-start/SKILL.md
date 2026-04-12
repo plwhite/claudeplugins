@@ -32,6 +32,15 @@ Steps:
 ```markdown
 # <Feature title> — Feature Plan
 
+## Handoff
+
+**Last updated:** YYYY-MM-DD
+**Session summary:** Feature plan created. Implementation not yet started.
+**Sub-task in progress:** None
+**First action next session:** Begin Sub-task 1
+**Open questions / decisions pending:** None
+**Dead ends to avoid:** None
+
 ## Design
 
 <The output of the planning process goes here. For a simple feature this may be
