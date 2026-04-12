@@ -31,8 +31,6 @@ Steps:
 
    4. Verify `FEATURES.md` In Progress entry is still accurate (description has not drifted from what the feature is actually doing).
 
-   5. Call @docs-structure-reviewer to perform a full review that the structure of the documentation is still valid. Apply its feedback, then call it again to confirm. If each call does not have fewer issues than the previous one (i.e. you are converging) ask for user input.
-
 4. Report a brief summary of what was updated.
 
-**Rule**: do not wait to be asked. This skill exists because documentation and tracking information drifts silently. Run it proactively when a sub-task completes.
+**Rule**: do not wait to be asked. This skill exists because documentation and tracking information drifts silently. Run it proactively when a sub-task completes, and whenever requested.
