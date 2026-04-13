@@ -11,7 +11,7 @@ plugin-name/
     plugin.json          ← required manifest (name, description, version)
   skills/
     skill-name/
-      SKILL.md           ← frontmatter: name, description, user-invocable
+      SKILL.md           ← frontmatter: name, description, user-invocable / argument-hint / disable-model-invocation
   agents/
     agent-name.md        ← frontmatter: name, description
 ```
@@ -42,6 +42,7 @@ Contents:
 - `devproc/skills/feature-start/SKILL.md` — move a feature to In Progress and create its plan file
 - `devproc/skills/feature-checkpoint/SKILL.md` — sync all documentation to current state
 - `devproc/skills/feature-end/SKILL.md` — mark a feature complete and move it to Completed
+- `devproc/agents/docs-structure-reviewer.md` — audits documentation structure and quality, producing actionable findings
 
 See `devproc/README.md` for full usage documentation.
 
@@ -83,8 +84,6 @@ These apply at all times, not just when completing features:
     Plan for a feature. Should have sections for :
 
     - Handoff (session state — last updated date, summary, current sub-task, first action next session, open questions, dead ends)
-
-    - Requirements (potentially more detail than in `FEATURES.md`)
 
     - Design (implementation strategy)
 

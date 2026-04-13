@@ -24,7 +24,7 @@ Steps:
 
 4. Before creating the plan file, do enough research to produce a realistic sub-task breakdown:
    - Read relevant existing code and data files.
-   - If the feature involves new Wikipedia pages or external data, do reconnaissance first.
+   - If the feature involves external services, APIs, or unfamiliar areas of the codebase, do reconnaissance before drafting sub-tasks.
    - If requirements are unclear, ask the user before writing the plan.
 
 5. Create `plans/<slug>.md` with this structure:

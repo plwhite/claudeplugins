@@ -13,29 +13,30 @@ type: project
 ## Document hierarchy
 
 ```
-README.md                        (landing page — now a proper orientation page)
+README.md                        (landing page — proper orientation page)
 CLAUDE.md                        (agent entry point — authoritative guide)
 FEATURES.md                      (feature index)
   → plans/<slug>.md              (per-feature plan: Handoff / Design / Sub-tasks)
 NOTES.md                         (non-obvious findings — prescribed but created on first use)
-demo/README.md                   (plugin user docs — now exists and is complete)
+demo/README.md                   (plugin user docs — complete)
   demo/.claude-plugin/plugin.json
   demo/skills/demo-skill/SKILL.md
   demo/agents/demo-agent.md
-devproc/README.md                (plugin user docs — now exists and is complete)
+devproc/README.md                (plugin user docs — complete)
   devproc/.claude-plugin/plugin.json
   devproc/skills/feature-*/SKILL.md  (5 skills)
-.claude-plugin/marketplace.json  (plugin registry — now referenced from README.md)
+  devproc/agents/docs-structure-reviewer.md
+.claude-plugin/marketplace.json  (plugin registry — referenced from README.md)
 ```
 
 ## Conventions observed
 
 - Plugin layout: `.claude-plugin/plugin.json` + `skills/<name>/SKILL.md` + `agents/<name>.md`
-- SKILL.md files use YAML frontmatter (name, description, user-invocable or argument-hint)
+- SKILL.md files use YAML frontmatter (name, description; optionally user-invocable, argument-hint, disable-model-invocation)
 - Plan files always have ## Handoff as first section, then ## Design, then ## Sub-tasks
 - FEATURES.md uses ### headings with [slug] tags
 - NOTES.md is prescribed but not yet created (not a problem — it is created on first use)
-- marketplace.json at root `.claude-plugin/` is now referenced from README.md
+- marketplace.json at root `.claude-plugin/` is referenced from README.md
 
 ## Review history
 
@@ -45,3 +46,5 @@ devproc/README.md                (plugin user docs — now exists and is complet
   - MAJOR: docs-structure-reviewer.md has a broken `<example` tag (line 45, missing `>`) that truncates the frontmatter description prematurely.
   - MINOR: CLAUDE.md plugin layout diagram shows only `user-invocable` as a SKILL.md frontmatter field; actual fields also include `argument-hint` and `disable-model-invocation`.
   - MINOR: CLAUDE.md and feature-init SKILL.md prescribe a "Requirements" section for plan files; feature-start SKILL.md template and actual plan files do not include it — schema drift between documentation and generated artifacts.
+- 2026-04-13: Fourth review. All three third-review issues confirmed fixed. One new MINOR found:
+  - MINOR: feature-start/SKILL.md step 4 contains a Wikipedia-specific example ("If the feature involves new Wikipedia pages or external data, do reconnaissance first") — a stale artefact from a prior project that will confuse users of this plugin in any other context.

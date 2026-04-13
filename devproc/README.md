@@ -11,6 +11,7 @@ This plugin provides skills to support a systematic development process based on
 | Skill | `feature-start` | Move a feature to In Progress and create its plan file |
 | Skill | `feature-checkpoint` | Sync all documentation and tracking to the current state |
 | Skill | `feature-end` | Mark a feature complete and move it to Completed |
+| Agent | `docs-structure-reviewer` | Audits documentation structure and quality, producing actionable findings without modifying files |
 
 ## Setup
 
@@ -87,6 +88,16 @@ Run this after each sub-task completes. The skill is designed to be run proactiv
 **Invoke with:** `/feature-end`
 
 Runs a full checkpoint, verifies all sub-tasks are complete, moves the feature entry from `## In progress` to `## Completed` in `FEATURES.md` (appending the completion date to the heading), and leaves the plan file in place as a record. Reports what was completed and what feature is next.
+
+## Agents
+
+### docs-structure-reviewer
+
+Audits the documentation structure and quality of a codebase. It traces all documents reachable from the top-level entry points (`README.md`, `CLAUDE.md`), checks discoverability, architectural completeness, procedural rigour, and stylistic consistency. Output is a prioritised list of findings (CRITICAL / MAJOR / MINOR / SUGGESTION) — it never modifies files itself.
+
+After applying fixes, invoke the agent again to re-audit. Repeat until no CRITICAL or MAJOR findings remain (or up to 3 iterations before asking the user for guidance).
+
+This agent is invoked automatically by the harness when documentation review is relevant (e.g. after `/feature-end`, or when the user asks to review docs).
 
 ## Key files
 

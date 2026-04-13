@@ -30,8 +30,13 @@ Both confirmed fixed:
 - feature-init SKILL.md plan-file template now includes Handoff as first listed section (line 49)
 - CLAUDE.md "Documents to support the model" plan file bullet now lists Handoff first
 
-## New issues found in third review (2026-04-13)
+## New issues found in third review (2026-04-13) — all resolved by fourth review
 
-- docs-structure-reviewer.md: broken `<example` tag at line 45 (missing `>`). The `---` at line 50 is swallowed into the description string, truncating the frontmatter. This is a recurring pattern risk: XML-style tags in YAML descriptions must be properly closed.
-- Schema drift: CLAUDE.md plugin layout diagram lists only `user-invocable` as a SKILL.md frontmatter field. Actual observed fields: `user-invocable`, `argument-hint`, `disable-model-invocation`. The diagram is incomplete.
-- Schema drift: CLAUDE.md and feature-init SKILL.md prescribe a "Requirements" section for plan files; feature-start SKILL.md template and all actual plan files omit it. One source must be authoritative — the feature-start template (which generates the actual artifacts) should win.
+All three confirmed fixed:
+- docs-structure-reviewer.md: broken `<example` tag at line 45 (missing `>`) — now properly closed
+- Schema drift: CLAUDE.md plugin layout diagram now includes `argument-hint` and `disable-model-invocation`
+- Schema drift: "Requirements" section removed from plan file schema in CLAUDE.md and feature-init SKILL.md
+
+## New issues found in fourth review (2026-04-13)
+
+- Stale artefact: feature-start/SKILL.md step 4 bullet mentions Wikipedia pages specifically — a project-specific example from a prior codebase that should be replaced with a generic example. Recurring pattern risk: SKILL.md files imported from other projects may carry context-specific examples that are misleading when the plugin is used generally.
