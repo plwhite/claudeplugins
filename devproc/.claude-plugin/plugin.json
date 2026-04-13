@@ -1,5 +1,5 @@
 {
   "name": "devproc",
-  "description": "Dev process skills and agents.",
+  "description": "Provides five skills to manage features through a Pending → In Progress → Completed lifecycle, with plan files and handoff notes for session continuity.",
   "version": "0.1.0"
 }

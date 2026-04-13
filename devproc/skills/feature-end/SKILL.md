@@ -29,7 +29,7 @@ Steps:
 <Two to four sentences summarising what was built, what data was committed, and any notable decisions. No tables, no sub-task lists.>
 ```
 
-4. The plan file (`plans/<slug>.md`) can be left as-is to serve as a record of how the feature unfolded.
+5. The plan file (`plans/<slug>.md`) can be left as-is to serve as a record of how the feature unfolded.
 
-5. Report a summary of what was completed and what feature is now next.
+6. Report a summary of what was completed and what feature is now next.
 

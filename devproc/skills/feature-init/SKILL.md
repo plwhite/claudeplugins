@@ -46,6 +46,8 @@ These apply at all times, not just when completing features:
 
     Plan for a feature. Should have sections for :
 
+    - Handoff (session state — last updated date, summary, current sub-task, first action next session, open questions, dead ends)
+
     - Requirements (potentially more detail than in `FEATURES.md`)
 
     - Design (implementation strategy)
