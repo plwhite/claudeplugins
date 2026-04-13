@@ -22,6 +22,6 @@ Steps:
 <One or two sentences describing what the feature covers and why.>
 ```
 
-Keep the description concise — no implementation detail, no sub-tasks. Those belong in a plan file created when the feature starts.
+Keep the description concise — no implementation detail, no sub-tasks. Those belong in a plan file created when the feature starts. If the user has provided requirements too detailed to fit in one or two sentences, preserve them in `plans/<slug>.md` under a `## Requirements` section, noting that the Design section will be fleshed out when the feature starts. Do not create the plan file if there are no requirements beyond what fits in the FEATURES.md entry.
 
 4. Confirm the new entry to the user as ready to proceed. Do not ask if they want to start the feature now (using `/feature-start`).

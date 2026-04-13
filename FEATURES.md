@@ -12,6 +12,10 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## Pending
 
+### Code review agents and skills [code-review]
+
+A set of code review agents (architectural, simplicity, general, nitty) operating at different levels of scrutiny and using appropriate models, plus skills that invoke them and apply their feedback — supporting both full-codebase and feature-diff review modes. Requirements detail in [plans/code-review.md](plans/code-review.md).
+
 *Features that are waiting for development.*
 
 ---
