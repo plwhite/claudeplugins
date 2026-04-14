@@ -6,15 +6,13 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## In progress
 
-*There should normally be only one feature here, and it should have a plan matching the slug in the plans directory. In some cases there may be no feature in progress, or in very rare cases more than one at once.*
+### Code review agents and skills [code-review]
+
+A set of code review agents (architectural, simplicity, general, nitty) operating at different levels of scrutiny and using appropriate models, plus skills that invoke them and apply their feedback — supporting both full-codebase and feature-diff review modes. Sub-task detail in [plans/code-review.md](plans/code-review.md).
 
 ---
 
 ## Pending
-
-### Code review agents and skills [code-review]
-
-A set of code review agents (architectural, simplicity, general, nitty) operating at different levels of scrutiny and using appropriate models, plus skills that invoke them and apply their feedback — supporting both full-codebase and feature-diff review modes. Requirements detail in [plans/code-review.md](plans/code-review.md).
 
 *Features that are waiting for development.*
 

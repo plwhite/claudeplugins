@@ -57,6 +57,8 @@ and provide corrections before implementation begins.>
 ...
 
 **▶ NEXT:** Sub-task 1
+
+> Run `/feature-checkpoint` after each sub-task completes.
 ```
 
 Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md` as you discover it, not here. The Design section is the exception: it should capture the key decisions and rationale from the planning process.
