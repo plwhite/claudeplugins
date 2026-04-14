@@ -38,6 +38,8 @@ If architectural review was confirmed in Step 2, also run:
 
 Collect all findings from all agents.
 
+> Steps 4–7 below are identical across all review skills (`review-full`, `review-component`, `review-branch`). If you change the convergence logic (e.g. the iteration cap), update all three.
+
 ## Step 4 — Classify findings
 
 For each finding, classify it as one of:

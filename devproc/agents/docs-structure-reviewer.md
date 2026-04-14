@@ -42,7 +42,6 @@ description: |
   </commentary>
   </example>
 
-  <example>
 tools: Glob, Grep, Read, WebFetch, WebSearch
 model: inherit
 color: green

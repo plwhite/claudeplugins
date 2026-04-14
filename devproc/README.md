@@ -1,6 +1,12 @@
 # devproc plugin
 
-This plugin provides skills to support a systematic development process based on features. It enforces rules to track features in files, moving through the lifecycle Pending → In Progress → Completed, with a plan file tracking sub-tasks and a handoff section that lets a new session resume exactly where the last one left off. By using skills to step through the various stages, it helps ensure that the good practice is systematically followed and the user can track and control how development happens.
+This plugin provides skills and agents for three areas of the development process:
+
+**Feature lifecycle** — tracks features through Pending → In Progress → Completed, with plan files, sub-task lists, and a handoff section so any session can resume exactly where the last one left off. This allows for systematic development of features so as to ensure that there is always a proper plan, spec and design.
+
+**Code review** — three review skills backed by four specialist agents that auto-apply code-level findings (iterating to convergence) and escalate architectural changes for user confirmation.
+
+**Docs review** - an agent that does a comprehensive docs structure review.
 
 ## Contents
 
@@ -11,7 +17,14 @@ This plugin provides skills to support a systematic development process based on
 | Skill | `feature-start` | Move a feature to In Progress and create its plan file |
 | Skill | `feature-checkpoint` | Sync all documentation and tracking to the current state |
 | Skill | `feature-end` | Mark a feature complete and move it to Completed |
+| Skill | `review-full` | Full-codebase code review |
+| Skill | `review-component` | Code review scoped to a described component or area |
+| Skill | `review-branch` | Code review scoped to files changed in the current branch |
 | Agent | `docs-structure-reviewer` | Audits documentation structure and quality, producing actionable findings without modifying files |
+| Agent | `code-review-architectural` | Architectural review: module boundaries, coupling, design fit (`claude-opus-4-6`) |
+| Agent | `code-review-simplicity` | Simplicity review: unnecessary complexity, duplication, dead code |
+| Agent | `code-review-general` | General review: correctness, error handling, robustness, performance |
+| Agent | `code-review-nitty` | Nitty review: naming, comments, control flow clarity, micro-robustness |
 
 ## Setup
 
@@ -89,6 +102,38 @@ Run this after each sub-task completes. The skill is designed to be run proactiv
 
 Runs a full checkpoint, verifies all sub-tasks are complete, moves the feature entry from `## In progress` to `## Completed` in `FEATURES.md` (appending the completion date to the heading), and leaves the plan file in place as a record. Reports what was completed and what feature is next.
 
+---
+
+### review-full
+
+**Invoke with:** `/review-full [including architectural review]`
+
+Runs a code review over the entire codebase. Always runs the simplicity, general, and nitty agents in parallel. Adds the architectural agent if the user requests it in the invocation text, or prompts if unclear.
+
+Code-level findings (contained within a function or file) are applied automatically. The agents are then re-run over the changed files and the cycle repeats until no new findings appear (capped at 5 iterations). Architectural findings (module boundaries, public APIs, structural design) are presented to the user for confirmation before applying.
+
+---
+
+### review-component
+
+**Invoke with:** `/review-component <description>`
+
+Runs a code review scoped to a specific component or area. The description is resolved to a file set using path/glob matching first, then keyword search — the resolved list is shown to the user before any agents run. Accepts the same architectural opt-in as `/review-full`. Applies the same auto-apply/escalate loop.
+
+**Example:**
+```
+/review-component the payments module
+/review-component src/auth/ including architectural review
+```
+
+---
+
+### review-branch
+
+**Invoke with:** `/review-branch [including architectural review]`
+
+Runs a code review scoped to files changed in the current feature branch, derived from `git diff` against the base branch. The full diff is passed to agents as context so they understand what changed, not just the current file state. Applies the same auto-apply/escalate loop.
+
 ## Agents
 
 ### docs-structure-reviewer
@@ -98,6 +143,30 @@ Audits the documentation structure and quality of a codebase. It traces all docu
 After applying fixes, invoke the agent again to re-audit. Repeat until no CRITICAL or MAJOR findings remain (or up to 3 iterations before asking the user for guidance).
 
 This agent is invoked automatically by the harness when documentation review is relevant (e.g. after `/feature-end`, or when the user asks to review docs).
+
+---
+
+### code-review-architectural
+
+Reviews module boundaries, coupling between components, consistency with the established design, and public interface quality. Uses `claude-opus-4-6`. Invoked by the review skills when the user opts in to architectural review. Produces findings classified as ARCHITECTURAL (requires confirmation), CONCERN, or SUGGESTION.
+
+---
+
+### code-review-simplicity
+
+Identifies unnecessary complexity: dead code, duplication, over-engineering, redundant abstractions, and verbose logic. Produces findings classified as MAJOR, MINOR, or SUGGESTION.
+
+---
+
+### code-review-general
+
+Checks correctness, error handling, edge cases, performance hot spots, and security at system boundaries. Produces findings classified as CRITICAL, MAJOR, MINOR, or SUGGESTION.
+
+---
+
+### code-review-nitty
+
+Reviews low-level code quality: naming, comments (missing, wrong, or redundant), control flow clarity, and micro-robustness issues within individual functions. Produces findings classified as MAJOR, MINOR, or SUGGESTION.
 
 ## Key files
 

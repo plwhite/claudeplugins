@@ -33,7 +33,7 @@ See `demo/README.md` for full usage documentation.
 
 Location: `devproc/`
 
-Dev process skills for managing features through their lifecycle.
+Skills and agents for feature lifecycle management and code review.
 
 Contents:
 - `devproc/.claude-plugin/plugin.json`

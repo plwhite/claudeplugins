@@ -14,7 +14,7 @@ Run `git diff --name-only main` (or the appropriate base branch) to get the list
 
 Exclude deleted files (they cannot be reviewed). Show the user the file list before proceeding — if it looks wrong or empty, stop and ask.
 
-Also capture the full diff (`git diff main`) to pass as context to the agents so they understand what changed and why, not just the current file state.
+Also capture the full diff (`git diff main`) to pass as context to the agents so they understand what changed, not just the current file state.
 
 ## Step 2 — Determine whether to include architectural review
 
@@ -35,6 +35,8 @@ If architectural review was confirmed in Step 2, also run:
 - `code-review-architectural` — checks module boundaries, coupling, and design fit; also pass any relevant design/architecture documents (README.md, CLAUDE.md, plans/)
 
 Collect all findings from all agents.
+
+> Steps 4–7 below are identical across all review skills (`review-full`, `review-component`, `review-branch`). If you change the convergence logic (e.g. the iteration cap), update all three.
 
 ## Step 4 — Classify findings
 

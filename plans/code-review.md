@@ -3,30 +3,15 @@
 ## Handoff
 
 **Last updated:** 2026-04-14
-**Session summary:** Sub-task 5 completed: `plugin.json` updated with a description covering both feature lifecycle and code review capabilities.
+**Session summary:** All seven sub-tasks complete. Feature ready to close.
 **Sub-task in progress:** None
-**First action next session:** Begin Sub-task 6 — update `devproc/README.md`: add four agents to Contents table and Agents section; add three review skills to Contents table and Skills section
+**First action next session:** N/A — feature complete
 **Open questions / decisions pending:** None
 **Dead ends to avoid:** None
 
-## Requirements
-
-Four code review agents, each focused on a distinct level of scrutiny:
-
-- **architectural** — checks that the architecture is valid, consistent with the design, and is the best approach. Uses `claude-opus-4-6`.
-- **simplicity** — identifies where complex code could be simplified or unused code removed. Uses `claude-sonnet-4-6`.
-- **general** — checks that the code does the right thing, is robust, and is suitably performant. Uses `claude-sonnet-4-6`.
-- **nitty** — digs into low-level code quality: readability, comments, robustness. Uses `claude-sonnet-4-6`.
-
-Skills that invoke these agents, incorporate their feedback, and apply it:
-
-- `/review-full` — reviews the full codebase
-- `/review-component [component description]` — reviews the described component or part of the codebase
-- `/review-branch` — reviews only files changed in the current feature branch (diff-scoped).
-- All three auto-apply code-level findings (iterating to convergence) and escalate architectural/interface changes for user confirmation.
-- The architectural agent is expensive; it runs only when the user explicitly requests it (e.g. "including architectural review") or when the skill prompts and the user confirms.
-
 ## Design
+
+Four code review agents (architectural, simplicity, general, nitty) operating at different levels of scrutiny, backed by three skills (/review-full, /review-component, /review-branch). All three skills auto-apply code-level findings (iterating to convergence) and escalate architectural/interface changes for user confirmation. The architectural agent uses `claude-opus-4-6`; the rest use `claude-sonnet-4-6`. The architectural agent is opt-in — invoked only when explicitly requested in the invocation text, or when the skill prompts and the user confirms.
 
 Four agent files live in `devproc/agents/`, following the same frontmatter conventions as `docs-structure-reviewer.md`. Each specifies its `model` field explicitly (`claude-opus-4-6` for architectural, `claude-sonnet-4-6` for the rest). Each agent's prompt scopes it to its review dimension and instructs it to produce findings without modifying files.
 
@@ -64,9 +49,9 @@ The `plugin.json` description will be updated to mention code review alongside f
 3. ✓ **Create `/review-component` skill** — `devproc/skills/review-component/SKILL.md` — resolves the component description to files, then same review logic as `/review-full` (2026-04-14)
 4. ✓ **Create `/review-branch` skill** — `devproc/skills/review-branch/SKILL.md` — diff-scoped review using `git diff` to identify changed files; same auto-apply/escalate and architectural opt-in logic (2026-04-14)
 5. ✓ **Update `plugin.json`** — extend description to cover code review skills and agents (2026-04-14)
-6. **Update `devproc/README.md`** — add agents to Contents table and Agents section; add skills to Contents table and Skills section
-7. **Update `CLAUDE.md`** — add new agents and skills to the devproc plugin contents list
+6. ✓ **Update `devproc/README.md`** — add agents to Contents table and Agents section; add skills to Contents table and Skills section (2026-04-14)
+7. ✓ **Update `CLAUDE.md`** — add new agents and skills to the devproc plugin contents list (2026-04-14)
 
-**▶ NEXT:** Sub-task 6
+**✓ All sub-tasks complete.**
 
 > Run `/feature-checkpoint` after each sub-task completes.

@@ -6,9 +6,7 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## In progress
 
-### Code review agents and skills [code-review]
-
-A set of code review agents (architectural, simplicity, general, nitty) operating at different levels of scrutiny and using appropriate models, plus skills that invoke them and apply their feedback — supporting both full-codebase and feature-diff review modes. Sub-task detail in [plans/code-review.md](plans/code-review.md).
+*No features currently in progress.*
 
 ---
 
@@ -25,6 +23,10 @@ A set of code review agents (architectural, simplicity, general, nitty) operatin
 ---
 
 ## Completed
+
+### Code review agents and skills [code-review] — 2026-04-14
+
+Four specialist code review agents (architectural using `claude-opus-4-6`, plus simplicity, general, and nitty using `claude-sonnet-4-6`) and three review skills (`/review-full`, `/review-component`, `/review-branch`). All skills auto-apply code-level findings iterating to convergence, and escalate architectural or interface-level changes for user confirmation. The architectural agent is opt-in via natural language. `devproc/README.md`, `CLAUDE.md`, and `plugin.json` updated to cover the new capabilities.
 
 ### Plugin documentation [plugin-documentation] — 2026-04-13
 
