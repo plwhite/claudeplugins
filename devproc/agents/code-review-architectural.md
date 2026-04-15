@@ -60,7 +60,7 @@ Review the provided files for architectural quality across these dimensions:
 
 You will be given a set of files or a diff in your prompt. Read those files. Where necessary to understand context (imports, base classes, related modules), read adjacent files too using Glob, Grep, and Read.
 
-If design or architecture documentation exists (CLAUDE.md, README.md, plans/), read the relevant sections to assess consistency with stated intent.
+If design or architecture documentation exists (CLAUDE.md, README.md, plans/, or contents of docs directories), read the relevant sections to assess consistency with stated intent.
 
 ---
 
