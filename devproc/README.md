@@ -26,11 +26,24 @@ This plugin provides skills and agents for three areas of the development proces
 | Agent | `code-review-general` | General review: correctness, error handling, robustness, performance |
 | Agent | `code-review-nitty` | Nitty review: naming, comments, control flow clarity, micro-robustness |
 
-## Setup
+## Using features
+
+Features push Claude (and the user!) into a systematic development process, with precise tracking. Before developing each feature, it is added to a set of files in the repository that allow tracking of specs, designs and plans.
+
+### Key feature management files
+
+| File | Purpose |
+|------|---------|
+| `FEATURES.md` | Index of all features and their status |
+| `plans/<slug>.md` | Per-feature plan with design, sub-tasks, and handoff state |
+| `NOTES.md` | Non-obvious technical findings recorded continuously |
+| `CLAUDE.md` | High-level project status only — no implementation detail |
+
+### Setup
 
 Run `/feature-init` once per project before using any other skills. This writes the feature model section to `CLAUDE.md`, creates `FEATURES.md`, and creates the `plans/` directory. Safe to re-run — it updates existing content rather than overwriting it.
 
-## Workflow
+### Workflow
 
 ```
 /feature-create "My new feature"
@@ -48,9 +61,9 @@ Invoke implementation of each subtask in turn, checkpointing as required.
     → moves entry to Completed, updates all documentation
 ```
 
-## Skills
+### Feature skills
 
-### feature-init
+#### feature-init
 
 **Invoke with:** `/feature-init`
 
@@ -58,11 +71,11 @@ One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, create
 
 ---
 
-### feature-create
+#### feature-create
 
 **Invoke with:** `/feature-create <description>`
 
-Adds a new entry at the top of the `## Pending` section in `FEATURES.md`. Derives a lowercase-hyphenated slug from the description and appends it as a tag on the heading (e.g. `### My feature [my-feature]`). The description is kept to one or two sentences — implementation detail belongs in the plan file, which is created when the feature starts.
+Adds a new entry at the top of the `## Pending` section in `FEATURES.md`. Derives a lowercase-hyphenated slug from the description and appends it as a tag on the heading (e.g. `### My feature [my-feature]`). The description is kept to one or two sentences — implementation detail belongs in the plan file, which is created when the feature starts. If a longer specification is provided, that context is stored off for implementation time.
 
 **Example:**
 ```
@@ -71,7 +84,7 @@ Adds a new entry at the top of the `## Pending` section in `FEATURES.md`. Derive
 
 ---
 
-### feature-start
+#### feature-start
 
 **Invoke with:** `/feature-start [feature name or slug]`
 
@@ -86,7 +99,7 @@ If only one feature is pending, the argument can be omitted.
 
 ---
 
-### feature-checkpoint
+#### feature-checkpoint
 
 **Invoke with:** `/feature-checkpoint`
 
@@ -96,7 +109,7 @@ Run this after each sub-task completes. The skill is designed to be run proactiv
 
 ---
 
-### feature-end
+#### feature-end
 
 **Invoke with:** `/feature-end`
 
@@ -104,17 +117,31 @@ Runs a full checkpoint, verifies all sub-tasks are complete, moves the feature e
 
 ---
 
-### review-full
+## Docs review
+
+There is one docs review agent, which is called by `feature-end`, or can be manually invoked by asking in the prompt.
+
+#### docs-structure-reviewer
+
+Does a full documentation review, checking for style, substance and completeness of documentation.
+
+## Code review
+
+### Code review skills
+
+These skills can be used to request code review, using the agents below (which are not normally called directly).
+
+#### review-full
 
 **Invoke with:** `/review-full [including architectural review]`
 
-Runs a code review over the entire codebase. Always runs the simplicity, general, and nitty agents in parallel. Adds the architectural agent if the user requests it in the invocation text, or prompts if unclear.
+Runs a code review over the entire codebase. Always runs the simplicity, general, and nitty agents in parallel. Adds the architectural agent if the user requests it in the invocation text, or prompts to ask whether to run it if unclear.
 
-Code-level findings (contained within a function or file) are applied automatically. The agents are then re-run over the changed files and the cycle repeats until no new findings appear (capped at 5 iterations). Architectural findings (module boundaries, public APIs, structural design) are presented to the user for confirmation before applying.
+Code-level findings (contained within a function or file) are applied automatically. The agents are then re-run over the changed files and the cycle repeats until no new findings appear (capped at 5 iterations). Architectural findings (module boundaries, public APIs, structural design) are presented to the user for confirmation before applying. It may well be worth creating a feature to apply all changes.
 
 ---
 
-### review-component
+#### review-component
 
 **Invoke with:** `/review-component <description>`
 
@@ -128,15 +155,15 @@ Runs a code review scoped to a specific component or area. The description is re
 
 ---
 
-### review-branch
+#### review-branch
 
 **Invoke with:** `/review-branch [including architectural review]`
 
 Runs a code review scoped to files changed in the current feature branch, derived from `git diff` against the base branch. The full diff is passed to agents as context so they understand what changed, not just the current file state. Applies the same auto-apply/escalate loop.
 
-## Agents
+### Code review agents
 
-### docs-structure-reviewer
+#### docs-structure-reviewer
 
 Audits the documentation structure and quality of a codebase. It traces all documents reachable from the top-level entry points (`README.md`, `CLAUDE.md`), checks discoverability, architectural completeness, procedural rigour, and stylistic consistency. Output is a prioritised list of findings (CRITICAL / MAJOR / MINOR / SUGGESTION) — it never modifies files itself.
 
@@ -146,33 +173,24 @@ This agent is invoked automatically by the harness when documentation review is 
 
 ---
 
-### code-review-architectural
+#### code-review-architectural
 
 Reviews module boundaries, coupling between components, consistency with the established design, and public interface quality. Uses `claude-opus-4-6`. Invoked by the review skills when the user opts in to architectural review. Produces findings classified as ARCHITECTURAL (requires confirmation), CONCERN, or SUGGESTION.
 
 ---
 
-### code-review-simplicity
+#### code-review-simplicity
 
 Identifies unnecessary complexity: dead code, duplication, over-engineering, redundant abstractions, and verbose logic. Produces findings classified as MAJOR, MINOR, or SUGGESTION.
 
 ---
 
-### code-review-general
+#### code-review-general
 
 Checks correctness, error handling, edge cases, performance hot spots, and security at system boundaries. Produces findings classified as CRITICAL, MAJOR, MINOR, or SUGGESTION.
 
 ---
 
-### code-review-nitty
+#### code-review-nitty
 
 Reviews low-level code quality: naming, comments (missing, wrong, or redundant), control flow clarity, and micro-robustness issues within individual functions. Produces findings classified as MAJOR, MINOR, or SUGGESTION.
-
-## Key files
-
-| File | Purpose |
-|------|---------|
-| `FEATURES.md` | Index of all features and their status |
-| `plans/<slug>.md` | Per-feature plan with design, sub-tasks, and handoff state |
-| `NOTES.md` | Non-obvious technical findings recorded continuously |
-| `CLAUDE.md` | High-level project status only — no implementation detail |
