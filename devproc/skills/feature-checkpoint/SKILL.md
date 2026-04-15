@@ -4,6 +4,8 @@ description: Sync all documentation and feature tracking to reflect the current 
 argument-hint: [feature name or slug]
 ---
 
+**Run this skill after every sub-task completes — do not wait to be asked.**
+
 Bring all project documentation up to date with the current state of the feature.
 
 Before proceeding, check that CLAUDE.md contains a Feature Model section.

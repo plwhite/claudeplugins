@@ -33,7 +33,7 @@ See `demo/README.md` for full usage documentation.
 
 Location: `devproc/`
 
-Dev process skills for managing features through their lifecycle.
+Skills and agents for feature lifecycle management and code review.
 
 Contents:
 - `devproc/.claude-plugin/plugin.json`
@@ -42,7 +42,14 @@ Contents:
 - `devproc/skills/feature-start/SKILL.md` — move a feature to In Progress and create its plan file
 - `devproc/skills/feature-checkpoint/SKILL.md` — sync all documentation to current state
 - `devproc/skills/feature-end/SKILL.md` — mark a feature complete and move it to Completed
+- `devproc/skills/review-full/SKILL.md` — full-codebase code review; auto-applies code-level findings, escalates architectural changes
+- `devproc/skills/review-component/SKILL.md` — code review scoped to a described component (resolves natural-language description to files)
+- `devproc/skills/review-branch/SKILL.md` — code review scoped to files changed in the current branch (uses git diff for scope and context)
 - `devproc/agents/docs-structure-reviewer.md` — audits documentation structure and quality, producing actionable findings
+- `devproc/agents/code-review-architectural.md` — architectural review agent (`claude-opus-4-6`)
+- `devproc/agents/code-review-simplicity.md` — simplicity and dead-code review agent
+- `devproc/agents/code-review-general.md` — correctness and robustness review agent
+- `devproc/agents/code-review-nitty.md` — low-level readability and naming review agent
 
 See `devproc/README.md` for full usage documentation.
 

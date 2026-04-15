@@ -1,5 +1,5 @@
 {
   "name": "devproc",
-  "description": "Provides five skills to manage features through a Pending → In Progress → Completed lifecycle, with plan files and handoff notes for session continuity.",
+  "description": "Provides skills and agents for software development process. Feature lifecycle: five skills to manage features through Pending → In Progress → Completed, with plan files and handoff notes for session continuity. Code review: three review skills (/review-full, /review-component, /review-branch) backed by four specialist agents (architectural, simplicity, general, nitty) that auto-apply code-level findings and escalate architectural changes for confirmation.",
   "version": "0.1.0"
 }
