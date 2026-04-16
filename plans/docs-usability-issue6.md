@@ -3,9 +3,9 @@
 ## Handoff
 
 **Last updated:** 2026-04-16
-**Session summary:** Sub-tasks 1 and 2 complete. `docs/setup.md` written (sandbox config, git hook, `gh` install, devproc install); root `README.md` reframed as "Claude Code setup and workflows" with links to docs/ and plugin references.
-**Sub-task in progress:** None — Sub-task 2 done, Sub-task 3 is next
-**First action next session:** Write `docs/workflow.md` — imperative task guide covering: initialise a project, create/start/checkpoint/end a feature, session restart, code review, and using issue references
+**Session summary:** Sub-tasks 1–3 complete. `docs/workflow.md` written covering the full feature lifecycle (create, start, checkpoint, restart, end), code review variants, and a docs review section; issue-aware examples included ready for Sub-task 5.
+**Sub-task in progress:** None — Sub-task 3 done, Sub-task 4 is next
+**First action next session:** Trim `devproc/README.md` — remove workflow narrative that duplicates docs/workflow.md, add pointer to docs/workflow.md at the top, keep skill/agent reference and feature-init setup
 **Open questions / decisions pending:** None
 **Dead ends to avoid:** Do not add `WebFetch(domain:api.github.com)` thinking it will fix `gh` in Bash — it only affects Claude's WebFetch tool, not Bash processes.
 
@@ -43,10 +43,10 @@ Sub-task 1 (sandbox research) feeds into Sub-task 2 (setup.md + README). Sub-tas
 
 1. ✓ **Research sandbox network config for `gh`** — find the correct settings.json config; record in NOTES.md; output feeds Sub-task 2 *(2026-04-16)*
 2. ✓ **Write `docs/setup.md` and reframe root `README.md`** — getting-started guide; README repositioned as "best practice collection" *(2026-04-16)*
-3. **Write `docs/workflow.md`** — imperative task-oriented guide drawing from devproc/README.md; covers daily workflow tasks
+3. ✓ **Write `docs/workflow.md`** — imperative task-oriented guide drawing from devproc/README.md; covers daily workflow tasks *(2026-04-16)*
 4. **Trim `devproc/README.md`** — keep plugin setup and reference; remove workflow content now in docs/; add pointer to docs/workflow.md
 5. **Update feature-create and feature-start skills for issue-aware input** — resolve "issue N" / natural-language issue references via `git remote -v` + `gh`; add example to docs/workflow.md
 
-**▶ NEXT:** Sub-task 3
+**▶ NEXT:** Sub-task 4
 
 > Run `/feature-checkpoint` after each sub-task completes.

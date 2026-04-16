@@ -2,7 +2,7 @@
 
 ## Current status
 
-**In progress:** `docs-usability-issue6` — repositioning the repo from "a collection of Claude plugins" to "Claude best practice and recommendations, supported by plugins." Sub-tasks 1 (sandbox config research) and 2 (`docs/setup.md` + README reframe) complete. Next: Sub-task 3 — write `docs/workflow.md` (imperative task-oriented guide), then trim `devproc/README.md`, then add issue-aware skills.
+**In progress:** `docs-usability-issue6` — repositioning the repo from "a collection of Claude plugins" to "Claude best practice and recommendations, supported by plugins." Sub-tasks 1–3 complete (`docs/setup.md`, `docs/workflow.md`, root README reframe). Next: Sub-task 4 — trim `devproc/README.md`, then Sub-task 5 — add issue-aware skills.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)

@@ -14,12 +14,15 @@ This repository contains descriptions and tooling for a set of practices using C
 
 - Follow [docs/workflow.md](docs/workflow.md) to follow the feature workflow.
 
+- See [docs/capabilities.md](docs/capabilities.md) for code review and other capabilities.
+
 ## Documentation
 
 | Document | What it covers |
 |----------|---------------|
 | [docs/setup.md](docs/setup.md) | Environment setup: sandbox, git hook, `gh`, devproc install |
-| [docs/workflow.md](docs/workflow.md) | Task-oriented guide: how to work with features and do high quality development |
+| [docs/workflow.md](docs/workflow.md) | Task-oriented guide: managing features from backlog to completion |
+| [docs/capabilities.md](docs/capabilities.md) | Code review and documentation review |
 | [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |
 
 ## Plugins
