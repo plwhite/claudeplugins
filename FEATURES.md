@@ -6,13 +6,15 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## In progress
 
-*No features currently in progress.*
+### Docs and usability improvements [docs-usability-issue6]
+
+Reposition the repo from "a collection of Claude plugins" to "Claude best practice and recommendations, supported by plugins." A new user following the docs ends up with a well-configured Claude setup (sandbox, git write protection, `gh` integration) and a working devproc workflow. Covers sandbox network config research, a new getting-started guide, devproc setup documentation, and issue-aware skills. Sub-task detail in [plans/docs-usability-issue6.md](plans/docs-usability-issue6.md).
 
 ---
 
 ## Pending
 
-*Features that are waiting for development.*
+*No features pending.*
 
 ---
 
