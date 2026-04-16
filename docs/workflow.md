@@ -14,7 +14,7 @@ Best practice regarding git is to:
 
 ## Add a feature to the backlog
 
-When you have a piece of work to track — from a GitHub issue, a design doc, or your own notes — add it to the project feature list. You should do this *either* when you are about to start work on it, *or* if this is a feature that is not covered by a GitHub issue (which would normally imply a small hobby project with less tracking.
+When you have a piece of work to track — from a GitHub issue, a design doc, or your own notes — add it to the project feature list. You should do this *either* when you are about to start work on it, *or* if this is a feature that is not covered by a GitHub issue (which would normally imply a small hobby project with less tracking).
 
 - With a description:
 

@@ -51,7 +51,7 @@ One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, create
 
 **Invoke with:** `/feature-create <description>`
 
-Adds a new entry at the top of the `## Pending` section in `FEATURES.md`. Derives a lowercase-hyphenated slug from the description and appends it as a tag on the heading (e.g. `### My feature [my-feature]`). The description is kept to one or two sentences — implementation detail belongs in the plan file. If a longer specification is provided, it is preserved in `plans/<slug>.md` under a `## Requirements` section.
+Adds a new entry at the top of the `## Pending` section in `FEATURES.md`. Derives a lowercase-hyphenated slug from the description and appends it as a tag on the heading (e.g. `### My feature [my-feature]`). The description is kept to one or two sentences — implementation detail belongs in the plan file. If a longer specification is provided, it is optionally preserved in `plans/<slug>.md` under a `## Requirements` section (this is an edge case, not part of the standard plan schema; it is only created when pre-given requirements are too detailed for the FEATURES.md entry).
 
 **Example:**
 ```

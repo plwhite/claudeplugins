@@ -32,4 +32,4 @@ This repository contains descriptions and tooling for a set of practices using C
 | [devproc](devproc/README.md) | Feature lifecycle and code review: create, plan, implement, review, and close features |
 | [demo](demo/README.md) | Minimal demo plugin for verifying plugin discovery and wiring |
 
-Plugins are registered in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json). Each entry names the plugin and points to its source directory. A new plugin needs both an entry here and its own directory with a `.claude-plugin/plugin.json` manifest.
+Plugins are registered in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json). See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines. Each entry names the plugin and points to its source directory. A new plugin needs both an entry here and its own directory with a `.claude-plugin/plugin.json` manifest.

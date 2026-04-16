@@ -14,7 +14,7 @@ None of these steps are required; this is "how to configure your system in the r
 
 To set everything up, follow the stages below.
 
-1. Check that you satisfy the [prerequisites](#prerequisites) above.
+1. Check that you satisfy the [prerequisites](#prerequisites) below.
 
 2. Configure Claude code to [run sandboxed](#sandbox-configuration).
 
@@ -26,7 +26,7 @@ To set everything up, follow the stages below.
 
 ### Prerequisites
 
-- Linux (WSL should work fine, as should iOS, but only Linux has been tested)
+- Linux (WSL should work fine, as should macOS, but only Linux has been tested)
 
 - [Claude Code](https://claude.ai/code) installed, ideally as the vscode extension.
 
@@ -36,7 +36,7 @@ To set everything up, follow the stages below.
 
 ### Sandbox configuration
 
-Set up Claude Code so that it runs standboxed on your box, with limited network access and no git write access. *If you want to allow Claude Code to make git changes directly, do not create the hooks file or hooks section.*
+Set up Claude Code so that it runs sandboxed on your box, with limited network access and no git write access. *If you want to allow Claude Code to make git changes directly, do not create the hooks file or hooks section.*
 
 - Edit `~/.claude/settings.json`. Create it if it does not exist. Add or merge the following:
 
@@ -47,7 +47,7 @@ Set up Claude Code so that it runs standboxed on your box, with limited network 
       "network": {
         "allowedDomains": ["github.com", "api.github.com"]
       }
-    }
+    },
     "hooks": {
       "PreToolUse": [
         {
@@ -151,4 +151,4 @@ This is idempotent, and ensures that feature development skills work. If you fai
 
 ## What's next
 
-See [workflow.md](workflow.md) for a task-oriented guide to daily use.
+See [workflow.md](workflow.md) for a task-oriented guide to daily use, and [capabilities.md](capabilities.md) for code review and documentation review.

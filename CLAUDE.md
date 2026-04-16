@@ -2,7 +2,7 @@
 
 ## Current status
 
-**In progress:** `docs-usability-issue6` — all 5 sub-tasks complete. Repo repositioned with new `docs/` directory (`setup.md`, `workflow.md`, `capabilities.md`), root README reframed, `devproc/README.md` trimmed to reference doc, and issue-aware resolution added to `feature-create` and `feature-start` skills. Ready for `/feature-end`.
+**No feature currently in progress.** `docs-usability-issue6` completed 2026-04-16 — repo repositioned with new `docs/` directory, root README reframed, `devproc/README.md` trimmed, and issue-aware skills added.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)

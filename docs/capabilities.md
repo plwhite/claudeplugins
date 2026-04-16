@@ -35,7 +35,6 @@ Code review should normally be run after every feature is complete, and occasion
 
 ### Architectural review
 
-
 If you want a deeper structural assessment (using `claude-opus-4-6` in a slow pass), you can request architectural review. If your brief is not clear, Claude will request clarification if architectural review is required. For example:
 
 ```
