@@ -1,28 +1,32 @@
-# Claude plugins
+# Claude Code setup and workflows
 
-A collection of plugins for [Claude Code](https://claude.ai/code). Each plugin packages skills (prompt/behavior documents) and agents that extend Claude Code's capabilities in a structured way.
+This repository contains descriptions and tooling for a set of practices using Claude Code. It includes the following.
 
-## What are plugins?
+- Documentation for how to set up and configure your Claude environment so as to be secure and managed.
 
-Plugins are directories that Claude Code discovers and loads, making their skills available as slash commands and their agents available by name. This repository registers its plugins via `.claude-plugin/marketplace.json` at the root, which tells Claude Code where to find each plugin. When adding a new plugin to this repo, register it there as well as creating its directory.
+- A documented development workflow based around developing features with regular spec / design / review / sign off iterations.
+
+- The `devproc` plugin, containing skills and agents to support and enforce the workflow via Claude slash commands.
+
+## Instructions
+
+- Follow [docs/setup.md](docs/setup.md) to configure your environment.
+
+- Follow [docs/workflow.md](docs/workflow.md) to follow the feature workflow.
+
+## Documentation
+
+| Document | What it covers |
+|----------|---------------|
+| [docs/setup.md](docs/setup.md) | Environment setup: sandbox, git hook, `gh`, devproc install |
+| [docs/workflow.md](docs/workflow.md) | Task-oriented guide: how to work with features and do high quality development |
+| [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |
 
 ## Plugins
 
 | Plugin | Description |
 |--------|-------------|
+| [devproc](devproc/README.md) | Feature lifecycle and code review: create, plan, implement, review, and close features |
 | [demo](demo/README.md) | Minimal demo plugin for verifying plugin discovery and wiring |
-| [devproc](devproc/README.md) | Feature lifecycle skills: create, start, checkpoint, and end features |
 
-## Plugin registry
-
-Plugins are registered in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json). Each entry names the plugin and points to its source directory:
-
-```json
-{ "name": "my-plugin", "source": "./my-plugin" }
-```
-
-Claude Code reads this file to discover available plugins. A new plugin must have an entry here as well as its own directory containing a `.claude-plugin/plugin.json` manifest.
-
-## Development
-
-The workspace guide, feature model, and active feature list are in [`CLAUDE.md`](CLAUDE.md) and [`FEATURES.md`](FEATURES.md). Read `CLAUDE.md` first when starting work on this repository.
+Plugins are registered in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json). Each entry names the plugin and points to its source directory. A new plugin needs both an entry here and its own directory with a `.claude-plugin/plugin.json` manifest.
