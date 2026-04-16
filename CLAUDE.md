@@ -2,7 +2,7 @@
 
 ## Current status
 
-**In progress:** `docs-usability-issue6` — repositioning the repo from "a collection of Claude plugins" to "Claude best practice and recommendations, supported by plugins." Sub-tasks 1–4 complete (`docs/setup.md`, `docs/workflow.md`, `docs/capabilities.md`, root README reframe, `devproc/README.md` trimmed). Next: Sub-task 5 — add issue-aware skills to `feature-create` and `feature-start`.
+**In progress:** `docs-usability-issue6` — all 5 sub-tasks complete. Repo repositioned with new `docs/` directory (`setup.md`, `workflow.md`, `capabilities.md`), root README reframed, `devproc/README.md` trimmed to reference doc, and issue-aware resolution added to `feature-create` and `feature-start` skills. Ready for `/feature-end`.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)

@@ -12,9 +12,16 @@ If it doesn't, tell the user to run /feature-init first and stop.
 The user has described the feature as: $ARGUMENTS
 
 Steps:
-1. Read `FEATURES.md` to understand existing features and avoid duplication.
-2. Derive a short, descriptive slug for the feature (e.g. `add-french-divisions`, `deploy-visualisation`). Use lowercase-hyphenated format. Put that at the end of the feature title in square brackets as a tag (e.g. `[add-french-divisions]`).
-3. Add a new entry at the top of the `## Pending` section in `FEATURES.md` with the format:
+1. If $ARGUMENTS looks like a GitHub issue reference — e.g. "issue 6", "issue #6", "#6", or natural language such as "the issue about improving error handling" — resolve it before proceeding:
+   a. Run `git remote -v` and parse the owner/repo from the fetch URL (handles both HTTPS `https://github.com/owner/repo.git` and SSH `git@github.com:owner/repo.git`).
+   b. For a numeric reference: run `gh issue view N --repo owner/repo` to fetch the title and body.
+   c. For a natural-language description: run `gh issue list --repo owner/repo --search "keywords" --limit 10 --json number,title,body` and select the best match.
+   d. Use the issue title as the feature title. Write one or two sentences summarising what the issue covers — do not copy the full issue body into `FEATURES.md`. Include the issue number as a reference (e.g. `See #6.`).
+   e. If `gh` is not available or the lookup fails, tell the user and ask them to provide the description manually.
+
+2. Read `FEATURES.md` to understand existing features and avoid duplication.
+3. Derive a short, descriptive slug for the feature (e.g. `add-french-divisions`, `deploy-visualisation`). Use lowercase-hyphenated format. Put that at the end of the feature title in square brackets as a tag (e.g. `[add-french-divisions]`).
+4. Add a new entry at the top of the `## Pending` section in `FEATURES.md` with the format:
 
 ```
 ### <Feature title> [tag]
@@ -24,4 +31,4 @@ Steps:
 
 Keep the description concise — no implementation detail, no sub-tasks. Those belong in a plan file created when the feature starts. If the user has provided requirements too detailed to fit in one or two sentences, preserve them in `plans/<slug>.md` under a `## Requirements` section, noting that the Design section will be fleshed out when the feature starts. Do not create the plan file if there are no requirements beyond what fits in the FEATURES.md entry.
 
-4. Confirm the new entry to the user as ready to proceed. Do not ask if they want to start the feature now (using `/feature-start`).
+5. Confirm the new entry to the user as ready to proceed. Do not ask if they want to start the feature now (using `/feature-start`).

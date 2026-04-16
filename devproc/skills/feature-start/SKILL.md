@@ -13,7 +13,17 @@ The user has identified the feature as: $ARGUMENTS
 
 Steps:
 
-1. Read `FEATURES.md` and identify the feature to start. If `$ARGUMENTS` is blank and there is exactly one entry in `## Pending`, use that. If ambiguous, ask the user to clarify.
+1. Read `FEATURES.md` and identify the feature to start.
+   - Match `$ARGUMENTS` against pending feature names and slugs.
+   - If `$ARGUMENTS` is blank and there is exactly one entry in `## Pending`, use that.
+   - If no match is found, tell the user the feature is not in `FEATURES.md` and ask them to run `/feature-create` first. Do not proceed.
+   - If ambiguous, ask the user to clarify.
+
+   Then, if the matched feature entry references a GitHub issue (e.g. contains `#6` or `Closes #6`), fetch the issue to use as additional context when writing the design:
+   a. Run `git remote -v` and parse the owner/repo from the fetch URL (handles both HTTPS `https://github.com/owner/repo.git` and SSH `git@github.com:owner/repo.git`).
+   b. Run `gh issue view N --repo owner/repo` to retrieve the full issue title and body.
+   c. Use this content to inform the Design section and sub-task breakdown.
+   d. If the `git` or `gh` commands fail (not installed, auth error, repo not found, etc.), do not proceed. Tell the user what was attempted, what failed, and ask them how to continue — e.g. "This feature references issue #6 but I was unable to fetch it (`gh` returned: …). Please either fix the `gh` setup or paste the issue content here."
 
 2. Move the feature entry from `## Pending` to `## In progress` in `FEATURES.md`. Update the In Progress entry to reference the plan file: add a line like `Sub-task detail in [plans/<slug>.md](plans/<slug>.md).`
 

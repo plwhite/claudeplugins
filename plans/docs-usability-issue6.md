@@ -3,9 +3,9 @@
 ## Handoff
 
 **Last updated:** 2026-04-16
-**Session summary:** Sub-tasks 1–4 complete. `devproc/README.md` rewritten: workflow narrative removed, skill/agent reference kept and reorganised, pointer to docs/ added at top. Note: during Sub-task 3 workflow.md was split into workflow.md (feature lifecycle) and capabilities.md (code review, docs review).
-**Sub-task in progress:** None — Sub-task 4 done, Sub-task 5 is next
-**First action next session:** Update `feature-create/SKILL.md` and `feature-start/SKILL.md` to resolve GitHub issue references via `git remote -v` + `gh issue view` / `gh issue list --search`
+**Session summary:** All 5 sub-tasks complete. Issue-aware resolution added to `feature-create/SKILL.md` and `feature-start/SKILL.md`: both skills now detect issue references, parse owner/repo from `git remote -v`, and fetch via `gh issue view` or `gh issue list --search`. No doc changes needed — workflow.md already covered the user-facing behaviour.
+**Sub-task in progress:** None — all done
+**First action next session:** Run `/feature-end`
 **Open questions / decisions pending:** None
 **Dead ends to avoid:** Do not add `WebFetch(domain:api.github.com)` thinking it will fix `gh` in Bash — it only affects Claude's WebFetch tool, not Bash processes.
 
@@ -46,8 +46,8 @@ Sub-task 1 (sandbox research) feeds into Sub-task 2 (setup.md + README). Sub-tas
 2. ✓ **Write `docs/setup.md` and reframe root `README.md`** — getting-started guide; README repositioned as "best practice collection" *(2026-04-16)*
 3. ✓ **Write `docs/workflow.md`** — imperative task-oriented guide drawing from devproc/README.md; covers daily workflow tasks *(2026-04-16)*
 4. ✓ **Trim `devproc/README.md`** — keep plugin setup and reference; remove workflow content now in docs/; add pointer to docs/workflow.md *(2026-04-16)*
-5. **Update feature-create and feature-start skills for issue-aware input** — resolve "issue N" / natural-language issue references via `git remote -v` + `gh`; add example to docs/workflow.md
+5. ✓ **Update feature-create and feature-start skills for issue-aware input** — resolve "issue N" / natural-language issue references via `git remote -v` + `gh`; docs already covered *(2026-04-16)*
 
-**▶ NEXT:** Sub-task 5
+**▶ NEXT:** All sub-tasks complete — run `/feature-end`
 
 > Run `/feature-checkpoint` after each sub-task completes.
