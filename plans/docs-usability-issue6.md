@@ -3,9 +3,9 @@
 ## Handoff
 
 **Last updated:** 2026-04-16
-**Session summary:** Sub-tasks 1–3 complete. `docs/workflow.md` written covering the full feature lifecycle (create, start, checkpoint, restart, end), code review variants, and a docs review section; issue-aware examples included ready for Sub-task 5.
-**Sub-task in progress:** None — Sub-task 3 done, Sub-task 4 is next
-**First action next session:** Trim `devproc/README.md` — remove workflow narrative that duplicates docs/workflow.md, add pointer to docs/workflow.md at the top, keep skill/agent reference and feature-init setup
+**Session summary:** Sub-tasks 1–4 complete. `devproc/README.md` rewritten: workflow narrative removed, skill/agent reference kept and reorganised, pointer to docs/ added at top. Note: during Sub-task 3 workflow.md was split into workflow.md (feature lifecycle) and capabilities.md (code review, docs review).
+**Sub-task in progress:** None — Sub-task 4 done, Sub-task 5 is next
+**First action next session:** Update `feature-create/SKILL.md` and `feature-start/SKILL.md` to resolve GitHub issue references via `git remote -v` + `gh issue view` / `gh issue list --search`
 **Open questions / decisions pending:** None
 **Dead ends to avoid:** Do not add `WebFetch(domain:api.github.com)` thinking it will fix `gh` in Bash — it only affects Claude's WebFetch tool, not Bash processes.
 
@@ -18,10 +18,11 @@ The repo is being repositioned: currently it presents as "here are some Claude p
 Joe Developer finds this repo, follows the docs start to finish, and ends up with: sandbox on and correctly configured, git write operations blocked, `gh` installed and working inside sandbox, devproc installed and active, and a clear understanding of the feature workflow. The plugin is the enabler, not the point.
 
 **Information architecture after this feature:**
-- Root `README.md` — reframed entry point: "Claude best practice collection." Short intro, then links to `docs/setup.md`, `docs/workflow.md`, and individual plugin docs.
-- `docs/setup.md` (new) — the authoritative getting-started guide: sandbox config, `gh` install, git write protection, devproc install.
-- `docs/workflow.md` (new) — imperative task-oriented guide; covers the things a user actually wants to do ("to start a new feature, do the following..."). Draws from devproc/README.md but reframed as instructions rather than capability descriptions. Broader scope than devproc alone — this is the day-to-day reference.
-- `devproc/README.md` — remains the devproc plugin reference. Keeps plugin-specific setup (`/feature-init`), the skill/agent inventory, and the skill reference. Points to `docs/workflow.md` for the workflow perspective.
+- Root `README.md` — reframed entry point: "Claude Code setup and workflows." Short intro, links to all docs/ files and plugin references.
+- `docs/setup.md` — getting-started guide: sandbox config, `gh` install, git write protection, devproc install, `/feature-init`.
+- `docs/workflow.md` — imperative feature lifecycle guide: create, start, checkpoint, restart, end.
+- `docs/capabilities.md` — code review (branch/component/full) and documentation review. Split out from workflow.md during Sub-task 3.
+- `devproc/README.md` — plugin reference: setup, skill/agent inventory, individual skill and agent reference.
 - `demo/README.md` — unchanged (internal).
 
 **Sub-task ordering and dependencies:**
@@ -44,9 +45,9 @@ Sub-task 1 (sandbox research) feeds into Sub-task 2 (setup.md + README). Sub-tas
 1. ✓ **Research sandbox network config for `gh`** — find the correct settings.json config; record in NOTES.md; output feeds Sub-task 2 *(2026-04-16)*
 2. ✓ **Write `docs/setup.md` and reframe root `README.md`** — getting-started guide; README repositioned as "best practice collection" *(2026-04-16)*
 3. ✓ **Write `docs/workflow.md`** — imperative task-oriented guide drawing from devproc/README.md; covers daily workflow tasks *(2026-04-16)*
-4. **Trim `devproc/README.md`** — keep plugin setup and reference; remove workflow content now in docs/; add pointer to docs/workflow.md
+4. ✓ **Trim `devproc/README.md`** — keep plugin setup and reference; remove workflow content now in docs/; add pointer to docs/workflow.md *(2026-04-16)*
 5. **Update feature-create and feature-start skills for issue-aware input** — resolve "issue N" / natural-language issue references via `git remote -v` + `gh`; add example to docs/workflow.md
 
-**▶ NEXT:** Sub-task 4
+**▶ NEXT:** Sub-task 5
 
 > Run `/feature-checkpoint` after each sub-task completes.
