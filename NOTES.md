@@ -8,4 +8,19 @@ Non-obvious findings. Do not record things derivable from reading the code.
 
 `gh issue view` and `gh api` time out in sandbox mode even when `WebFetch(domain:api.github.com)` is listed in project permissions. The `WebFetch(...)` permission only covers Claude's WebFetch tool — it has no effect on outbound network access from Bash processes. The sandbox blocks Bash network independently.
 
-Both calls work when `dangerouslyDisableSandbox: true` is set. The correct fix is to add a sandbox network allowlist entry for `api.github.com` (and `github.com`) in settings.json. The exact config key needs investigation — see Sub-task 1 of the `docs-usability-issue6` feature.
+The correct configuration is `sandbox.network.allowedDomains` in `~/.claude/settings.json` (global, since `gh` is used across projects):
+
+```json
+{
+  "sandbox": {
+    "enabled": true,
+    "network": {
+      "allowedDomains": ["github.com", "api.github.com"]
+    }
+  }
+}
+```
+
+Wildcards are supported (e.g. `*.npmjs.org`). Domain arrays merge across settings scopes, so adding entries globally does not override project-level entries.
+
+On macOS with a MITM proxy and custom CA, Go-based tools like `gh` may additionally need `"enableWeakerNetworkIsolation": true` under `sandbox.network` to reach the system TLS trust service — but this relaxes isolation and should only be used if needed.

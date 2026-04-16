@@ -1,5 +1,9 @@
 # Workspace guide (Claude plugins)
 
+## Current status
+
+**In progress:** `docs-usability-issue6` — repositioning the repo from "a collection of Claude plugins" to "Claude best practice and recommendations, supported by plugins." Adds `docs/setup.md` (getting-started guide), `docs/workflow.md` (task-oriented workflow reference), reframes root README, trims devproc README, and adds issue-aware skills to `feature-create` and `feature-start`. Sub-task 1 (sandbox network config research) complete; Sub-task 2 (write docs/setup.md + reframe README) is next.
+
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
 - agents (agent definitions)

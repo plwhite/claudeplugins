@@ -3,9 +3,9 @@
 ## Handoff
 
 **Last updated:** 2026-04-16
-**Session summary:** Feature plan created. Implementation not yet started.
-**Sub-task in progress:** None
-**First action next session:** Begin Sub-task 1 — investigate sandbox network config for `gh`
+**Session summary:** Sub-task 1 complete. Identified `sandbox.network.allowedDomains` as the correct settings.json key for allowing Bash network access; documented in NOTES.md. Scope also expanded from "docs improvements" to a full repo repositioning: new `docs/setup.md` and `docs/workflow.md`, reframed root README, devproc README trimmed, plus issue-aware skills.
+**Sub-task in progress:** None — Sub-task 1 done, Sub-task 2 is next
+**First action next session:** Create the `docs/` directory and write `docs/setup.md` (sandbox config, git write hook, `gh` install, devproc install)
 **Open questions / decisions pending:** None
 **Dead ends to avoid:** Do not add `WebFetch(domain:api.github.com)` thinking it will fix `gh` in Bash — it only affects Claude's WebFetch tool, not Bash processes.
 
@@ -41,12 +41,12 @@ Sub-task 1 (sandbox research) feeds into Sub-task 2 (setup.md + README). Sub-tas
 
 ## Sub-tasks
 
-1. **Research sandbox network config for `gh`** — find the correct settings.json config; record in NOTES.md; output feeds Sub-task 2
+1. ✓ **Research sandbox network config for `gh`** — find the correct settings.json config; record in NOTES.md; output feeds Sub-task 2 *(2026-04-16)*
 2. **Write `docs/setup.md` and reframe root `README.md`** — getting-started guide; README repositioned as "best practice collection"
 3. **Write `docs/workflow.md`** — imperative task-oriented guide drawing from devproc/README.md; covers daily workflow tasks
 4. **Trim `devproc/README.md`** — keep plugin setup and reference; remove workflow content now in docs/; add pointer to docs/workflow.md
 5. **Update feature-create and feature-start skills for issue-aware input** — resolve "issue N" / natural-language issue references via `git remote -v` + `gh`; add example to docs/workflow.md
 
-**▶ NEXT:** Sub-task 1
+**▶ NEXT:** Sub-task 2
 
 > Run `/feature-checkpoint` after each sub-task completes.
