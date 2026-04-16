@@ -59,9 +59,37 @@ All four targeted fixes from fifth review confirmed applied:
 
 4. review-branch/SKILL.md "what changed and why" — RESOLVED. Line 17 now reads "so they understand what changed, not just the current file state" — "and why" removed.
 
-## Carryover issue (not in fix scope for sixth review)
+## Carryover issue (not in fix scope for sixth review) — RESOLVED
 
-- MAJOR (carryover): FEATURES.md still shows code-review feature as "In Progress" despite all sub-tasks being complete. /feature-end was not run. This is a process gap, not a documentation quality defect, but it leaves a stale navigational state.
+- MAJOR (carryover): FEATURES.md code-review feature is now in Completed. docs-usability-issue6 is In Progress. Process gap is resolved, though /feature-end has not yet been run for docs-usability-issue6 (all sub-tasks complete per plan).
+
+## Seventh review (2026-04-16) — docs-usability-issue6 feature
+
+New findings:
+
+1. MAJOR: docs/setup.md JSON block (lines 44–65) is missing a comma after the closing brace of the "sandbox" object, before "hooks". This is syntactically invalid JSON — copy-paste breaks.
+2. MAJOR: docs/setup.md step 1 says "Check that you satisfy the prerequisites **above**" but the ### Prerequisites subsection appears *below* that numbered list. The anchor link is valid but the word "above" is incorrect and spatially misleading.
+3. MINOR: docs/setup.md Prerequisites bullet says "iOS" — almost certainly means "macOS". iOS does not run Claude Code.
+4. MINOR: CONTRIBUTING.md exists at repo root but is not linked from README.md, CLAUDE.md, or any entry point. Orphaned document.
+5. MINOR: devproc/README.md feature-create section mentions `## Requirements` section in plan file as an optional edge case. This is not part of the standard plan schema (Handoff / Design / Sub-tasks), which could confuse readers. A note clarifying it is an optional edge case for long pre-given specs would help, but the current text does partially convey this.
+6. MINOR: docs/setup.md line 39 — typo "standboxed" (should be "sandboxed").
+
+## Eighth review (2026-04-16) — re-audit after 7 targeted fixes
+
+All 7 claimed fixes verified:
+1. docs/setup.md JSON comma between sandbox/hooks objects — RESOLVED (valid JSON confirmed).
+2. docs/setup.md "above" → "below" in step 1 — RESOLVED.
+3. docs/setup.md "iOS" → "macOS" — RESOLVED.
+4. docs/setup.md typo "standboxed" → "sandboxed" — RESOLVED.
+5. docs/setup.md "What's next" extended to link capabilities.md — RESOLVED.
+6. devproc/README.md feature-create Requirements note clarified as edge case — RESOLVED.
+7. README.md link to CONTRIBUTING.md added — RESOLVED.
+
+New findings:
+- MINOR: docs/workflow.md line 17 — unclosed parenthesis: "(which would normally imply a small hobby project with less tracking." — missing closing ")".
+- SUGGESTION: docs/capabilities.md "### Architectural review" heading has a double blank line before its paragraph — cosmetic.
+
+---
 
 ## Recurring pattern alert (resolved)
 

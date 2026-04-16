@@ -12,7 +12,7 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## Pending
 
-*Features that are waiting for development.*
+*No features pending.*
 
 ---
 
@@ -23,6 +23,10 @@ Features being developed for this project. Each feature has a level three (`###`
 ---
 
 ## Completed
+
+### Docs and usability improvements [docs-usability-issue6] — 2026-04-16
+
+Repositioned the repo from "a collection of Claude plugins" to "Claude best practice and recommendations, supported by plugins." Added a new `docs/` directory with `setup.md` (environment configuration: sandbox, git write protection, `gh` install, devproc install), `workflow.md` (imperative feature lifecycle guide), and `capabilities.md` (code review and docs review). Rewrote root `README.md` to lead with the best-practice framing. Trimmed `devproc/README.md` to a pure plugin reference with pointers to the new docs. Updated `feature-create` and `feature-start` skills to resolve GitHub issue references via `git remote -v` and `gh`, so users can pass "issue 6" or a natural-language description directly as a feature argument.
 
 ### Code review agents and skills [code-review] — 2026-04-14
 

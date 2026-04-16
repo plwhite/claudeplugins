@@ -1,5 +1,9 @@
 # Workspace guide (Claude plugins)
 
+## Current status
+
+**No feature currently in progress.** `docs-usability-issue6` completed 2026-04-16 — repo repositioned with new `docs/` directory, root README reframed, `devproc/README.md` trimmed, and issue-aware skills added.
+
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
 - agents (agent definitions)
