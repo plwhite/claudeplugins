@@ -1,6 +1,8 @@
+![devproc](images/devproc_wide.png)
+
 # Claude Code setup and workflows
 
-This repository contains descriptions and tooling for a set of practices using Claude Code. It includes the following.
+This repository contains descriptions and tooling for a set of best practices using Claude Code. It includes the following.
 
 - Documentation for how to set up and configure your Claude environment so as to be secure and managed.
 
