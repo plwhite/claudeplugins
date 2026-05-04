@@ -2,7 +2,7 @@
 
 ## Current status
 
-**No feature currently in progress.** `docs-usability-issue6` completed 2026-04-16 — repo repositioned with new `docs/` directory, root README reframed, `devproc/README.md` trimmed, and issue-aware skills added.
+**No feature currently in progress.** `security-permissions-docs` completed 2026-05-04 — added a "Block reads of sensitive files" section to `docs/setup.md` documenting the `permissions.deny` stanza for `~/.claude/settings.json`, wired into the setup.md intro bullets, "Detailed steps" list, and root README docs table.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)

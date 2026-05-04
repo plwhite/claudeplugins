@@ -22,7 +22,7 @@ This repository contains descriptions and tooling for a set of best practices us
 
 | Document | What it covers |
 |----------|---------------|
-| [docs/setup.md](docs/setup.md) | Environment setup: sandbox, git hook, `gh`, devproc install |
+| [docs/setup.md](docs/setup.md) | Environment setup: sandbox, git hook, blocking reads of sensitive files, `gh`, devproc install |
 | [docs/workflow.md](docs/workflow.md) | Task-oriented guide: managing features from backlog to completion |
 | [docs/capabilities.md](docs/capabilities.md) | Code review and documentation review |
 | [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |

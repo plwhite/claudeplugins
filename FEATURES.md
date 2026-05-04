@@ -24,6 +24,10 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## Completed
 
+### Document security permissions in settings.json [security-permissions-docs] — 2026-05-04
+
+Added a "Block reads of sensitive files" section to `docs/setup.md` documenting a `permissions.deny` stanza for `~/.claude/settings.json` that blocks Claude reads of `.env`, generic secrets files, PEM/key/p12 material, SSH private keys, and `credentials.json`. Wired the new section into the setup.md intro bullets, "Detailed steps" navigation list, and the root README docs table. Resolves #10.
+
 ### Docs and usability improvements [docs-usability-issue6] — 2026-04-16
 
 Repositioned the repo from "a collection of Claude plugins" to "Claude best practice and recommendations, supported by plugins." Added a new `docs/` directory with `setup.md` (environment configuration: sandbox, git write protection, `gh` install, devproc install), `workflow.md` (imperative feature lifecycle guide), and `capabilities.md` (code review and docs review). Rewrote root `README.md` to lead with the best-practice framing. Trimmed `devproc/README.md` to a pure plugin reference with pointers to the new docs. Updated `feature-create` and `feature-start` skills to resolve GitHub issue references via `git remote -v` and `gh`, so users can pass "issue 6" or a natural-language description directly as a feature argument.
