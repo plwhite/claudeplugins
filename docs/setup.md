@@ -6,6 +6,8 @@ This guide walks through configuring Claude Code for a productive development wo
 
 - Lock down git access so that Claude can only view git status, not push to git.
 
+- Block reads of files that conventionally hold secrets (`.env`, private keys, credentials).
+
 - Install the plugin.
 
 None of these steps are required; this is "how to configure your system in the right way for me", which you may wish to tweak appropriately.
@@ -18,11 +20,13 @@ To set everything up, follow the stages below.
 
 2. Configure Claude code to [run sandboxed](#sandbox-configuration).
 
-3. Install and authenticate [the GitHub CLI](#install-and-authenticate-github-cli).
+3. [Block reads of sensitive files](#block-reads-of-sensitive-files).
 
-4. Make the [`devproc` plugin available](#make-the-devproc-plugin-available-locally).
+4. Install and authenticate [the GitHub CLI](#install-and-authenticate-github-cli).
 
-5. Initialise the [`devproc` plugin for each repo](#initialise-devproc-in-each-repo-for-which-you-want-to-use-it).
+5. Make the [`devproc` plugin available](#make-the-devproc-plugin-available-locally).
+
+6. Initialise the [`devproc` plugin for each repo](#initialise-devproc-in-each-repo-for-which-you-want-to-use-it).
 
 ### Prerequisites
 
@@ -88,6 +92,42 @@ Set up Claude Code so that it runs sandboxed on your box, with limited network a
   ```
 
   With this in place, Claude can run read-only commands (`git status`, `git diff`, `git log`, `git show`, `git blame`) freely. Attempts to commit, push, merge, reset, or otherwise modify git state are blocked and must be run manually.
+
+### Block reads of sensitive files
+
+The sandbox restricts where Claude can write, but reads inside the project directory and other allowed paths are unrestricted. A `.env` file, an SSH key checked into the wrong place, or a stray `credentials.json` is therefore visible to Claude — and from there it can leak into tool output, summaries, commit messages, or generated artefacts. Claude Code has a `permissions.deny` mechanism that refuses specific tool actions outright; the configuration below blocks reads of the file patterns that most commonly hold secrets, regardless of where they appear in the tree.
+
+- Edit `~/.claude/settings.json` and add or merge the following with the existing top-level keys (`sandbox`, `hooks`, etc.) — do not replace them:
+
+  ```json
+  {
+    "permissions": {
+      "deny": [
+        "Read(.env)",
+        "Read(.env.*)",
+        "Read(**/.env)",
+        "Read(**/.env.*)",
+        "Read(**/secrets.*)",
+        "Read(**/*.pem)",
+        "Read(**/*.key)",
+        "Read(**/*.p12)",
+        "Read(**/id_rsa)",
+        "Read(**/id_ed25519)",
+        "Read(**/credentials.json)"
+      ]
+    }
+  }
+  ```
+
+Each entry covers a category of secret material:
+
+- **`.env` files** (`.env`, `.env.*`, `**/.env`, `**/.env.*`) — application configuration files that conventionally hold API keys, database URLs, and other credentials. Both top-level and nested forms are covered.
+- **Generic secrets files** (`**/secrets.*`) — files named `secrets.json`, `secrets.yaml`, `secrets.toml`, etc. that hold credentials in projects that follow that convention.
+- **Cryptographic key material** (`**/*.pem`, `**/*.key`, `**/*.p12`) — private keys and certificate bundles.
+- **SSH private keys** (`**/id_rsa`, `**/id_ed25519`) — the standard filenames for SSH private keys, which are sometimes inadvertently checked into a repo or left in an adjacent path.
+- **GCP-style credentials** (`**/credentials.json`) — the conventional filename for Google Cloud service-account credentials and similar.
+
+This is defence in depth, not a substitute for keeping secrets out of the working tree in the first place. Adapt the list to your own conventions: if your project uses different filenames for secret material, add them.
 
 ### Install and authenticate GitHub CLI
 
