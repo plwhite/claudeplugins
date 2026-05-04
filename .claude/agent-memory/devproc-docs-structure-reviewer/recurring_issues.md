@@ -22,3 +22,34 @@ No CRITICAL findings. No new orphaned documents. CONTRIBUTING.md remains linked 
 Recurring patterns to watch:
 - CLAUDE.md status drift at feature close-out (third occurrence of "in-progress label not flipped before docs review runs").
 - `permissions`/`sandbox`/`hooks` JSON snippets in setup.md show a single top-level key in isolation, relying on prose to convey "merge with existing keys". A reader who skims may overwrite. Could warrant a single combined example block.
+
+## Tenth review (2026-05-04) — claudeignore-docs feature close-out (issue #9)
+
+Scope: new `setup-files/` directory (`.claudeignore`, `block-git-writes.sh`, `README.md`); restructured `docs/setup.md` (8-step ordered list, new Clone/Configure-claudeignore sub-sections, hook moved out of heredoc); root README docs-table updated.
+
+Findings:
+- SHOULD-FIX: CLAUDE.md "Current status" still reads `In progress: claudeignore-docs` at close-out review time. FOURTH occurrence of this drift.
+- SHOULD-FIX: docs/setup.md intro bullets list 5 goals; Detailed steps lists 8. Clone/gh/init missing from intro framing. SECOND consecutive review flagging an intro vs detailed-steps mismatch in this file.
+- NIT: setup.md line 87 — "copy verbatim" is residual heredoc-era wording.
+- NIT: setup.md Clone section lacks forward-reference to sections that reuse the path.
+- NIT: `.claudeignore` category list is duplicated three places (setup.md prose, file comments, setup-files/README.md Purpose column).
+- NIT: setup-files/README.md table row order (`.claudeignore` first) does not match setup.md step order (hook first).
+- NIT: root README docs-table coverage cell mixes verb-noun and bare-noun phrasing.
+
+All 8 anchor links in setup.md "Detailed steps" verified to resolve. Both anchors in setup-files/README.md (`#configure-claudeignore`, `#sandbox-configuration`) verified. No orphaned documents introduced.
+
+Recurring patterns now strongly established:
+- CLAUDE.md status block flip at /feature-end is unreliable. Worth treating as a process bug rather than a per-feature reminder.
+- docs/setup.md intro bullets vs Detailed steps drift each time a step is added (twice in a row now).
+
+## Eleventh review (2026-05-04) — claudeignore-docs final close-out pass
+
+Scope: cross-doc consistency check after sub-task 6 + status-block flip.
+
+Verified clean:
+- CLAUDE.md "Current status" now reads "No feature currently in progress" with claudeignore-docs as recently completed. Drift recurrence finally resolved.
+- New "## setup-files directory" section sits between "## devproc plugin" and "## Feature model" in CLAUDE.md, mirrors demo/devproc section style (Location / one-line purpose / Contents bullets), and adds the rule for new files.
+- FEATURES.md entry moved to Completed, dated 2026-05-04, single multi-sentence paragraph, no tables/sub-task lists. Matches Feature-model schema.
+- Full hierarchy (root README → docs/{setup,workflow,capabilities}.md → devproc/README.md → demo/README.md → setup-files/README.md → plans) cross-resolves with no broken links or orphans. README docs-table row for setup-files/README.md is live; setup-files/README.md back-links to docs/setup.md sections; setup.md forward-references to setup-files paths all match.
+
+No findings.

@@ -1,0 +1,66 @@
+# Recommended .claudeignore. Copy to the root of your project to suppress
+# speculative scans of high-noise / low-value paths by Claude.
+
+# ── Dependencies ────────────────────────────────────────────────
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+
+# ── Build output ─────────────────────────────────────────────────
+dist/
+build/
+out/
+.next/
+.nuxt/
+target/          # Rust / Java / Maven
+*.class
+
+# ── Compiled / minified assets ───────────────────────────────────
+*.min.js
+*.min.css
+*.bundle.js
+*.map
+
+# ── Lockfiles (big, low-value noise) ─────────────────────────────
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+poetry.lock
+Pipfile.lock
+Cargo.lock
+
+# ── Test snapshots & coverage ────────────────────────────────────
+coverage/
+.nyc_output/
+__snapshots__/
+*.snap
+
+# ── Logs & temp ──────────────────────────────────────────────────
+*.log
+logs/
+tmp/
+temp/
+.cache/
+
+# ── Large data / binary ──────────────────────────────────────────
+*.csv
+*.parquet
+*.pkl
+*.sqlite
+*.db
+*.bin
+*.pdf
+*.zip
+*.tar.gz
+
+# ── IDE & OS cruft ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

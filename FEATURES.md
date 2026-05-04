@@ -24,6 +24,10 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## Completed
 
+### Add a .claudeignore setup [claudeignore-docs] — 2026-05-04
+
+Added a new top-level `setup-files/` directory holding files users copy into their environments rather than recreating from heredocs. Initial contents: a recommended `.claudeignore` template (covering dependencies, build output, lockfiles, large data, IDE cruft) for each project root, the existing `block-git-writes.sh` hook (extracted out of the inlined heredoc in `docs/setup.md`), and a directory README mapping each file to its destination and the documenting section of `docs/setup.md`. Substantially restructured `docs/setup.md` to support the new copy-from-repo pattern: pulled the `git clone` step out of the plugin section into its own "Clone this repository" sub-section near the start, replaced the heredoc with `cp` + `chmod +x`, renamed the plugin section to "Enable the devproc plugin", added a "Configure .claudeignore" sub-section, and updated the intro and "Detailed steps" navigation list to eight ordered steps. Resolves #9.
+
 ### Document security permissions in settings.json [security-permissions-docs] — 2026-05-04
 
 Added a "Block reads of sensitive files" section to `docs/setup.md` documenting a `permissions.deny` stanza for `~/.claude/settings.json` that blocks Claude reads of `.env`, generic secrets files, PEM/key/p12 material, SSH private keys, and `credentials.json`. Wired the new section into the setup.md intro bullets, "Detailed steps" navigation list, and the root README docs table. Resolves #10.
