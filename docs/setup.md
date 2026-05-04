@@ -1,6 +1,6 @@
 # Setup guide
 
-This guide walks through configuring Claude Code for a productive development workflow:
+This guide walks through configuring Claude Code for a productive development workflow. The detailed steps below cover the full configuration; at a high level, you will:
 
 - Set up strong sandbox security so that Claude cannot access files or paths outside your repo.
 
@@ -10,6 +10,8 @@ This guide walks through configuring Claude Code for a productive development wo
 
 - Install the plugin.
 
+- Drop a recommended `.claudeignore` into each project to suppress speculative scans of high-noise paths.
+
 None of these steps are required; this is "how to configure your system in the right way for me", which you may wish to tweak appropriately.
 
 ## Detailed steps
@@ -18,15 +20,19 @@ To set everything up, follow the stages below.
 
 1. Check that you satisfy the [prerequisites](#prerequisites) below.
 
-2. Configure Claude code to [run sandboxed](#sandbox-configuration).
+2. [Clone this repository](#clone-this-repository) to a stable location — subsequent steps copy files out of it.
 
-3. [Block reads of sensitive files](#block-reads-of-sensitive-files).
+3. Configure Claude code to [run sandboxed](#sandbox-configuration).
 
-4. Install and authenticate [the GitHub CLI](#install-and-authenticate-github-cli).
+4. [Block reads of sensitive files](#block-reads-of-sensitive-files).
 
-5. Make the [`devproc` plugin available](#make-the-devproc-plugin-available-locally).
+5. Install and authenticate [the GitHub CLI](#install-and-authenticate-github-cli).
 
-6. Initialise the [`devproc` plugin for each repo](#initialise-devproc-in-each-repo-for-which-you-want-to-use-it).
+6. [Enable the `devproc` plugin](#enable-the-devproc-plugin).
+
+7. [Configure `.claudeignore`](#configure-claudeignore) for each repo where you use Claude.
+
+8. Initialise the [`devproc` plugin for each repo](#initialise-devproc-in-each-repo-for-which-you-want-to-use-it).
 
 ### Prerequisites
 
@@ -37,6 +43,16 @@ To set everything up, follow the stages below.
 - Various command line tools including `jq`, `bash`, `git`
 
 - Optionally `gh` installed for GitHub access
+
+### Clone this repository
+
+Several later steps copy files out of this repo (the git-write hook, the `.claudeignore` template) and the plugin install also points at it. Clone it once to a stable location:
+
+```bash
+git clone https://github.com/plwhite/claudeplugins /some/path/claudeplugins
+```
+
+Subsequent instructions assume `/some/path/claudeplugins`; substitute your chosen path throughout. The path is reused under [Sandbox configuration](#sandbox-configuration), [Enable the devproc plugin](#enable-the-devproc-plugin), and [Configure .claudeignore](#configure-claudeignore), so a stable location matters.
 
 ### Sandbox configuration
 
@@ -68,26 +84,11 @@ Set up Claude Code so that it runs sandboxed on your box, with limited network a
   }
   ```
 
-- Configure git write protection as referenced in the script above.
+- Copy the git-write hook from this repo into `~/.claude/hooks/` and make it executable. The script source lives at [`setup-files/block-git-writes.sh`](../setup-files/block-git-writes.sh):
 
   ```bash
   mkdir -p ~/.claude/hooks
-  cat > ~/.claude/hooks/block-git-writes.sh << 'EOF'
-  #!/bin/bash
-  INPUT=$(cat)
-  COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
-
-  # Only care about git commands
-  echo "$COMMAND" | grep -qE '\bgit\b' || exit 0
-
-  # Block write operations
-  if echo "$COMMAND" | grep -qE '\bgit\s+(commit|add|push|fetch|pull|merge|rebase|reset|stash|tag|branch -d|branch -D)\b'; then
-    echo "BLOCKED: '$COMMAND' — git write operations are reserved for the developer." >&2
-    exit 2
-  fi
-
-  exit 0
-  EOF
+  cp /some/path/claudeplugins/setup-files/block-git-writes.sh ~/.claude/hooks/block-git-writes.sh
   chmod +x ~/.claude/hooks/block-git-writes.sh
   ```
 
@@ -149,15 +150,9 @@ The GitHub CLI allows Claude Code to read issues, which is very useful if you wi
   gh issue list
   ~~~
 
-### Make the devproc plugin available locally
+### Enable the devproc plugin
 
-The `devproc` plugin is the heart of this repository, with skills and agents to support the development workflow.
-
-- Clone this repository to a stable location on your machine:
-
-  ```bash
-  git clone https://github.com/plwhite/claudeplugins /some/path/claudeplugins
-  ```
+The `devproc` plugin is the heart of this repository, with skills and agents to support the development workflow. The repo was cloned earlier under [Clone this repository](#clone-this-repository); now register it as a local plugin marketplace and enable the plugin.
 
 - Add the following to `~/.claude/settings.json`, replacing the path with wherever you cloned the repo:
 
@@ -178,6 +173,18 @@ The `devproc` plugin is the heart of this repository, with skills and agents to 
   ```
 
   *Note that this enables the plugin for every repo globally. If that is not what you want to do, and you want to enable it only for some repos, then you should add the `enabledPlugins` stanza to `.claude/settings.local.json` for those repos.*
+
+### Configure .claudeignore
+
+Claude Code respects a `.claudeignore` file at the project root, which excludes the matching paths from speculative directory scans. Without it, Claude can spend tokens and time grepping through `node_modules/`, build output, lockfiles, large data files, and other high-noise / low-value paths.
+
+A recommended template lives at [`setup-files/.claudeignore`](../setup-files/.claudeignore); the file's section comments document what each pattern group covers. Drop it into each project root:
+
+```bash
+cp /some/path/claudeplugins/setup-files/.claudeignore .
+```
+
+Adapt the patterns to your project as needed — the file is intended as a sensible default, not a fixed list.
 
 ### Initialise devproc in each repo for which you want to use it
 

@@ -2,7 +2,7 @@
 
 ## Current status
 
-**No feature currently in progress.** `security-permissions-docs` completed 2026-05-04 — added a "Block reads of sensitive files" section to `docs/setup.md` documenting the `permissions.deny` stanza for `~/.claude/settings.json`, wired into the setup.md intro bullets, "Detailed steps" list, and root README docs table.
+**No feature currently in progress.** `claudeignore-docs` completed 2026-05-04 — added a top-level `setup-files/` directory holding a `.claudeignore` template and the externalised `block-git-writes.sh` hook, and restructured `docs/setup.md` around copy-from-repo instructions (new "Clone this repository" and "Configure .claudeignore" sections; eight-step navigation).
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -56,6 +56,19 @@ Contents:
 - `devproc/agents/code-review-nitty.md` — low-level readability and naming review agent
 
 See `devproc/README.md` for full usage documentation.
+
+## setup-files directory
+
+Location: `setup-files/`
+
+Files referenced by `docs/setup.md` that users copy into their environments rather than recreate from heredocs. Each file is paired with a setup.md section that describes where it goes and what it does.
+
+Contents:
+- `setup-files/.claudeignore` — recommended `.claudeignore` for project roots
+- `setup-files/block-git-writes.sh` — `PreToolUse` hook that blocks Bash `git` write commands
+- `setup-files/README.md` — destination, purpose, and back-link to setup.md per file
+
+When adding a new file here, also add an entry to `setup-files/README.md` and a "copy from `/some/path/claudeplugins/setup-files/...`" instruction in `docs/setup.md`.
 
 ## Feature model
 
