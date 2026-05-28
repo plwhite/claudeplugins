@@ -10,6 +10,8 @@ This repository contains descriptions and tooling for a set of best practices us
 
 - The `devproc` plugin, containing skills and agents to support and enforce the workflow via Claude slash commands.
 
+- A Docker container that runs Claude with full permissions inside an isolated environment, for when you want Claude to work autonomously without sandbox restrictions.
+
 ## Instructions
 
 - Follow [docs/setup.md](docs/setup.md) to configure your environment.
@@ -18,6 +20,8 @@ This repository contains descriptions and tooling for a set of best practices us
 
 - See [docs/capabilities.md](docs/capabilities.md) for code review and other capabilities.
 
+- See [docs/container.md](docs/container.md) to run Claude in a container with full permissions.
+
 ## Documentation
 
 | Document | What it covers |
@@ -25,6 +29,7 @@ This repository contains descriptions and tooling for a set of best practices us
 | [docs/setup.md](docs/setup.md) | Environment setup: sandbox, git hook, sensitive-file deny-list, `gh`, devproc install, `.claudeignore` |
 | [docs/workflow.md](docs/workflow.md) | Task-oriented guide: managing features from backlog to completion |
 | [docs/capabilities.md](docs/capabilities.md) | Code review and documentation review |
+| [docs/container.md](docs/container.md) | Container mode: running Claude with full permissions in an isolated Docker container |
 | [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |
 | [setup-files/README.md](setup-files/README.md) | Files copied into place during setup (`.claudeignore`, git-write hook): destination and purpose |
 

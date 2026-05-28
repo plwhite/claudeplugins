@@ -1,0 +1,22 @@
+#!/bin/bash
+set -euo pipefail
+
+PROJECT="${1:-$(pwd)}"
+PROJECT="$(cd "$PROJECT" && pwd)"
+CONTAINER="claude-$(basename "$PROJECT")"
+
+GIT_NAME="$(git -C "$PROJECT" config user.name 2>/dev/null || git config user.name)"
+GIT_EMAIL="$(git -C "$PROJECT" config user.email 2>/dev/null || git config user.email)"
+
+docker run -d \
+    -v "$PROJECT":/workspace \
+    -v "$HOME/.claude/.credentials":/home/claude/.claude/.credentials:ro \
+    -e GIT_AUTHOR_NAME="$GIT_NAME" \
+    -e GIT_AUTHOR_EMAIL="$GIT_EMAIL" \
+    -e GIT_COMMITTER_NAME="$GIT_NAME" \
+    -e GIT_COMMITTER_EMAIL="$GIT_EMAIL" \
+    --name "$CONTAINER" \
+    claudedev
+
+echo "Started container: $CONTAINER"
+echo "Attach with: bash bin/claude-attach $CONTAINER"

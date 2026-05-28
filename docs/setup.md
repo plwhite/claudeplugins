@@ -2,15 +2,21 @@
 
 This guide walks through configuring Claude Code for a productive development workflow. The detailed steps below cover the full configuration; at a high level, you will:
 
+- Check prerequisites and clone this repository to a stable location.
+
 - Set up strong sandbox security so that Claude cannot access files or paths outside your repo.
 
 - Lock down git access so that Claude can only view git status, not push to git.
 
 - Block reads of files that conventionally hold secrets (`.env`, private keys, credentials).
 
+- Install and authenticate the GitHub CLI so Claude can read issues.
+
 - Install the plugin.
 
 - Drop a recommended `.claudeignore` into each project to suppress speculative scans of high-noise paths.
+
+- Initialise the plugin in each repo where you want to use it.
 
 None of these steps are required; this is "how to configure your system in the right way for me", which you may wish to tweak appropriately.
 

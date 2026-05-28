@@ -1,0 +1,9 @@
+{
+  "hasCompletedOnboarding": true,
+  "trustedDirectories": ["/workspace"],
+  "projects": {
+    "/workspace": {
+      "hasTrustDialogAccepted": true
+    }
+  }
+}
