@@ -11,6 +11,7 @@ type: project
 - `docs/setup.md` — getting-started guide for new users (sandbox, git hook, gh CLI, devproc install)
 - `docs/workflow.md` — imperative feature lifecycle guide
 - `docs/capabilities.md` — code review and documentation review reference
+- `docs/container.md` — container mode procedural guide (build/run/attach/stop); linked from README.md
 - `devproc/README.md` — plugin reference; links back to docs/workflow.md and docs/capabilities.md
 - `FEATURES.md` — feature index (In Progress / Pending / Deferred / Completed); links to plan files
 
@@ -22,6 +23,7 @@ CLAUDE.md                        (agent entry point — authoritative guide)
 docs/setup.md                    (getting-started: sandbox, git hook, gh CLI, devproc install)
 docs/workflow.md                 (imperative feature lifecycle guide)
 docs/capabilities.md             (code review + docs review reference)
+docs/container.md                (container mode: build, run, attach, stop; bin/ wrapper scripts)
 FEATURES.md                      (feature index)
   → plans/<slug>.md              (per-feature plan: Handoff / Design / Sub-tasks)
 NOTES.md                         (non-obvious findings — exists, populated)
@@ -48,8 +50,10 @@ CONTRIBUTING.md                  (contribution guidelines — NOT linked from RE
 - SKILL.md files use YAML frontmatter (name, description; optionally user-invocable, argument-hint, disable-model-invocation)
 - Plan files always have ## Handoff as first section, then ## Design, then ## Sub-tasks (no ## Requirements)
 - FEATURES.md uses ### headings with [slug] tags
-- NOTES.md is prescribed but not yet created (not a problem — it is created on first use)
+- NOTES.md exists and is populated (gh CLI/sandbox finding, docker build context, marketplace.json discovery, setup-files/ rationale)
 - marketplace.json at root `.claude-plugin/` is referenced from README.md
+- bin/ directory holds four wrapper scripts (claude-build, claude-run, claude-attach, claude-stop); documented in docs/container.md and inventoried in CLAUDE.md ## Container mode section
+- docker/ directory holds Dockerfile and baked-in config files (CLAUDE.md, settings.json); documented in CLAUDE.md ## Container mode section; usage documented via docs/container.md
 - Agent files use YAML frontmatter: name, description (multi-line with examples), tools, model, color; optionally memory
 
 ## Review history

@@ -24,6 +24,10 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## Completed
 
+### Allow running Claude in a container [claude-container] — 2026-05-28
+
+Added a Docker-based container mode that runs Claude with full ("YOLO") permissions inside an isolated environment. The `docker/` directory contains a Dockerfile (Ubuntu base, Claude Code, python3, tmux) that bakes in the `devproc` plugin and a bypass-permissions `~/.claude/` config; UID/GID are parameterised at build time so files written in the container are owned by the host user. Four wrapper scripts in `bin/` (`claude-build`, `claude-run`, `claude-attach`, `claude-stop`) handle the full container lifecycle; all accept an optional project path and work correctly when symlinked from `/usr/local/bin` or `~/.local/bin`. Credentials are mounted read-only from the host; git identity is passed via env vars; git remote credentials are not passed, limiting Claude to local git operations. Resolves #15.
+
 ### Add a .claudeignore setup [claudeignore-docs] — 2026-05-04
 
 Added a new top-level `setup-files/` directory holding files users copy into their environments rather than recreating from heredocs. Initial contents: a recommended `.claudeignore` template (covering dependencies, build output, lockfiles, large data, IDE cruft) for each project root, the existing `block-git-writes.sh` hook (extracted out of the inlined heredoc in `docs/setup.md`), and a directory README mapping each file to its destination and the documenting section of `docs/setup.md`. Substantially restructured `docs/setup.md` to support the new copy-from-repo pattern: pulled the `git clone` step out of the plugin section into its own "Clone this repository" sub-section near the start, replaced the heredoc with `cp` + `chmod +x`, renamed the plugin section to "Enable the devproc plugin", added a "Configure .claudeignore" sub-section, and updated the intro and "Detailed steps" navigation list to eight ordered steps. Resolves #9.

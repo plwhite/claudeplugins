@@ -2,7 +2,7 @@
 
 ## Current status
 
-**No feature currently in progress.** `claudeignore-docs` completed 2026-05-04 — added a top-level `setup-files/` directory holding a `.claudeignore` template and the externalised `block-git-writes.sh` hook, and restructured `docs/setup.md` around copy-from-repo instructions (new "Clone this repository" and "Configure .claudeignore" sections; eight-step navigation).
+**No feature currently in progress.** `claude-container` completed 2026-05-28 — added `docker/` with a fully configured Dockerfile and baked-in YOLO config, and `bin/` with four wrapper scripts (`claude-build`, `claude-run`, `claude-attach`, `claude-stop`) covering the full container lifecycle.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -69,6 +69,23 @@ Contents:
 - `setup-files/README.md` — destination, purpose, and back-link to setup.md per file
 
 When adding a new file here, also add an entry to `setup-files/README.md` and a "copy from `/some/path/claudeplugins/setup-files/...`" instruction in `docs/setup.md`.
+
+## Container mode
+
+Location: `docker/` (image definition) and `bin/` (wrapper scripts)
+
+Docker-based isolation mode that runs Claude with full permissions inside a container, with the project directory mounted read-write.
+
+Contents:
+- `docker/Dockerfile` — Ubuntu base with Claude Code, python3, tmux; bakes in plugins and a YOLO `~/.claude/` config
+- `docker/files/home/.claude/CLAUDE.md` — global CLAUDE.md inside the container (full-permissions framing)
+- `docker/files/home/.claude/settings.json` — bypass-permissions mode, devproc plugin enabled
+- `bin/claude-build` — builds the `claudedev` image with host UID/GID baked in
+- `bin/claude-run` — starts a detached container for a project directory
+- `bin/claude-attach` — attaches to the tmux session in a running container
+- `bin/claude-stop` — stops and removes the container
+
+See [docs/container.md](docs/container.md) for full usage documentation.
 
 ## Feature model
 

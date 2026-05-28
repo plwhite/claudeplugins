@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euo pipefail
+
+PROJECT="${1:-$(pwd)}"
+PROJECT="$(cd "$PROJECT" && pwd)"
+CONTAINER="claude-$(basename "$PROJECT")"
+
+docker rm -f "$CONTAINER"
