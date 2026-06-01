@@ -2,7 +2,7 @@
 
 ## Current status
 
-**In progress: `container-bugs`** — fixing three issues in container mode (see #17). Sub-task 1 done (corrected the credentials mount path in `claude-run` so automatic login works). Remaining: harden the tmux session against accidental `exit`/Ctrl-D closure, and document the Shift-highlight copy/paste tip. See `plans/container-bugs.md`.
+**In progress: `container-bugs`** — fixing three issues in container mode (see #17). Sub-tasks 1–2 done: corrected the credentials mount path in `claude-run` so automatic login works, and added a `run-claude.sh` keep-alive loop so the tmux session survives accidental `exit`/Ctrl-D/Ctrl-C (auto-resumes via `claude --continue`, with a SIGINT trap and a crash-guard). Remaining: document the Shift-highlight copy/paste tip. See `plans/container-bugs.md`.
 
 `claude-container` completed 2026-05-28 — added `docker/` with a fully configured Dockerfile and baked-in YOLO config, and `bin/` with four wrapper scripts (`claude-build`, `claude-run`, `claude-attach`, `claude-stop`) covering the full container lifecycle.
 

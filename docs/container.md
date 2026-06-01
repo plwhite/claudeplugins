@@ -4,7 +4,7 @@ Container mode runs Claude inside an isolated Docker container with full permiss
 
 The container:
 
-- Runs Claude in a detached tmux session so it continues working after you detach.
+- Runs Claude in a detached tmux session so it continues working after you detach. The session survives Claude exiting — if Claude exits it is automatically relaunched (resuming the conversation), and `exit`/Ctrl-D/Ctrl-C cannot destroy the session.
 - Mounts the project directory read-write at `/workspace`.
 - Bakes in the `devproc` plugin so the full feature workflow is available.
 - Uses a "YOLO" `~/.claude/` config: `--dangerously-skip-permissions`, bypass-permissions mode, onboarding skipped.
@@ -56,7 +56,11 @@ Or with an explicit path:
 bash /some/path/claudeplugins/bin/claude-attach /path/to/project
 ```
 
-This attaches to the tmux session running in the container. Detach at any time with `Ctrl-b d` — Claude keeps running in the background. The `reset` at the end of the attach script cleans up the terminal after you detach.
+This attaches to the tmux session running in the container.
+
+**To leave Claude without stopping it, detach with `Ctrl-b d`** — Claude keeps running in the background and you can re-attach later. Do *not* use `exit` or Ctrl-D for this: those exit Claude itself. If Claude does exit (deliberately, accidentally, or via a crash) it is automatically relaunched, resuming the previous conversation, so the session is always running when you re-attach. Neither `exit`/Ctrl-D nor Ctrl-C can tear the session down — the only way to do that is `claude-stop`.
+
+The `reset` at the end of the attach script cleans up the terminal after you detach.
 
 ## Stop and remove the container
 

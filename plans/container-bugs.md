@@ -3,18 +3,20 @@
 ## Handoff
 
 **Last updated:** 2026-06-01
-**Session summary:** Sub-task 1 complete and user-tested: fixed the credentials
-mount path in `claude-run` so automatic login works. Recon previously
-identified root causes for all three issues.
-**Sub-task in progress:** None (Sub-task 1 done)
-**First action next session:** Begin Sub-task 2 — decide how to stop
-`exit`/Ctrl-D killing the tmux session. The session command in
-[entrypoint.sh](../docker/files/home/entrypoint.sh) is `claude` itself, so when
-Claude exits the session dies. Evaluate respawn-loop vs tmux `remain-on-exit`.
-**Open questions / decisions pending:** Exact approach for hardening the tmux
-session against accidental closure (Sub-task 2) to be decided during that
-sub-task.
-**Dead ends to avoid:** None yet.
+**Session summary:** Sub-tasks 1 and 2 complete. Sub-task 1 (credentials mount)
+user-tested. Sub-task 2 keep-alive loop (`run-claude.sh`) revised after testing:
+Ctrl-C at the relaunch prompt was killing the session, and the parked prompt
+left Claude not running — now auto-resumes via `claude --continue` with a SIGINT
+trap and a <5s crash-guard. Needs a rebuild/retest in a container.
+**Sub-task in progress:** None (Sub-tasks 1–2 done)
+**First action next session:** Begin Sub-task 3 — add a note to
+[docs/container.md](../docs/container.md) that copy/paste out of the tmux
+session is easier if you hold Shift while highlighting (selects via the
+terminal rather than tmux).
+**Open questions / decisions pending:** None.
+**Dead ends to avoid:** For relaunch use `claude --continue` (auto-resumes the
+latest conversation), not `-r`/`--resume`, which with no session ID opens an
+interactive picker — wrong for an unattended loop.
 
 ## Requirements
 
@@ -66,14 +68,16 @@ findings (e.g. confirmed credentials path, tmux hardening mechanism) in
 
 1. ✓ **Fix automatic login** (2026-06-01) — corrected the `claude-run` mount to
    `~/.claude/.credentials.json` on both sides; user-tested, login works.
-2. **Harden against accidental session closure** — decide and implement the
-   best approach to stop `exit`/Ctrl-D killing the session, and document
-   `Ctrl-B D` as the correct way to detach.
+2. ✓ **Harden against accidental session closure** (2026-06-01) — added
+   `run-claude.sh` keep-alive loop; `entrypoint.sh` runs it; documented
+   `Ctrl-b d` as the detach. Revised after testing: now **auto-resumes**
+   (`claude --continue`) on exit with a <5s crash-guard, and traps SIGINT
+   between runs so Ctrl-C can no longer kill the session.
 3. **Document copy/paste tip** — note in `docs/container.md` that holding Shift
    while highlighting makes copy/paste out of the tmux session work.
 4. **Final checkpoint** — sync docs/NOTES, confirm all three issues resolved,
    ready for `/feature-end`.
 
-**▶ NEXT:** Sub-task 2
+**▶ NEXT:** Sub-task 3
 
 > Run `/feature-checkpoint` after each sub-task completes.
