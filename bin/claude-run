@@ -19,4 +19,4 @@ docker run -d \
     claudedev
 
 echo "Started container: $CONTAINER"
-echo "Attach with: bash bin/claude-attach $CONTAINER"
+echo "Attach with: bash bin/claude-attach $PROJECT"

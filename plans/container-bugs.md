@@ -3,16 +3,13 @@
 ## Handoff
 
 **Last updated:** 2026-06-01
-**Session summary:** Sub-tasks 1 and 2 complete. Sub-task 1 (credentials mount)
-user-tested. Sub-task 2 keep-alive loop (`run-claude.sh`) revised after testing:
-Ctrl-C at the relaunch prompt was killing the session, and the parked prompt
-left Claude not running — now auto-resumes via `claude --continue` with a SIGINT
-trap and a <5s crash-guard. Needs a rebuild/retest in a container.
-**Sub-task in progress:** None (Sub-tasks 1–2 done)
-**First action next session:** Begin Sub-task 3 — add a note to
-[docs/container.md](../docs/container.md) that copy/paste out of the tmux
-session is easier if you hold Shift while highlighting (selects via the
-terminal rather than tmux).
+**Session summary:** All three sub-tasks complete. Sub-task 1 (credentials
+mount) user-tested; Sub-task 2 (keep-alive auto-resume loop with SIGINT trap and
+crash-guard) user-tested and accepted; Sub-task 3 documented the Shift-highlight
+copy/paste tip. Feature is functionally complete and ready for `/feature-end`.
+**Sub-task in progress:** None (all sub-tasks done)
+**First action next session:** Run `/feature-end` to move the feature to
+Completed (no implementation work remains).
 **Open questions / decisions pending:** None.
 **Dead ends to avoid:** For relaunch use `claude --continue` (auto-resumes the
 latest conversation), not `-r`/`--resume`, which with no session ID opens an
@@ -73,11 +70,12 @@ findings (e.g. confirmed credentials path, tmux hardening mechanism) in
    `Ctrl-b d` as the detach. Revised after testing: now **auto-resumes**
    (`claude --continue`) on exit with a <5s crash-guard, and traps SIGINT
    between runs so Ctrl-C can no longer kill the session.
-3. **Document copy/paste tip** — note in `docs/container.md` that holding Shift
-   while highlighting makes copy/paste out of the tmux session work.
+3. ✓ **Document copy/paste tip** (2026-06-01) — added a "Copying and pasting"
+   subsection to `docs/container.md`: hold Shift while highlighting to use the
+   terminal's native selection rather than tmux's.
 4. **Final checkpoint** — sync docs/NOTES, confirm all three issues resolved,
    ready for `/feature-end`.
 
-**▶ NEXT:** Sub-task 3
+**▶ NEXT:** Sub-task 4 (final checkpoint) — then `/feature-end`.
 
 > Run `/feature-checkpoint` after each sub-task completes.

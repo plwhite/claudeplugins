@@ -58,9 +58,15 @@ bash /some/path/claudeplugins/bin/claude-attach /path/to/project
 
 This attaches to the tmux session running in the container.
 
-**To leave Claude without stopping it, detach with `Ctrl-b d`** — Claude keeps running in the background and you can re-attach later. Do *not* use `exit` or Ctrl-D for this: those exit Claude itself. If Claude does exit (deliberately, accidentally, or via a crash) it is automatically relaunched, resuming the previous conversation, so the session is always running when you re-attach. Neither `exit`/Ctrl-D nor Ctrl-C can tear the session down — the only way to do that is `claude-stop`.
+**To leave Claude without stopping it, detach with `Ctrl-b d`.** Claude keeps running in the background and you can re-attach later. Do *not* use `exit` or Ctrl-D for this: those exit Claude itself.
+
+Even so, the session is hard to lose by accident. If Claude does exit (deliberately, accidentally, or via a crash) it is automatically relaunched, resuming the previous conversation, so the session is always running when you re-attach. Neither `exit`/Ctrl-D nor Ctrl-C can tear the session down — the only way to do that is `claude-stop`.
 
 The `reset` at the end of the attach script cleans up the terminal after you detach.
+
+### Copying and pasting
+
+Copying text out of the tmux session can be awkward: a normal click-drag selection is captured by tmux rather than your terminal. To select text for the system clipboard, **hold Shift while highlighting** — this bypasses tmux and uses your terminal emulator's own selection, so the usual copy (and paste) shortcuts work as expected.
 
 ## Stop and remove the container
 
