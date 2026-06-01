@@ -8,7 +8,7 @@ The container:
 - Mounts the project directory read-write at `/workspace`.
 - Bakes in the `devproc` plugin so the full feature workflow is available.
 - Uses a "YOLO" `~/.claude/` config: `--dangerously-skip-permissions`, bypass-permissions mode, onboarding skipped.
-- Passes your Anthropic API credentials (from `~/.claude/.credentials`) automatically.
+- Passes your Claude login credentials (from `~/.claude/.credentials.json`) automatically.
 - Does not pass git remote credentials — only local git operations (`git status`, `git diff`, `git log`) are available inside the container.
 
 ## Prerequisites

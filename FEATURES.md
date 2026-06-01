@@ -6,7 +6,9 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## In progress
 
-*No features currently in progress.*
+### Fix bugs in container implementation [container-bugs]
+
+Address several issues in the container mode: automatic login not working (credentials file appears not to be mounted), the tmux session being too easy to close accidentally via `exit`/Ctrl-D, and the friction of copy/paste out of a tmux session. See #17. Sub-task detail in [plans/container-bugs.md](plans/container-bugs.md).
 
 ---
 

@@ -33,6 +33,19 @@ The container Dockerfile COPYs plugin directories (`devproc/`, `demo/`) from the
 
 `ARG UID`/`ARG GID` are declared without defaults so that a bare `docker build` fails visibly rather than silently using UID 1000. The build script always passes `$(id -u)`/`$(id -g)`.
 
+## Container credentials mount path (#17)
+
+Claude Code on Linux reads OAuth login from `~/.claude/.credentials.json`. The
+original `claude-run` mounted `$HOME/.claude/.credentials` →
+`/home/claude/.claude/.credentials` — the `.json` suffix was missing on both
+sides. Because the host source path did not exist, Docker silently created an
+empty *directory* there (visible on the host as `~/.claude/.credentials/`, owned
+`nobody:nogroup`) and bind-mounted that empty dir, so no credentials ever
+reached the container and automatic login failed. Fix: mount
+`.credentials.json` on both sides. The stray empty `~/.claude/.credentials/`
+directory created by the old bug is a host-side artifact and can be removed
+manually.
+
 ## setup-files/ as a checked-in resources directory
 
 `setup-files/` (added during `claudeignore-docs`) holds files users copy into their environments rather than recreate from heredocs. The directory name was chosen for direct pairing with `docs/setup.md`. Alternatives considered and rejected: `templates/` (implies edit-before-use, which most files here do not need), `resources/` (too generic), `dotfiles/` (the script isn't a dotfile).
