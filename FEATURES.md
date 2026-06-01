@@ -24,6 +24,10 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## Completed
 
+### Fix bugs in container implementation [container-bugs] — 2026-06-01
+
+Fixed three issues in container mode (#17). Automatic login failed because `claude-run` mounted `~/.claude/.credentials` (no `.json`) on both sides — Docker created an empty directory at the missing source and mounted that, so credentials never reached the container; the mount now points at `~/.claude/.credentials.json`. The tmux session was destroyed whenever Claude exited (Claude was the session's top-level process); a new baked-in `run-claude.sh` wraps Claude in a keep-alive loop that auto-relaunches it with `claude --continue` (resuming the conversation), traps SIGINT between runs so Ctrl-C cannot kill the session, and uses a sub-5-second crash-guard to avoid a tight respawn loop — only `claude-stop` now tears the session down. Also documented the Shift-highlight copy/paste tip and corrected the `claude-run` attach hint to print a project path rather than a container name.
+
 ### Allow running Claude in a container [claude-container] — 2026-05-28
 
 Added a Docker-based container mode that runs Claude with full ("YOLO") permissions inside an isolated environment. The `docker/` directory contains a Dockerfile (Ubuntu base, Claude Code, python3, tmux) that bakes in the `devproc` plugin and a bypass-permissions `~/.claude/` config; UID/GID are parameterised at build time so files written in the container are owned by the host user. Four wrapper scripts in `bin/` (`claude-build`, `claude-run`, `claude-attach`, `claude-stop`) handle the full container lifecycle; all accept an optional project path and work correctly when symlinked from `/usr/local/bin` or `~/.local/bin`. Credentials are mounted read-only from the host; git identity is passed via env vars; git remote credentials are not passed, limiting Claude to local git operations. Resolves #15.

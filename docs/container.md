@@ -4,11 +4,11 @@ Container mode runs Claude inside an isolated Docker container with full permiss
 
 The container:
 
-- Runs Claude in a detached tmux session so it continues working after you detach.
+- Runs Claude in a detached tmux session so it continues working after you detach. The session survives Claude exiting — if Claude exits it is automatically relaunched (resuming the conversation), and `exit`/Ctrl-D/Ctrl-C cannot destroy the session.
 - Mounts the project directory read-write at `/workspace`.
 - Bakes in the `devproc` plugin so the full feature workflow is available.
 - Uses a "YOLO" `~/.claude/` config: `--dangerously-skip-permissions`, bypass-permissions mode, onboarding skipped.
-- Passes your Anthropic API credentials (from `~/.claude/.credentials`) automatically.
+- Passes your Claude login credentials (from `~/.claude/.credentials.json`) automatically.
 - Does not pass git remote credentials — only local git operations (`git status`, `git diff`, `git log`) are available inside the container.
 
 ## Prerequisites
@@ -56,7 +56,17 @@ Or with an explicit path:
 bash /some/path/claudeplugins/bin/claude-attach /path/to/project
 ```
 
-This attaches to the tmux session running in the container. Detach at any time with `Ctrl-b d` — Claude keeps running in the background. The `reset` at the end of the attach script cleans up the terminal after you detach.
+This attaches to the tmux session running in the container.
+
+**To leave Claude without stopping it, detach with `Ctrl-b d`.** Claude keeps running in the background and you can re-attach later. Do *not* use `exit` or Ctrl-D for this: those exit Claude itself.
+
+Even so, the session is hard to lose by accident. If Claude does exit (deliberately, accidentally, or via a crash) it is automatically relaunched, resuming the previous conversation, so the session is always running when you re-attach. Neither `exit`/Ctrl-D nor Ctrl-C can tear the session down — the only way to do that is `claude-stop`.
+
+The `reset` at the end of the attach script cleans up the terminal after you detach.
+
+### Copying and pasting
+
+Copying text out of the tmux session can be awkward: a normal click-drag selection is captured by tmux rather than your terminal. To select text for the system clipboard, **hold Shift while highlighting** — this bypasses tmux and uses your terminal emulator's own selection, so the usual copy (and paste) shortcuts work as expected.
 
 ## Stop and remove the container
 

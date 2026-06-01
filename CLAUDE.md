@@ -2,7 +2,9 @@
 
 ## Current status
 
-**No feature currently in progress.** `claude-container` completed 2026-05-28 — added `docker/` with a fully configured Dockerfile and baked-in YOLO config, and `bin/` with four wrapper scripts (`claude-build`, `claude-run`, `claude-attach`, `claude-stop`) covering the full container lifecycle.
+**No feature currently in progress.** `container-bugs` completed 2026-06-01 — fixed three container-mode issues from #17: corrected the credentials mount path in `claude-run` so automatic login works; added a `run-claude.sh` keep-alive loop so the tmux session survives accidental `exit`/Ctrl-D/Ctrl-C (auto-resumes via `claude --continue`, with a SIGINT trap and a crash-guard); and documented the Shift-highlight copy/paste tip.
+
+`claude-container` completed 2026-05-28 — added `docker/` with a fully configured Dockerfile and baked-in YOLO config, and `bin/` with four wrapper scripts (`claude-build`, `claude-run`, `claude-attach`, `claude-stop`) covering the full container lifecycle.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -80,6 +82,8 @@ Contents:
 - `docker/Dockerfile` — Ubuntu base with Claude Code, python3, tmux; bakes in plugins and a YOLO `~/.claude/` config
 - `docker/files/home/.claude/CLAUDE.md` — global CLAUDE.md inside the container (full-permissions framing)
 - `docker/files/home/.claude/settings.json` — bypass-permissions mode, devproc plugin enabled
+- `docker/files/home/entrypoint.sh` — container entrypoint; starts the detached tmux session running `run-claude.sh`
+- `docker/files/home/run-claude.sh` — keep-alive loop that auto-relaunches Claude (via `claude --continue`) on exit so the tmux session survives `exit`/Ctrl-D/Ctrl-C
 - `bin/claude-build` — builds the `claudedev` image with host UID/GID baked in
 - `bin/claude-run` — starts a detached container for a project directory
 - `bin/claude-attach` — attaches to the tmux session in a running container

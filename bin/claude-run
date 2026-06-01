@@ -10,7 +10,7 @@ GIT_EMAIL="$(git -C "$PROJECT" config user.email 2>/dev/null || git config user.
 
 docker run -d \
     -v "$PROJECT":/workspace \
-    -v "$HOME/.claude/.credentials":/home/claude/.claude/.credentials:ro \
+    -v "$HOME/.claude/.credentials.json":/home/claude/.claude/.credentials.json:ro \
     -e GIT_AUTHOR_NAME="$GIT_NAME" \
     -e GIT_AUTHOR_EMAIL="$GIT_EMAIL" \
     -e GIT_COMMITTER_NAME="$GIT_NAME" \
@@ -19,4 +19,4 @@ docker run -d \
     claudedev
 
 echo "Started container: $CONTAINER"
-echo "Attach with: bash bin/claude-attach $CONTAINER"
+echo "Attach with: bash bin/claude-attach $PROJECT"

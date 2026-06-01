@@ -89,3 +89,30 @@ Carryover findings:
 
 CLAUDE.md status drift: still In Progress for claude-container, but /feature-end is explicitly imminent per user brief — not flagged.
 No new findings identified. FEATURES.md and CLAUDE.md status consistent with pre-/feature-end state per user's instruction.
+
+## Fourteenth review (2026-06-01) — container-bugs feature close-out
+
+Scope: updates to docs/container.md (keep-alive auto-resume + Shift copy/paste), docker/files/home/run-claude.sh (new), entrypoint.sh, bin/claude-run credentials mount fix. Discoverability of container.md from README/CLAUDE re-verified.
+
+Findings:
+- MAJOR: CLAUDE.md "Current status" is internally contradictory — opens "Sub-tasks 1–2 done:" then mid-sentence says "All three sub-tasks done; ready for /feature-end." A reader cannot tell whether 2 or 3 sub-tasks are complete. The "1–2 done" framing is stale; plan + FEATURES describe all 3 done.
+- MINOR: FEATURES.md still lists container-bugs under "## In progress" although plan Handoff + CLAUDE.md both say all sub-tasks complete and ready for /feature-end. SIXTH occurrence of close-out status drift (this time in FEATURES.md, not the CLAUDE.md status line). Per established pattern, /feature-end is imminent — flagged MINOR not MAJOR since brief states feature "just completed".
+- MINOR: bin/claude-run final echo prints `Attach with: bash bin/claude-attach $CONTAINER` (a container NAME, e.g. claude-myproj), but claude-attach takes a PROJECT PATH (`${1:-$(pwd)}`) per the script and per docs/container.md. The echoed hint contradicts documented usage; following it from another dir would build the wrong container name. Code-adjacent but it is user-facing guidance text.
+- NIT (carryover, twelfth review): docs/container.md em dash usage — now consistent with suite (heavy em-dash use throughout); no longer an outlier. RESOLVED.
+
+Verified clean:
+- docs/container.md keep-alive description (intro bullet line 7 + Attach section line 61) accurately matches run-claude.sh behaviour (auto-relaunch, --continue resume, exit/Ctrl-D/Ctrl-C cannot destroy session). Imperative style throughout. Prerequisites precede commands. "Copying and pasting" subsection correctly placed under Attach, explains WHY (tmux captures selection).
+- container.md discoverable from README (intro bullet + docs table) and CLAUDE.md (## Container mode section + Feature model). No orphans introduced. run-claude.sh is a new docker/ artifact — CLAUDE.md ## Container mode Contents list does NOT inventory it (lists Dockerfile, CLAUDE.md, settings.json, 4 bin scripts; entrypoint.sh and run-claude.sh both absent). MINOR completeness gap below.
+- MINOR: CLAUDE.md ## Container mode "Contents" omits docker/files/home/entrypoint.sh and docker/files/home/run-claude.sh — both are significant baked-in scripts (run-claude.sh is the keep-alive loop central to this feature). A reader using CLAUDE.md as a workspace map would not know they exist.
+- NOTES.md: two new well-formed sections (credentials mount path #17, session keep-alive #17), non-obvious-only, correct per schema.
+
+## Fifteenth review (2026-06-01) — container-bugs five-fix verification pass
+
+All five fixes verified correct; feature converged:
+1. CLAUDE.md status block rewritten to "No feature currently in progress. container-bugs completed 2026-06-01 — …", contradiction gone, claude-container entry retained below. MAJOR RESOLVED.
+2. CLAUDE.md ## Container mode Contents now lists entrypoint.sh and run-claude.sh. MINOR RESOLVED.
+3. /feature-end ran: FEATURES.md ## In progress shows "No features currently in progress", container-bugs under ## Completed dated 2026-06-01 with single multi-sentence paragraph (matches feature-model schema). Close-out drift NOT recurrent this cycle.
+4. bin/claude-run line 22 echoes `$PROJECT` not `$CONTAINER` — matches documented claude-attach <project-path> contract. MINOR RESOLVED.
+5. docs/container.md detach paragraph split: bolded "detach with Ctrl-b d" stands alone (line 61); auto-relaunch/claude-stop moved to following paragraph (line 63). SUGGESTION RESOLVED.
+
+No new findings. No orphans. Full hierarchy cross-resolves. First cycle in several where the status flip was already correct at re-audit time — possible the close-out drift pattern is being addressed.

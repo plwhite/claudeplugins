@@ -33,6 +33,48 @@ The container Dockerfile COPYs plugin directories (`devproc/`, `demo/`) from the
 
 `ARG UID`/`ARG GID` are declared without defaults so that a bare `docker build` fails visibly rather than silently using UID 1000. The build script always passes `$(id -u)`/`$(id -g)`.
 
+## Container credentials mount path (#17)
+
+Claude Code on Linux reads OAuth login from `~/.claude/.credentials.json`. The
+original `claude-run` mounted `$HOME/.claude/.credentials` →
+`/home/claude/.claude/.credentials` — the `.json` suffix was missing on both
+sides. Because the host source path did not exist, Docker silently created an
+empty *directory* there (visible on the host as `~/.claude/.credentials/`, owned
+`nobody:nogroup`) and bind-mounted that empty dir, so no credentials ever
+reached the container and automatic login failed. Fix: mount
+`.credentials.json` on both sides. The stray empty `~/.claude/.credentials/`
+directory created by the old bug is a host-side artifact and can be removed
+manually.
+
+## Container session keep-alive (#17)
+
+Claude is the tmux session's top-level process, so when it exits (`exit`,
+Ctrl-D, `/quit` or a crash) the pane closes and the session is destroyed — an
+accidental keypress would discard the working session. `run-claude.sh` wraps
+Claude in a loop that **auto-relaunches** it on exit, resuming the previous
+conversation, so the session is always running when you attach. `entrypoint.sh`
+runs `bash /home/claude/run-claude.sh` as the session command.
+
+Non-obvious details:
+
+- Relaunch uses `claude --continue`, which auto-resumes the most recent
+  conversation in the current directory. `-r`/`--resume` with no session ID
+  instead opens an interactive picker — wrong for an unattended loop. The first
+  launch is plain `claude` (nothing to resume yet).
+- **Ctrl-C handling is the subtle part.** Between Claude runs the loop sets
+  `trap '' INT` so Ctrl-C cannot kill the wrapper (and thus the session); it
+  resets `trap - INT` immediately before launching Claude so Claude still gets
+  normal Ctrl-C handling. Without this, a Ctrl-C while the wrapper was between
+  runs terminated the script and destroyed the tmux session irrecoverably — the
+  original keep-alive bug found in testing.
+- A crash-guard avoids a tight respawn loop: if Claude exits within 5s of
+  launch it is treated as a startup crash and the loop waits on a prompt
+  (`while ! read -r _; do sleep 1; done`, which also ignores EOF/Ctrl-D) instead
+  of respawning immediately. A normal exit pauses ~2s then resumes.
+
+`run-claude.sh` is invoked via `bash`, so unlike `entrypoint.sh` it does not
+need the executable bit set in the Dockerfile.
+
 ## setup-files/ as a checked-in resources directory
 
 `setup-files/` (added during `claudeignore-docs`) holds files users copy into their environments rather than recreate from heredocs. The directory name was chosen for direct pairing with `docs/setup.md`. Alternatives considered and rejected: `templates/` (implies edit-before-use, which most files here do not need), `resources/` (too generic), `dotfiles/` (the script isn't a dotfile).
