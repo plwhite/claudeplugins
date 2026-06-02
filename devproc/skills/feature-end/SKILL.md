@@ -17,9 +17,7 @@ Steps:
 
 2. Confirm all sub-tasks are complete. If any are not, ask the user whether to defer them, drop them, or keep the feature open.
 
-3. Call @docs-structure-reviewer to perform a full review that the structure of the documentation is still valid. Apply its feedback, then call it again to confirm. If each call does not have fewer issues than the previous one (i.e. you are converging) ask for user input.
-
-4. Update `FEATURES.md`:
+3. Update `FEATURES.md` (do this *before* the documentation review, so the review sees the feature in its final Completed state rather than still In progress):
    - Remove the feature entry from `## In progress`.
    - Add a completion entry at the top of `## Completed` with the format:
 
@@ -28,6 +26,8 @@ Steps:
 
 <Two to four sentences summarising what was built, what data was committed, and any notable decisions. No tables, no sub-task lists.>
 ```
+
+4. Call @docs-structure-reviewer to perform a full review that the structure of the documentation is still valid. Apply its feedback, then call it again to confirm. If each call does not have fewer issues than the previous one (i.e. you are converging) ask for user input.
 
 5. The plan file (`plans/<slug>.md`) can be left as-is to serve as a record of how the feature unfolded.
 

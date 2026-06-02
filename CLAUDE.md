@@ -2,7 +2,9 @@
 
 ## Current status
 
-**No feature currently in progress.** `container-bugs` completed 2026-06-01 — fixed three container-mode issues from #17: corrected the credentials mount path in `claude-run` so automatic login works; added a `run-claude.sh` keep-alive loop so the tmux session survives accidental `exit`/Ctrl-D/Ctrl-C (auto-resumes via `claude --continue`, with a SIGINT trap and a crash-guard); and documented the Shift-highlight copy/paste tip.
+**In progress: `dev-process-manager` (#19).** Adding a top-level Opus "dev process manager" agent to the `devproc` plugin that orchestrates the feature workflow — spawning Sonnet teammates per sub-task, briefing each to run `/feature-checkpoint`, reviewing their work, closing them down, and pausing for the user at decision points and the agreed autonomy boundary. Sub-tasks 1–3 done: `devproc/agents/dev-process-manager.md` written; `claude-run` gained a `--manager`/`--agent` option that passes the agent through to the container (via `CLAUDE_AGENT` → `run-claude.sh`, on initial launch and `--continue` relaunch); and documentation updated across the README files, `docs/`, `plugin.json`, and `CLAUDE.md`. Next: an end-to-end manual test (Sub-task 4), then `/feature-end`. See [plans/dev-process-manager.md](plans/dev-process-manager.md).
+
+`container-bugs` completed 2026-06-01 — fixed three container-mode issues from #17: corrected the credentials mount path in `claude-run` so automatic login works; added a `run-claude.sh` keep-alive loop so the tmux session survives accidental `exit`/Ctrl-D/Ctrl-C (auto-resumes via `claude --continue`, with a SIGINT trap and a crash-guard); and documented the Shift-highlight copy/paste tip.
 
 `claude-container` completed 2026-05-28 — added `docker/` with a fully configured Dockerfile and baked-in YOLO config, and `bin/` with four wrapper scripts (`claude-build`, `claude-run`, `claude-attach`, `claude-stop`) covering the full container lifecycle.
 
@@ -39,7 +41,7 @@ See `demo/README.md` for full usage documentation.
 
 Location: `devproc/`
 
-Skills and agents for feature lifecycle management and code review.
+Skills and agents for feature lifecycle management, workflow orchestration, and code review.
 
 Contents:
 - `devproc/.claude-plugin/plugin.json`
@@ -51,6 +53,7 @@ Contents:
 - `devproc/skills/review-full/SKILL.md` — full-codebase code review; auto-applies code-level findings, escalates architectural changes
 - `devproc/skills/review-component/SKILL.md` — code review scoped to a described component (resolves natural-language description to files)
 - `devproc/skills/review-branch/SKILL.md` — code review scoped to files changed in the current branch (uses git diff for scope and context)
+- `devproc/agents/dev-process-manager.md` — top-level Opus orchestrator (`claude --agent dev-process-manager`); drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user
 - `devproc/agents/docs-structure-reviewer.md` — audits documentation structure and quality, producing actionable findings
 - `devproc/agents/code-review-architectural.md` — architectural review agent (`claude-opus-4-6`)
 - `devproc/agents/code-review-simplicity.md` — simplicity and dead-code review agent
@@ -85,7 +88,7 @@ Contents:
 - `docker/files/home/entrypoint.sh` — container entrypoint; starts the detached tmux session running `run-claude.sh`
 - `docker/files/home/run-claude.sh` — keep-alive loop that auto-relaunches Claude (via `claude --continue`) on exit so the tmux session survives `exit`/Ctrl-D/Ctrl-C
 - `bin/claude-build` — builds the `claudedev` image with host UID/GID baked in
-- `bin/claude-run` — starts a detached container for a project directory
+- `bin/claude-run` — starts a detached container for a project directory; `--manager`/`--agent NAME` selects a top-level agent and `--model NAME` (default: derived from the agent's `model:` field) its session model, passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`
 - `bin/claude-attach` — attaches to the tmux session in a running container
 - `bin/claude-stop` — stops and removes the container
 

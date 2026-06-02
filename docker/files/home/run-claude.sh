@@ -10,10 +10,26 @@
 # The session is only ever torn down by `claude-stop`.
 cd /workspace
 
+# Optional top-level agent, passed through from `claude-run --manager`/`--agent`
+# via the CLAUDE_AGENT env var. Applied to both the first launch and every
+# relaunch, so the resumed session keeps running as the same agent.
+agent_args=()
+if [[ -n "${CLAUDE_AGENT:-}" ]]; then
+    agent_args=(--agent "$CLAUDE_AGENT")
+fi
+
+# Optional session model, passed through from claude-run via the CLAUDE_MODEL
+# env var. claude-run derives it from the selected agent's `model:` field (or
+# takes an explicit --model), because `--agent` alone does not apply the agent's
+# model to the top-level session. Applied to the first launch and every relaunch.
+if [[ -n "${CLAUDE_MODEL:-}" ]]; then
+    agent_args+=(--model "$CLAUDE_MODEL")
+fi
+
 # First launch starts a fresh conversation; every relaunch resumes it.
 # `--continue` auto-resumes the most recent conversation in this directory
 # (unlike `-r`/`--resume`, which with no session ID opens an interactive picker).
-args=(--dangerously-skip-permissions)
+args=(--dangerously-skip-permissions "${agent_args[@]}")
 
 while true; do
     # Claude runs in the foreground with default signal handling, so Ctrl-C
@@ -21,7 +37,7 @@ while true; do
     trap - INT
     start=$SECONDS
     claude "${args[@]}" || true
-    args=(--continue --dangerously-skip-permissions)
+    args=(--continue --dangerously-skip-permissions "${agent_args[@]}")
 
     # Between Claude runs, ignore Ctrl-C so an accidental keypress can never kill
     # the keep-alive loop (and therefore the tmux session).

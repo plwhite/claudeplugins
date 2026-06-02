@@ -80,3 +80,56 @@ need the executable bit set in the Dockerfile.
 `setup-files/` (added during `claudeignore-docs`) holds files users copy into their environments rather than recreate from heredocs. The directory name was chosen for direct pairing with `docs/setup.md`. Alternatives considered and rejected: `templates/` (implies edit-before-use, which most files here do not need), `resources/` (too generic), `dotfiles/` (the script isn't a dotfile).
 
 Adding a file to `setup-files/` requires three coordinated edits: the file itself, an entry in `setup-files/README.md`, and a corresponding "copy from `/some/path/claudeplugins/setup-files/...`" instruction in `docs/setup.md`. The setup.md "Clone this repository" sub-section is the prerequisite for all such copy steps; reorder with care if it ever moves.
+
+## dev-process-manager agent (#19)
+
+`claude --agent <name>` runs the session *as* a named agent (CLI help: "Agent
+for the current session. Overrides the 'agent' setting"). This is the top-level
+invocation #19 calls for — distinct from the Task/Agent tool, which spawns
+*sub*-agents from within a session. The `dev-process-manager` agent is the
+session lead; it then uses the team tools to spawn its own teammates.
+
+The agent definition deliberately **omits the `tools:` frontmatter field**.
+Omitting it grants the agent the full tool set; the review agents restrict
+`tools:` because they are read-only, but the manager must spawn and manage
+teammates (TeamCreate, Agent, TaskCreate/TaskUpdate, SendMessage, TaskStop,
+TeamDelete) and drive the `/feature-*` skills, so it needs everything. Listing
+tools explicitly would risk omitting one and silently breaking orchestration.
+
+Model is the alias `model: opus` (and teammate briefs specify `sonnet`) rather
+than a pinned id like the review agents' `claude-opus-4-6` — the aliases resolve
+to the latest model in each family at runtime, so the agent never goes stale.
+
+Teammate shutdown is via `SendMessage` with `{type: "shutdown_request"}`;
+`TeamDelete` only succeeds once all members have shut down.
+
+The container exposes the agent via `claude-run --manager` (or `--agent NAME`).
+The selected agent flows host → `CLAUDE_AGENT` env var (`docker run -e`) →
+`run-claude.sh`, which appends `--agent "$CLAUDE_AGENT"` to the claude command
+line. Because `run-claude.sh` relaunches with `--continue` on exit, the agent
+flag is added to the relaunch args too, so a resumed session keeps running as the
+same agent. **To verify in testing:** whether `--agent` alongside `--continue` is
+accepted cleanly or whether the resumed conversation already retains its agent
+(making the flag redundant but harmless).
+
+### `--agent` does not apply the agent's model to the top-level session
+
+Found in Sub-task 4 testing: `claude --agent dev-process-manager` ran as Sonnet,
+not the agent's `model: opus`. The `model:` frontmatter field only governs the
+model when an agent is invoked as a **sub-agent** (via the Task/Agent tool). When
+an agent is used as the **top-level** session via `--agent`, Claude resolves the
+session model at startup from `--model` / settings / the account default and
+ignores the agent's `model:`. The container `settings.json` pins no model, so the
+manager fell back to the default.
+
+Fix: `claude-run` derives the model from the agent's own definition and passes it
+explicitly. `derive_model()` reads the `model:` line from
+`devproc/agents/<agent>.md` (found via the repo root resolved with
+`readlink -f`), and the value flows host → `CLAUDE_MODEL` env var →
+`run-claude.sh`, which appends `--model "$CLAUDE_MODEL"` to both the initial and
+`--continue` relaunch args. The agent definition stays the single source of
+truth — no model is hardcoded in `claude-run`. An explicit `claude-run --model`
+overrides it, and an agent whose definition is not in this repo (so the model
+cannot be derived) falls back to no `--model`, i.e. the previous default
+behaviour. Verified the derivation handles both the alias (`opus`) and pinned
+ids (`claude-opus-4-6`).

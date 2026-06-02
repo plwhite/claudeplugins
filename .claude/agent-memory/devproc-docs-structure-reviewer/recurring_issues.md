@@ -116,3 +116,35 @@ All five fixes verified correct; feature converged:
 5. docs/container.md detach paragraph split: bolded "detach with Ctrl-b d" stands alone (line 61); auto-relaunch/claude-stop moved to following paragraph (line 63). SUGGESTION RESOLVED.
 
 No new findings. No orphans. Full hierarchy cross-resolves. First cycle in several where the status flip was already correct at re-audit time — possible the close-out drift pattern is being addressed.
+
+## Sixteenth review (2026-06-03) — dev-process-manager feature close-out (#19)
+
+Scope: new `devproc/agents/dev-process-manager.md`; `--manager`/`--agent`/`--model` options on `bin/claude-run` + `run-claude.sh`; doc updates to devproc/README.md, docs/capabilities.md (new "Dev process manager" section), docs/container.md ("Run as the dev process manager"), docs/workflow.md (pointer), README.md, plugin.json, CLAUDE.md.
+
+Findings:
+- MAJOR: SEVENTH close-out status drift. FEATURES.md still lists dev-process-manager under "## In progress" though plan Handoff says /feature-end ran and feature moved to Completed. Plan/Handoff and FEATURES.md disagree on the canonical state.
+- MAJOR: `--model` option is fully implemented (claude-run derive_model + CLAUDE_MODEL passthrough; sub-task 4 fix) and documented in NOTES.md, plan, and claude-run --help, but NO user-facing doc mentions it. docs/container.md "Run as the dev process manager" documents --manager and --agent but not --model. A user who needs to override the model (or runs an agent not in this repo) has no documented escape hatch. CLAUDE.md ## Container mode claude-run line also only mentions --manager/--agent (CLAUDE_AGENT), not --model/CLAUDE_MODEL.
+- MINOR: CLAUDE.md ## Container mode claude-run bullet says "passed through via CLAUDE_AGENT" — now also CLAUDE_MODEL; entrypoint/run-claude inventory unaffected but the passthrough description is incomplete.
+- MINOR: The `dpm` alias is documented in docs/container.md and claude-run --help but NOT in devproc/README.md or docs/capabilities.md. Minor inconsistency in which surfaces mention the alias.
+- MINOR: "dev process manager" (spaced, prose) vs "dev-process-manager" (hyphenated, agent/slug) vs "dpm"/"dpm" — three forms in play. Mostly used correctly (prose name vs CLI name) but worth a consistency note.
+
+Verified clean / good:
+- capabilities.md "## Dev process manager" anchor (#dev-process-manager) resolves; container.md, devproc/README.md, workflow.md all link to it correctly.
+- New material is discoverable: README→capabilities/container/workflow→manager; devproc/README Contents table + Agent reference entry present; CLAUDE.md contents list updated. No orphans.
+- capabilities.md "Dev process manager" section is well-placed (first capability, before Code review), opens with what-it-is, uses imperative run blocks, states the token-cost tradeoff.
+- agent file dev-process-manager.md opens with role statement; numbered workflow; Principles section. Good hierarchical clarity.
+- workflow.md pointer (line 13) correctly frames the manager as automating the same steps; good single-source-of-truth discipline.
+
+Status drift now SEVEN occurrences across sixteen reviews — firmly a process bug, not per-feature.
+
+## Seventeenth review (2026-06-03) — dev-process-manager four-fix verification pass
+
+All four fixes verified correct; feature converged:
+1. FEATURES.md: dev-process-manager moved to top of ## Completed dated 2026-06-03, single paragraph incl. --model derivation; ## In progress now "No features currently in progress." MAJOR RESOLVED. Close-out drift fixed at re-audit this cycle.
+2. docs/container.md: new "#### Session model" subsection under "Run as the dev process manager" — documents default (model from agent's model: field, manager=Opus, because --agent doesn't apply model to top-level session) and --model override incl. the not-in-this-repo case. MAJOR RESOLVED.
+3. CLAUDE.md ## Container mode claude-run bullet now mentions --model NAME (default: derived from agent's model:) and CLAUDE_AGENT/CLAUDE_MODEL passthrough. MINOR RESOLVED.
+4. docs/capabilities.md: dpm alias note added (line 17) + line 23 "manager runs as Opus automatically" pointing to container.md#session-model + --model override. MINOR RESOLVED.
+
+Anchor check: container.md heading "#### Session model" → #session-model; capabilities.md line 23 links container.md#session-model. RESOLVES.
+Terminology (MINOR) and behaviour-list dedup (SUGGESTION) deliberately deferred per user — acceptable.
+No new findings. No orphans. Full hierarchy cross-resolves.
