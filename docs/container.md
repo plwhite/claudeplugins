@@ -42,6 +42,36 @@ bash /some/path/claudeplugins/bin/claude-run /path/to/project
 
 This starts a detached container named `claude-<project-dirname>`, mounts the project at `/workspace`, and passes your git identity. Claude starts immediately in the tmux session.
 
+### Run as the dev process manager
+
+By default the container runs an ordinary Claude session. To instead run Claude as the [dev process manager](capabilities.md#dev-process-manager) — the orchestrator that drives the feature workflow semi-autonomously, spawning teammates per sub-task — pass `--manager`:
+
+```bash
+bash /some/path/claudeplugins/bin/claude-run --manager
+```
+
+This is the natural pairing with container mode: the manager works through sub-tasks autonomously inside the isolated container, while still checking in with you at the boundary you set.
+
+To run as a different top-level agent, name it explicitly:
+
+```bash
+bash /some/path/claudeplugins/bin/claude-run --agent some-agent-name
+```
+
+`--agent dpm` is accepted as a short alias for `--agent dev-process-manager`. The agent must be discoverable in the container (the baked-in `devproc` plugin's agents always are). Options come before the optional project path, e.g. `claude-run --manager /path/to/project`. The selected agent persists across the container's automatic relaunches, so a resumed session keeps running as the same agent.
+
+#### Session model
+
+By default `claude-run` runs the session as the **model declared in the agent's own definition** — the manager runs as Opus because `devproc/agents/dev-process-manager.md` sets `model: opus`. This is necessary because `--agent` on its own applies the agent's persona and tools but *not* its model to the top-level session, so `claude-run` reads the agent's `model:` field and passes it through explicitly.
+
+To override the model, or to set one for an agent whose definition is not in this repo (where it cannot be derived), pass `--model`:
+
+```bash
+bash /some/path/claudeplugins/bin/claude-run --agent some-agent-name --model opus
+```
+
+Like the agent, the model persists across the container's automatic relaunches.
+
 ## Attach to Claude
 
 From the project directory you want Claude to work on:

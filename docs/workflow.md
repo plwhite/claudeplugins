@@ -10,6 +10,8 @@ Best practice regarding git is to:
 
 - finish off by squashing commits as necessary, and merge the branch.
 
+This guide describes driving the workflow yourself, one step at a time. You can also hand the same workflow to the [dev process manager](capabilities.md#dev-process-manager), a top-level agent that works through sub-tasks semi-autonomously — spawning a teammate per sub-task, reviewing its work, and checking in with you at the points you choose. The steps below are exactly what that agent automates.
+
 ---
 
 ## Add a feature to the backlog

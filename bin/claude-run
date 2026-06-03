@@ -1,12 +1,125 @@
 #!/bin/bash
 set -euo pipefail
 
-PROJECT="${1:-$(pwd)}"
+REPO="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+
+usage() {
+    cat <<'EOF'
+Usage: claude-run [--manager | --agent NAME] [--model NAME] [PROJECT]
+
+Start a detached Claude container for PROJECT (default: current directory).
+
+Options:
+  -m, --manager      Run the session as the dev-process-manager agent, which
+                     orchestrates the feature workflow (spawns a teammate per
+                     sub-task, reviews the work, and checkpoints). Shorthand for
+                     '--agent dev-process-manager'.
+  -a, --agent NAME   Run the session as the named top-level agent. NAME may be a
+                     short alias: 'dpm' = dev-process-manager.
+      --model NAME   Override the session model. By default the model is taken
+                     from the selected agent's definition (its 'model:' field),
+                     because '--agent' alone does not apply the agent's model to
+                     the top-level session. Use this for agents not defined in
+                     this repo, or to force a specific model.
+  -h, --help         Show this help and exit.
+EOF
+}
+
+# Read the 'model:' frontmatter field from an agent definition in this repo.
+# Prints the model (e.g. "opus") or nothing if the agent file or field is absent.
+derive_model() {
+    local agent_file="$REPO/devproc/agents/$1.md"
+    [[ -f "$agent_file" ]] || return 0
+    local line
+    line="$(grep -m1 '^model:[[:space:]]' "$agent_file" 2>/dev/null || true)"
+    line="${line#model:}"
+    printf '%s' "${line//[[:space:]]/}"
+}
+
+AGENT=""
+MODEL=""
+PROJECT=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -m|--manager)
+            AGENT="dev-process-manager"
+            shift
+            ;;
+        -a|--agent)
+            if [[ $# -lt 2 ]]; then
+                echo "claude-run: --agent requires an agent name" >&2
+                exit 1
+            fi
+            AGENT="$2"
+            shift 2
+            ;;
+        --model)
+            if [[ $# -lt 2 ]]; then
+                echo "claude-run: --model requires a value" >&2
+                exit 1
+            fi
+            MODEL="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            echo "claude-run: unknown option '$1'" >&2
+            usage >&2
+            exit 1
+            ;;
+        *)
+            if [[ -n "$PROJECT" ]]; then
+                echo "claude-run: unexpected extra argument '$1'" >&2
+                exit 1
+            fi
+            PROJECT="$1"
+            shift
+            ;;
+    esac
+done
+
+# Any positional left after `--` is the project path.
+if [[ $# -gt 0 ]]; then
+    PROJECT="$1"
+fi
+
+# Resolve short agent aliases to full agent names.
+case "$AGENT" in
+    dpm) AGENT="dev-process-manager" ;;
+esac
+
+# Unless overridden, take the session model from the agent's own definition.
+# '--agent NAME' applies the agent's persona and tools but NOT its 'model:'
+# field to the top-level session, so we pass it explicitly via --model.
+if [[ -z "$MODEL" && -n "$AGENT" ]]; then
+    MODEL="$(derive_model "$AGENT")"
+fi
+
+PROJECT="${PROJECT:-$(pwd)}"
 PROJECT="$(cd "$PROJECT" && pwd)"
 CONTAINER="claude-$(basename "$PROJECT")"
 
 GIT_NAME="$(git -C "$PROJECT" config user.name 2>/dev/null || git config user.name)"
 GIT_EMAIL="$(git -C "$PROJECT" config user.email 2>/dev/null || git config user.email)"
+
+# Pass the chosen agent and model through to run-claude.sh, which adds `--agent`
+# and `--model` to the claude command line on both the initial launch and every
+# --continue relaunch.
+extra_env=()
+if [[ -n "$AGENT" ]]; then
+    extra_env+=(-e CLAUDE_AGENT="$AGENT")
+fi
+if [[ -n "$MODEL" ]]; then
+    extra_env+=(-e CLAUDE_MODEL="$MODEL")
+fi
 
 docker run -d \
     -v "$PROJECT":/workspace \
@@ -15,8 +128,12 @@ docker run -d \
     -e GIT_AUTHOR_EMAIL="$GIT_EMAIL" \
     -e GIT_COMMITTER_NAME="$GIT_NAME" \
     -e GIT_COMMITTER_EMAIL="$GIT_EMAIL" \
+    "${extra_env[@]}" \
     --name "$CONTAINER" \
     claudedev
 
 echo "Started container: $CONTAINER"
+if [[ -n "$AGENT" ]]; then
+    echo "Top-level agent: $AGENT${MODEL:+ (model: $MODEL)}"
+fi
 echo "Attach with: bash bin/claude-attach $PROJECT"

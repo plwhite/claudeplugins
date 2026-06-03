@@ -24,6 +24,10 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## Completed
 
+### Create dev process manager agent [dev-process-manager] — 2026-06-03
+
+Added a top-level Opus "dev process manager" agent (`devproc/agents/dev-process-manager.md`, run via `claude --agent dev-process-manager` or `claude-run --manager`) that orchestrates the feature workflow: it establishes the feature (creating/starting one if asked), agrees an autonomy boundary with the user, spawns a (normally Sonnet) teammate per sub-task briefed to run `/feature-checkpoint`, reviews the actual changes, shuts each teammate down, and pauses for the user at requirement/design decisions. The container infra gained `claude-run` options `--manager`/`--agent NAME` (with a `dpm` alias) and `--model NAME`, passed through to `run-claude.sh` via `CLAUDE_AGENT`/`CLAUDE_MODEL` on both initial launch and `--continue` relaunch. Testing surfaced that top-level `--agent` does not apply an agent's `model:` to the session, so `claude-run` derives the model from the agent definition and passes `--model` explicitly — keeping the agent file the single source of truth. Resolves #19.
+
 ### Fix bugs in container implementation [container-bugs] — 2026-06-01
 
 Fixed three issues in container mode (#17). Automatic login failed because `claude-run` mounted `~/.claude/.credentials` (no `.json`) on both sides — Docker created an empty directory at the missing source and mounted that, so credentials never reached the container; the mount now points at `~/.claude/.credentials.json`. The tmux session was destroyed whenever Claude exited (Claude was the session's top-level process); a new baked-in `run-claude.sh` wraps Claude in a keep-alive loop that auto-relaunches it with `claude --continue` (resuming the conversation), traps SIGINT between runs so Ctrl-C cannot kill the session, and uses a sub-5-second crash-guard to avoid a tight respawn loop — only `claude-stop` now tears the session down. Also documented the Shift-highlight copy/paste tip and corrected the `claude-run` attach hint to print a project path rather than a container name.
