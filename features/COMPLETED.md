@@ -1,28 +1,13 @@
-# Project features
+# Completed features
 
-Features being developed for this project. Each feature has a level three (`###`) heading and a short, normally one-paragraph description that explains what the feature is. The feature heading should have a slug (such as `initial-development` or `code-coverage-00` so the plan can be found when created.
-
----
-
-## In progress
-
-*No features currently in progress.*
+Features that have been completed, described to reflect what was actually
+developed. Headings must end with the date of completion in YYYY-MM-DD format.
 
 ---
 
-## Pending
+### Split FEATURES.md into separate files to save tokens [split-features-md] — 2026-06-11
 
-*No features pending.*
-
----
-
-## Explicitly deferred
-
-*Features that are explicitly deferred; these are not expected to happen but may be resurrected.*
-
----
-
-## Completed
+Replaced the single `FEATURES.md` with a `features/` directory: four status-split list files (`CURRENT.md`, `PENDING.md`, `DEFERRED.md`, `COMPLETED.md`) plus the per-feature plan files moved into a `features/plans/` subdirectory, so the large completed list no longer loads into context every session. Updated the `devproc` skills so `/feature-init` idempotently migrates an older `FEATURES.md` + top-level `plans/`/`notes/` layout, and feature creation always writes the full source-issue specification (entire description plus design/requirements-relevant comments) into the plan file; this repo was migrated as dog-fooding. Scope grew during the work to rename the lifecycle skills `feature-create`→`feature-spec` and `feature-start`→`feature-design`, reframing the flow as spec → design → implement → end across all skills, agents, and docs. Notable decisions: slug files live in a `features/plans/` subdirectory rather than the `features/` root, and the old "Explicitly deferred" section became `DEFERRED.md` (a blocked feature is just one reason to defer, so a single file covers both). Resolves #14.
 
 ### Create dev process manager agent [dev-process-manager] — 2026-06-03
 

@@ -32,7 +32,7 @@ Always run:
 - `code-review-nitty` — checks naming, comments, and fine-grained clarity
 
 If architectural review was confirmed in Step 2, also run:
-- `code-review-architectural` — checks module boundaries, coupling, and design fit; also pass any relevant design/architecture documents (README.md, CLAUDE.md, plans/)
+- `code-review-architectural` — checks module boundaries, coupling, and design fit; also pass any relevant design/architecture documents (README.md, CLAUDE.md, features/plans/)
 
 Collect all findings from all agents.
 

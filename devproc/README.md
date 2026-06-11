@@ -8,9 +8,9 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 
 | Type | Name | Description |
 |------|------|-------------|
-| Skill | `feature-init` | One-time setup: adds the feature model to `CLAUDE.md`, creates `FEATURES.md` and `plans/` |
-| Skill | `feature-create` | Add a new feature entry to the Pending section of `FEATURES.md` |
-| Skill | `feature-start` | Move a feature to In Progress and create its plan file |
+| Skill | `feature-init` | One-time setup: adds the feature model to `CLAUDE.md`, creates the `features/` directory (and migrates an older `FEATURES.md`/`plans/` layout) |
+| Skill | `feature-spec` | Create a new feature in `features/PENDING.md` and write its specification into the plan file |
+| Skill | `feature-design` | Move a feature to `features/CURRENT.md` and write its design and sub-task plan |
 | Skill | `feature-checkpoint` | Sync all documentation and tracking to the current state |
 | Skill | `feature-end` | Mark a feature complete and move it to Completed |
 | Skill | `review-full` | Full-codebase code review |
@@ -25,14 +25,17 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 
 ## Setup
 
-Run `/feature-init` once per project before using any other skills. This writes the feature model section to `CLAUDE.md`, creates `FEATURES.md` with the standard section structure (In Progress / Pending / Explicitly deferred / Completed), and creates the `plans/` directory. Safe to re-run — it updates existing content rather than overwriting it.
+Run `/feature-init` once per project before using any other skills. This writes the feature model section to `CLAUDE.md` and creates the `features/` directory, whose feature list is split across four files by status (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) so the large completed list need not be read into context every session. It also migrates an older single-file layout (`FEATURES.md` plus a top-level `plans/` or `notes/` directory) to the new structure. Safe to re-run — it updates existing content rather than overwriting it.
 
 ### Feature tracking files
 
 | File | Purpose |
 |------|---------|
-| `FEATURES.md` | Index of all features and their status |
-| `plans/<slug>.md` | Per-feature plan with design, sub-tasks, and handoff state |
+| `features/CURRENT.md` | Feature(s) currently in progress (normally exactly one) |
+| `features/PENDING.md` | Features waiting for development |
+| `features/DEFERRED.md` | Features explicitly deferred, including those blocked by a dependency |
+| `features/COMPLETED.md` | Completed features, dated — the large list kept out of routine context |
+| `features/plans/<slug>.md` | Per-feature plan with requirements, design, sub-tasks, and handoff state |
 | `NOTES.md` | Non-obvious technical findings recorded continuously |
 | `CLAUDE.md` | High-level project status only — no implementation detail |
 
@@ -44,34 +47,34 @@ Run `/feature-init` once per project before using any other skills. This writes 
 
 **Invoke with:** `/feature-init`
 
-One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, creates `FEATURES.md` with the standard section structure, and creates the `plans/` directory. Safe to re-run.
+One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, creates the `features/` directory with its four status files (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) and a `features/plans/` subdirectory, and migrates an older `FEATURES.md`/`plans/` layout if present. Safe to re-run.
 
 ---
 
-### feature-create
+### feature-spec
 
-**Invoke with:** `/feature-create <description>`
+**Invoke with:** `/feature-spec <description>`
 
-Adds a new entry at the top of the `## Pending` section in `FEATURES.md`. Derives a lowercase-hyphenated slug from the description and appends it as a tag on the heading (e.g. `### My feature [my-feature]`). The description is kept to one or two sentences — implementation detail belongs in the plan file. If a longer specification is provided, it is optionally preserved in `plans/<slug>.md` under a `## Requirements` section (this is an edge case, not part of the standard plan schema; it is only created when pre-given requirements are too detailed for the FEATURES.md entry).
+The first step of the lifecycle: create a feature and specify *what* it must do. Adds a new entry at the top of `features/PENDING.md`, deriving a lowercase-hyphenated slug from the description and appending it as a tag on the heading (e.g. `### My feature [my-feature]`). The list entry is kept to one or two sentences — the specification belongs in the plan file. It always creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section captures the full source-issue content (entire description plus any design/requirements-relevant comments) so a later session can resume from the plan file alone, without re-reading the issue.
 
 **Example:**
 ```
-/feature-create "Add dark mode support to the UI"
-/feature-create "issue 12"
+/feature-spec "Add dark mode support to the UI"
+/feature-spec "issue 12"
 ```
 
 ---
 
-### feature-start
+### feature-design
 
-**Invoke with:** `/feature-start [feature name or slug]`
+**Invoke with:** `/feature-design [feature name or slug]`
 
-Moves the named feature from `## Pending` to `## In progress` in `FEATURES.md`, then creates `plans/<slug>.md` with a Design section and a numbered sub-task list. The plan file includes a `## Handoff` section kept current so any session can resume without context from the previous one. If only one feature is pending, the argument can be omitted.
+The second step of the lifecycle: decide *how* the feature will be built. Moves the named feature from `features/PENDING.md` to `features/CURRENT.md`, then fleshes out `features/plans/<slug>.md` — preserving the `## Requirements` section written by `/feature-spec`, filling in the Design section, and adding a numbered sub-task list. The plan file includes a `## Handoff` section kept current so any session can resume without context from the previous one. Producing the design does not begin implementation — that is a separate step with no slash command. If only one feature is pending, the argument can be omitted.
 
 **Example:**
 ```
-/feature-start dark-mode-support
-/feature-start "issue 12"
+/feature-design dark-mode-support
+/feature-design "issue 12"
 ```
 
 ---
@@ -90,7 +93,7 @@ Run after each sub-task completes. The skill is designed to be run proactively, 
 
 **Invoke with:** `/feature-end`
 
-Runs a full checkpoint, verifies all sub-tasks are complete, moves the feature entry from `## In progress` to `## Completed` in `FEATURES.md` (appending the completion date), and triggers a documentation review. The plan file is kept in place as a record.
+Runs a full checkpoint, verifies all sub-tasks are complete, moves the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` (appending the completion date), and triggers a documentation review. The plan file is kept in place as a record.
 
 ---
 
@@ -128,9 +131,9 @@ Runs a code review scoped to files changed in the current feature branch, derive
 
 ### dev-process-manager
 
-**Run as the session agent with:** `claude --agent dev-process-manager` (or, in container mode, `claude-run --manager` — see [docs/container.md](../docs/container.md)).
+**Run as the session agent with:** `claude --agent dev-process-manager` (or, in container mode, `claude-run --manager` — equivalently `claude-run --agent dpm` — see [docs/container.md](../docs/container.md)).
 
-A top-level Opus orchestrator for the feature workflow. Unlike the review agents — which are sub-agents invoked by a skill — this agent *is* the session you talk to. It establishes the feature being worked on (creating and starting one itself if asked), agrees an autonomy boundary with you (e.g. "do sub-tasks 1–4, then check with me"), then for each sub-task spawns a teammate (normally Sonnet), briefs it to run `/feature-checkpoint` on completion, reviews the actual changes before accepting them, and shuts the teammate down. It pauses for you at requirement/design decisions and when you ask to review something. See [docs/capabilities.md](../docs/capabilities.md#dev-process-manager) for the task-oriented guide.
+A top-level Opus orchestrator for the feature workflow. Unlike the review agents — which are sub-agents invoked by a skill — this agent *is* the session you talk to. It establishes the feature being worked on (specifying and designing one itself if asked), agrees an autonomy boundary with you (e.g. "do sub-tasks 1–4, then check with me"), then for each sub-task spawns a teammate (normally Sonnet), briefs it to run `/feature-checkpoint` on completion, reviews the actual changes before accepting them, and shuts the teammate down. It pauses for you at requirement/design decisions and when you ask to review something. See [docs/capabilities.md](../docs/capabilities.md#dev-process-manager) for the task-oriented guide.
 
 ---
 

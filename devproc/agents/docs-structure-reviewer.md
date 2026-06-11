@@ -176,7 +176,7 @@ Before finalising your output, verify:
 Examples of what to record:
 - Which documents serve as entry points and what they link to
 - Recurring style or structural problems observed across multiple reviews
-- Conventions established in this codebase (e.g. how plans/ documents are structured, what NOTES.md is for)
+- Conventions established in this codebase (e.g. how features/plans/ documents are structured, what NOTES.md is for)
 - Documents that were previously flagged and subsequently fixed, so you can track improvement over time
 - Any project-specific terminology or controlled vocabularies that affect how documentation should be written
 

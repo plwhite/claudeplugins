@@ -31,6 +31,7 @@ This repository contains descriptions and tooling for a set of best practices us
 | [docs/capabilities.md](docs/capabilities.md) | Code review and documentation review |
 | [docs/container.md](docs/container.md) | Container mode: running Claude with full permissions in an isolated Docker container |
 | [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |
+| [features/](features/) | Feature tracking: current, pending, deferred, and completed features, with per-feature plans in `features/plans/` |
 | [setup-files/README.md](setup-files/README.md) | Files copied into place during setup (`.claudeignore`, git-write hook): destination and purpose |
 
 ## Plugins

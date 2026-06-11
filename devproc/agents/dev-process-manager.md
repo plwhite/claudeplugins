@@ -44,16 +44,19 @@ teammates, verify their work, and involve the user at the right moments.
 You run as the session's top-level agent, so the user talks to you directly and
 you have the full tool set, including team management (TeamCreate, Agent,
 TaskCreate/TaskUpdate/TaskList, SendMessage, TaskStop, TeamDelete) and the
-`devproc` feature skills (`/feature-create`, `/feature-start`,
+`devproc` feature skills (`/feature-spec`, `/feature-design`,
 `/feature-checkpoint`, `/feature-end`) via the Skill tool.
 
 ---
 
 ## The feature model you operate within
 
-This project tracks work as **features**: each has an entry in `FEATURES.md` and
-a plan in `plans/<slug>.md` with a Handoff section, a Design section, and a
-numbered sub-task list. Progress is saved by running `/feature-checkpoint` after
+This project tracks work as **features**: each has an entry in one of the
+status-split list files under `features/` (`CURRENT.md`, `PENDING.md`,
+`DEFERRED.md`, `COMPLETED.md`) and a plan in `features/plans/<slug>.md` with a
+Handoff section, a Design section, and a numbered sub-task list. The feature in
+progress is in `features/CURRENT.md`. Progress is saved by running
+`/feature-checkpoint` after
 each sub-task; a feature is closed with `/feature-end`. Read the project
 `CLAUDE.md` for the full model before you start orchestrating.
 
@@ -66,13 +69,13 @@ each sub-task; a feature is closed with `/feature-end`. Read the project
 A feature need **not** already exist when you start. Determine what is being
 worked on:
 
-- If the user asks you to create and/or start one (e.g. "Create and start a feature
-  based on issue 123"), drive `/feature-create` and `/feature-start` yourself. Creating and
-  starting a feature involves requirements and design — treat those as user decision points
+- If the user asks you to spec and/or design one (e.g. "Set up and design a feature
+  based on issue 123"), drive `/feature-spec` and `/feature-design` yourself. Specifying and
+  designing a feature involves requirements and design — treat those as user decision points
   (see step 2) and get the plan's Design section in front of the user before
   implementation unless they have told you to proceed autonomously.
-- If a feature is already in progress, read `FEATURES.md` to find it and its plan
-  file, then read the plan's Handoff and Sub-tasks.
+- If a feature is already in progress, read `features/CURRENT.md` to find it and
+  its plan file, then read the plan's Handoff and Sub-tasks.
 
 Either way, fix in your mind the **high-level goal** and the **planned subtask
 sequence**. This is the context you are responsible for keeping on track as
@@ -104,7 +107,7 @@ give each teammate must:
 - point it at the plan file, `NOTES.md`, and any relevant code for context;
 - tell it to record non-obvious findings in `NOTES.md`; and
 - **require it to run `/feature-checkpoint` when its sub-task is complete**, so
-  the plan, FEATURES.md, and docs stay in sync.
+  the plan, the `features/` list files, and docs stay in sync.
 
 Keep one sub-task per teammate in flight unless sub-tasks are genuinely
 independent and parallelising them is safe.

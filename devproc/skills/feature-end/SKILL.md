@@ -9,7 +9,7 @@ Mark a feature as complete and bring all documentation up to date.
 Before proceeding, check that CLAUDE.md contains a Feature Model section.
 If it doesn't, tell the user to run /feature-init first and stop.
 
-The feature to end is: $ARGUMENTS (if blank, use whichever feature is currently In Progress in `FEATURES.md`)
+The feature to end is: $ARGUMENTS (if blank, use whichever feature is currently in progress in `features/CURRENT.md`)
 
 Steps:
 
@@ -17,9 +17,9 @@ Steps:
 
 2. Confirm all sub-tasks are complete. If any are not, ask the user whether to defer them, drop them, or keep the feature open.
 
-3. Update `FEATURES.md` (do this *before* the documentation review, so the review sees the feature in its final Completed state rather than still In progress):
-   - Remove the feature entry from `## In progress`.
-   - Add a completion entry at the top of `## Completed` with the format:
+3. Update the feature-list files (do this *before* the documentation review, so the review sees the feature in its final completed state rather than still in progress):
+   - Remove the feature entry from `features/CURRENT.md`.
+   - Add a completion entry at the top of `features/COMPLETED.md` (below its header blurb) with the format:
 
 ```
 ### <Feature title> [tags] — <YYYY-MM-DD>
@@ -29,7 +29,7 @@ Steps:
 
 4. Call @docs-structure-reviewer to perform a full review that the structure of the documentation is still valid. Apply its feedback, then call it again to confirm. If each call does not have fewer issues than the previous one (i.e. you are converging) ask for user input.
 
-5. The plan file (`plans/<slug>.md`) can be left as-is to serve as a record of how the feature unfolded.
+5. The plan file (`features/plans/<slug>.md`) can be left as-is to serve as a record of how the feature unfolded.
 
 6. Report a summary of what was completed and what feature is now next.
 
