@@ -36,9 +36,9 @@ When you have a piece of work to track — from a GitHub issue, a design doc, or
   /feature-create "the issue about improving error messages"
   ```
 
-  When an issue reference is used, Claude calls `git remote -v` to identify your repo and fetches the issue via `gh`, using its title and body as the feature description. `gh` must be configured — see [setup.md](setup.md).
+  When an issue reference is used, Claude calls `git remote -v` to identify your repo and fetches the issue (and its comments) via `gh`, using its title for the feature and copying the full description plus any design/requirements-relevant comments into the plan file. `gh` must be configured — see [setup.md](setup.md).
 
-This adds an entry to `FEATURES.md` in the Pending section with a slug (e.g. `[improve-error-messages]`) that links it to its plan file.
+This adds an entry to `features/PENDING.md` with a slug (e.g. `[improve-error-messages]`) and creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section holds the captured issue content so you never need to re-open the issue.
 
 ---
 
@@ -59,7 +59,7 @@ When you are ready to work on a feature:
   /feature-start "issue 12"
   ```
 
-Claude reads the feature description (fetching the GitHub issue if needed), researches the relevant code, and produces a design and sub-task breakdown in `plans/<slug>.md`.
+Claude reads the captured requirements in the plan file (fetching the GitHub issue only if they are missing), researches the relevant code, and fleshes out the design and sub-task breakdown in `features/plans/<slug>.md`.
 
 **Review the plan before approving it.** The plan is presented to you before any implementation begins. This is the moment to correct the approach, adjust scope, or add constraints. Implementation does not start until you confirm.
 
@@ -85,8 +85,8 @@ Often, you will find more necessary work as you go along; you can ask Claude to 
 
 When returning to an in-progress feature in a new session:
 
-1. Open Claude in the project directory. It reads `FEATURES.md` on startup and sees the in-progress feature.
-2. Open `plans/<slug>.md` and read the `## Handoff` section — this contains the session summary, current sub-task state, and the specific first action.
+1. Open Claude in the project directory. It reads `features/CURRENT.md` on startup and sees the in-progress feature.
+2. Open `features/plans/<slug>.md` and read the `## Handoff` section — this contains the session summary, current sub-task state, and the specific first action.
 3. Ask Claude to continue. It resumes from exactly where the last session stopped.
 
 You do not need to re-explain context. The Handoff section is the contract between sessions.
@@ -99,7 +99,7 @@ When all sub-tasks are done:
 
 - Review that you are comfortable with the final state.
 
-- Run `/feature-end` to tell Claude that the feature is done. This will run a full checkpoint, verifying all sub-tasks are marked complete, and move the feature entry from In Progress to Completed in `FEATURES.md` with the completion date. The plan file is kept as a record. It also triggers an intensive docs review over all docs in the project.
+- Run `/feature-end` to tell Claude that the feature is done. This will run a full checkpoint, verifying all sub-tasks are marked complete, and move the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` with the completion date. The plan file is kept as a record. It also triggers an intensive docs review over all docs in the project.
 
 - Commit the final state changes to git, squash commits as required, and push and merge the feature branch.
 

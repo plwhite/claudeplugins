@@ -8,9 +8,9 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 
 | Type | Name | Description |
 |------|------|-------------|
-| Skill | `feature-init` | One-time setup: adds the feature model to `CLAUDE.md`, creates `FEATURES.md` and `plans/` |
-| Skill | `feature-create` | Add a new feature entry to the Pending section of `FEATURES.md` |
-| Skill | `feature-start` | Move a feature to In Progress and create its plan file |
+| Skill | `feature-init` | One-time setup: adds the feature model to `CLAUDE.md`, creates the `features/` directory (and migrates an older `FEATURES.md`/`plans/` layout) |
+| Skill | `feature-create` | Add a new feature to `features/PENDING.md` and create its plan file |
+| Skill | `feature-start` | Move a feature to `features/CURRENT.md` and flesh out its plan file |
 | Skill | `feature-checkpoint` | Sync all documentation and tracking to the current state |
 | Skill | `feature-end` | Mark a feature complete and move it to Completed |
 | Skill | `review-full` | Full-codebase code review |
@@ -25,14 +25,17 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 
 ## Setup
 
-Run `/feature-init` once per project before using any other skills. This writes the feature model section to `CLAUDE.md`, creates `FEATURES.md` with the standard section structure (In Progress / Pending / Explicitly deferred / Completed), and creates the `plans/` directory. Safe to re-run — it updates existing content rather than overwriting it.
+Run `/feature-init` once per project before using any other skills. This writes the feature model section to `CLAUDE.md` and creates the `features/` directory, whose feature list is split across four files by status (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) so the large completed list need not be read into context every session. It also migrates an older single-file layout (`FEATURES.md` plus a top-level `plans/` or `notes/` directory) to the new structure. Safe to re-run — it updates existing content rather than overwriting it.
 
 ### Feature tracking files
 
 | File | Purpose |
 |------|---------|
-| `FEATURES.md` | Index of all features and their status |
-| `plans/<slug>.md` | Per-feature plan with design, sub-tasks, and handoff state |
+| `features/CURRENT.md` | Feature(s) currently in progress (normally exactly one) |
+| `features/PENDING.md` | Features waiting for development |
+| `features/DEFERRED.md` | Features explicitly deferred, including those blocked by a dependency |
+| `features/COMPLETED.md` | Completed features, dated — the large list kept out of routine context |
+| `features/plans/<slug>.md` | Per-feature plan with requirements, design, sub-tasks, and handoff state |
 | `NOTES.md` | Non-obvious technical findings recorded continuously |
 | `CLAUDE.md` | High-level project status only — no implementation detail |
 
@@ -44,7 +47,7 @@ Run `/feature-init` once per project before using any other skills. This writes 
 
 **Invoke with:** `/feature-init`
 
-One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, creates `FEATURES.md` with the standard section structure, and creates the `plans/` directory. Safe to re-run.
+One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, creates the `features/` directory with its four status files (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) and a `features/plans/` subdirectory, and migrates an older `FEATURES.md`/`plans/` layout if present. Safe to re-run.
 
 ---
 
@@ -52,7 +55,7 @@ One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, create
 
 **Invoke with:** `/feature-create <description>`
 
-Adds a new entry at the top of the `## Pending` section in `FEATURES.md`. Derives a lowercase-hyphenated slug from the description and appends it as a tag on the heading (e.g. `### My feature [my-feature]`). The description is kept to one or two sentences — implementation detail belongs in the plan file. If a longer specification is provided, it is optionally preserved in `plans/<slug>.md` under a `## Requirements` section (this is an edge case, not part of the standard plan schema; it is only created when pre-given requirements are too detailed for the FEATURES.md entry).
+Adds a new entry at the top of `features/PENDING.md`. Derives a lowercase-hyphenated slug from the description and appends it as a tag on the heading (e.g. `### My feature [my-feature]`). The list entry is kept to one or two sentences — implementation detail belongs in the plan file. It always creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section captures the full source-issue content (entire description plus any design/requirements-relevant comments) so a later session can resume from the plan file alone, without re-reading the issue.
 
 **Example:**
 ```
@@ -66,7 +69,7 @@ Adds a new entry at the top of the `## Pending` section in `FEATURES.md`. Derive
 
 **Invoke with:** `/feature-start [feature name or slug]`
 
-Moves the named feature from `## Pending` to `## In progress` in `FEATURES.md`, then creates `plans/<slug>.md` with a Design section and a numbered sub-task list. The plan file includes a `## Handoff` section kept current so any session can resume without context from the previous one. If only one feature is pending, the argument can be omitted.
+Moves the named feature from `features/PENDING.md` to `features/CURRENT.md`, then fleshes out `features/plans/<slug>.md` — preserving the `## Requirements` section written by `/feature-create`, filling in the Design section, and adding a numbered sub-task list. The plan file includes a `## Handoff` section kept current so any session can resume without context from the previous one. If only one feature is pending, the argument can be omitted.
 
 **Example:**
 ```
@@ -90,7 +93,7 @@ Run after each sub-task completes. The skill is designed to be run proactively, 
 
 **Invoke with:** `/feature-end`
 
-Runs a full checkpoint, verifies all sub-tasks are complete, moves the feature entry from `## In progress` to `## Completed` in `FEATURES.md` (appending the completion date), and triggers a documentation review. The plan file is kept in place as a record.
+Runs a full checkpoint, verifies all sub-tasks are complete, moves the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` (appending the completion date), and triggers a documentation review. The plan file is kept in place as a record.
 
 ---
 

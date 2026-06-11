@@ -97,8 +97,8 @@ content is preserved rather than overwritten:
    Copy each section's `###` feature entries verbatim into the corresponding
    file under that file's standard header (see templates below). Then delete
    `FEATURES.md`. Update any links elsewhere in the repo that pointed at
-   `FEATURES.md` or `plans/<slug>.md` to the new paths (see step 5 of
-   `/feature-checkpoint` conventions — at minimum check `CLAUDE.md`).
+   `FEATURES.md` or `plans/<slug>.md` to the new paths — at minimum check
+   `CLAUDE.md` and any project README.
 
 If neither `FEATURES.md` nor a top-level `plans/`/`notes/` directory exists,
 there is nothing to migrate; continue to step 3.
