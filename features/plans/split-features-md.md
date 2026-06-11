@@ -20,8 +20,8 @@ Additional requirement from the feature request: `/feature-create` must copy the
 
 **Last updated:** 2026-06-11
 **Session summary:** All six sub-tasks complete. The `devproc` plugin now defines the `features/` model, this repo is migrated to it, and (scope added late) the lifecycle skills were renamed `feature-create`→`feature-spec` and `feature-start`→`feature-design`, with all live docs reframed as spec → design → implement → end. No stale references remain in live docs.
-**Sub-task in progress:** None — feature implementation complete.
-**First action next session:** Run `/feature-end` (it will trigger a docs-structure review that also refreshes the agent-memory snapshots still describing the old layout/names).
+**Sub-task in progress:** None — feature complete and closed.
+**First action next session:** None — `/feature-end` ran on 2026-06-11: feature moved to `features/COMPLETED.md`, and the docs-structure review converged (4 findings → 0 actionable, all applied). This plan is retained as a record.
 **Open questions / decisions pending:** None — all resolved (see "Open decisions").
 **Dead ends to avoid:** None
 
