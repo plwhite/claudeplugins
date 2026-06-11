@@ -2,7 +2,7 @@
 
 ## Current status
 
-**In progress: `split-features-md` (#14).** Replacing the single `FEATURES.md` with a `features/` directory: four status-split list files (`CURRENT.md`, `PENDING.md`, `DEFERRED.md`, `COMPLETED.md`) plus the per-feature plan files moved into a `features/plans/` subdirectory, so the large completed list need not be read into context every session. Sub-tasks 1–4 done: all five feature skills updated (`/feature-init` now migrates older layouts; `/feature-create` always writes a `features/plans/<slug>.md` slug file capturing the full source-issue content), and the docs/agents/plugin.json updated to match. Sub-task 5 (in progress) migrates this repo itself to the new layout. See [features/plans/split-features-md.md](features/plans/split-features-md.md).
+**In progress: `split-features-md` (#14).** Replaced the single `FEATURES.md` with a `features/` directory: four status-split list files (`CURRENT.md`, `PENDING.md`, `DEFERRED.md`, `COMPLETED.md`) plus the per-feature plan files moved into a `features/plans/` subdirectory, so the large completed list need not be read into context every session. All six sub-tasks done: the feature skills migrate older layouts and always capture the full source-issue spec in the plan file; this repo is migrated; and the lifecycle skills were renamed `feature-create`→`feature-spec` and `feature-start`→`feature-design` (lifecycle: spec → design → implement → end). Ready for `/feature-end`. See [features/plans/split-features-md.md](features/plans/split-features-md.md).
 
 `dev-process-manager` completed 2026-06-03 — added a top-level Opus "dev process manager" agent (`claude --agent dev-process-manager` / `claude-run --manager`) that orchestrates the feature workflow, spawning a teammate per sub-task and reviewing their work; `claude-run` gained `--manager`/`--agent`/`--model` options passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`.
 
@@ -46,8 +46,8 @@ Skills and agents for feature lifecycle management, workflow orchestration, and 
 Contents:
 - `devproc/.claude-plugin/plugin.json`
 - `devproc/skills/feature-init/SKILL.md` — one-time setup: writes feature model to CLAUDE.md, creates the `features/` directory, and migrates an older `FEATURES.md`/`plans/` layout
-- `devproc/skills/feature-create/SKILL.md` — add a new feature to `features/PENDING.md` and create its plan file with the full issue content
-- `devproc/skills/feature-start/SKILL.md` — move a feature to `features/CURRENT.md` and flesh out its plan file
+- `devproc/skills/feature-spec/SKILL.md` — create a new feature in `features/PENDING.md` and write its specification (full issue content) into the plan file
+- `devproc/skills/feature-design/SKILL.md` — move a feature to `features/CURRENT.md` and write its design and sub-task plan
 - `devproc/skills/feature-checkpoint/SKILL.md` — sync all documentation to current state
 - `devproc/skills/feature-end/SKILL.md` — mark a feature complete and move it to `features/COMPLETED.md`
 - `devproc/skills/review-full/SKILL.md` — full-codebase code review; auto-applies code-level findings, escalates architectural changes
@@ -98,11 +98,13 @@ See [docs/container.md](docs/container.md) for full usage documentation.
 
 Major pieces of work are organised into features. Each feature has a concise entry in one of the feature-list files under `features/` and a detailed plan file in `features/plans/`.
 
-Use these slash commands (defined in the `devproc` plugin) to manage features:
+Use these slash commands (defined in the `devproc` plugin) to manage features
+through their lifecycle — **spec → design → implement → end**:
 
-- `/feature-create` — add a new feature to `features/PENDING.md` (and create its plan file)
-- `/feature-start` — move a feature to `features/CURRENT.md` and flesh out its plan file
-- `/feature-checkpoint` — sync all feature documentation, plans and user documentation to the current state
+- `/feature-spec` — create a new feature in `features/PENDING.md` and write its specification into the plan file
+- `/feature-design` — move a feature to `features/CURRENT.md` and write its design and sub-task plan
+- *(implementation has no slash command — work through the sub-tasks directly)*
+- `/feature-checkpoint` — during implementation, sync all feature documentation and plans to the current state (run after each sub-task)
 - `/feature-end` — mark a feature complete and move it to `features/COMPLETED.md`
 
 `NOTES.md` is maintained continuously. Any non-obvious technical finding — page structure quirks, API behaviour, design decisions, scope changes — goes there as it is discovered.

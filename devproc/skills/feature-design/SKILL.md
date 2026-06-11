@@ -1,10 +1,14 @@
 ---
-name: feature-start
-description: Begin implementing a pending feature — move to In Progress and flesh out its plan file
+name: feature-design
+description: Design and plan a feature — move it to in progress and write its design and sub-task plan
 argument-hint: [feature name or slug]
 ---
 
-Start implementing a feature.
+Design a specified feature: decide *how* it will be built and break the work
+into sub-tasks. This is the second step of the feature lifecycle
+(`feature-spec` → `feature-design` → implement → `feature-end`). It assumes the
+feature has already been specified by `/feature-spec`; it produces the design
+and plan, but does **not** begin implementation.
 
 Before proceeding, check that CLAUDE.md contains a Feature Model section.
 If it doesn't, tell the user to run /feature-init first and stop.
@@ -13,14 +17,14 @@ The user has identified the feature as: $ARGUMENTS
 
 Steps:
 
-1. Read `features/PENDING.md` and identify the feature to start.
+1. Read `features/PENDING.md` and identify the feature to design.
    - Match `$ARGUMENTS` against pending feature names and slugs.
    - If `$ARGUMENTS` is blank and there is exactly one entry in `features/PENDING.md`, use that.
-   - If no match is found, tell the user the feature is not in `features/PENDING.md` and ask them to run `/feature-create` first. Do not proceed.
+   - If no match is found, tell the user the feature is not in `features/PENDING.md` and ask them to run `/feature-spec` first. Do not proceed.
    - If ambiguous, ask the user to clarify.
 
-   Then gather the requirements to inform the design:
-   a. Read the feature's plan file `features/plans/<slug>.md`. `/feature-create` normally captures the full source-issue content in its `## Requirements` section — prefer this over re-fetching the issue.
+   Then gather the specification to inform the design:
+   a. Read the feature's plan file `features/plans/<slug>.md`. `/feature-spec` normally captures the full source-issue content in its `## Requirements` section — prefer this over re-fetching the issue.
    b. If the plan file is missing or has no usable `## Requirements`, and the feature entry references a GitHub issue (e.g. contains `#6` or `Closes #6`), fetch it: run `git remote -v` to parse owner/repo from the fetch URL (HTTPS `https://github.com/owner/repo.git` or SSH `git@github.com:owner/repo.git`), then `gh issue view N --repo owner/repo --comments`.
    c. If a fetch is needed but the `git`/`gh` commands fail (not installed, auth error, repo not found, etc.), do not proceed. Tell the user what was attempted, what failed, and ask them how to continue — e.g. "This feature references issue #6 but I was unable to fetch it (`gh` returned: …). Please either fix the `gh` setup or paste the issue content here."
 
@@ -28,15 +32,15 @@ Steps:
 
 3. Decide whether to use deep planning mode:
    - Use `/plan` if: the feature is complex (multiple systems touched, significant unknowns, non-trivial architecture decisions), OR the user has asked for deeper thinking or planning (e.g. "use plan mode" or "this is a complex change").
-   - Skip `/plan` for straightforward features where the sub-tasks are obvious from the description.
+   - Skip `/plan` for straightforward features where the sub-tasks are obvious from the specification.
    - If using `/plan`: invoke it now before proceeding. The plan output will inform the sub-task breakdown.
 
-4. Before writing the plan, do enough research to produce a realistic sub-task breakdown:
+4. Before writing the design, do enough research to produce a realistic sub-task breakdown:
    - Read relevant existing code and data files.
    - If the feature involves external services, APIs, or unfamiliar areas of the codebase, do reconnaissance before drafting sub-tasks.
-   - If requirements are unclear, ask the user before writing the plan.
+   - If the specification is unclear, ask the user before writing the design.
 
-5. Flesh out the plan file `features/plans/<slug>.md`. It normally already exists (created by `/feature-create`) with a `## Requirements` section and a `## Design` placeholder. **Preserve the `## Requirements` section**, prepend a `## Handoff` section, replace the Design placeholder with the real design, and add a `## Sub-tasks` section. If the file does not exist, create it with all sections. Target structure:
+5. Flesh out the plan file `features/plans/<slug>.md`. It normally already exists (created by `/feature-spec`) with a `## Requirements` section and a `## Design` placeholder. **Preserve the `## Requirements` section**, prepend a `## Handoff` section, replace the Design placeholder with the real design, and add a `## Sub-tasks` section. If the file does not exist, create it with all sections. Target structure:
 
 ```markdown
 # <Feature title> — Feature Plan
@@ -44,7 +48,7 @@ Steps:
 ## Handoff
 
 **Last updated:** YYYY-MM-DD
-**Session summary:** Feature plan created. Implementation not yet started.
+**Session summary:** Design and plan created. Implementation not yet started.
 **Sub-task in progress:** None
 **First action next session:** Begin Sub-task 1
 **Open questions / decisions pending:** None
@@ -52,7 +56,7 @@ Steps:
 
 ## Requirements
 
-<Preserved from /feature-create. If absent and there are no requirements beyond
+<Preserved from /feature-spec. If absent and there are no requirements beyond
 the features/PENDING.md summary, this section may be omitted.>
 
 ## Design
@@ -77,4 +81,4 @@ and provide corrections before implementation begins.>
 
 Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md` as you discover it, not here. The Design section is the exception: it should capture the key decisions and rationale from the planning process.
 
-6. Summarise the plan to the user and confirm you are ready to begin sub-task 1. *Do not start implementation without user confirmation.*
+6. Summarise the design and sub-task plan to the user. Implementation is a separate step with no slash command of its own — *do not start implementing without user confirmation.*

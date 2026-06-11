@@ -1,6 +1,15 @@
 # Workflow guide
 
-This guide describes how to work through a software project using `devproc`. The approach is built around features: discrete pieces of work that are planned before they are implemented, checkpointed as they progress, and closed out once complete.
+This guide describes how to work through a software project using `devproc`. The approach is built around features: discrete pieces of work that are specified and designed before they are implemented, checkpointed as they progress, and closed out once complete.
+
+Each feature moves through a lifecycle, with a slash command for each stage:
+
+1. **Specify** (`/feature-spec`) — create the feature and record *what* it must do.
+2. **Design** (`/feature-design`) — decide *how* to build it and break it into sub-tasks.
+3. **Implement** — work through the sub-tasks (no slash command; `/feature-checkpoint` keeps state in sync as you go).
+4. **End** (`/feature-end`) — verify completion, close the feature out, and review the docs.
+
+`/feature-init` sets the model up once per repository before any of this.
 
 Best practice regarding git is to:
 
@@ -14,60 +23,60 @@ This guide describes driving the workflow yourself, one step at a time. You can 
 
 ---
 
-## Add a feature to the backlog
+## Specify a feature
 
-When you have a piece of work to track — from a GitHub issue, a design doc, or your own notes — add it to the project feature list. You should do this *either* when you are about to start work on it, *or* if this is a feature that is not covered by a GitHub issue (which would normally imply a small hobby project with less tracking).
+When you have a piece of work to track — from a GitHub issue, a design doc, or your own notes — specify it as a feature. This records *what* the feature must do, without yet deciding how. You should do this *either* when you are about to start work on it, *or* if this is a feature that is not covered by a GitHub issue (which would normally imply a small hobby project with less tracking).
 
 - With a description:
 
   ```
-  /feature-create "A short description of what you want to do"
+  /feature-spec "A short description of what you want to do"
   ```
 
 - From a GitHub issue by number:
 
   ```
-  /feature-create "issue 12"
+  /feature-spec "issue 12"
   ```
 
 - From a GitHub issue by description:
 
   ```
-  /feature-create "the issue about improving error messages"
+  /feature-spec "the issue about improving error messages"
   ```
 
   When an issue reference is used, Claude calls `git remote -v` to identify your repo and fetches the issue (and its comments) via `gh`, using its title for the feature and copying the full description plus any design/requirements-relevant comments into the plan file. `gh` must be configured — see [setup.md](setup.md).
 
-This adds an entry to `features/PENDING.md` with a slug (e.g. `[improve-error-messages]`) and creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section holds the captured issue content so you never need to re-open the issue.
+This adds an entry to `features/PENDING.md` with a slug (e.g. `[improve-error-messages]`) and creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section holds the captured specification so you never need to re-open the issue.
 
 ---
 
-## Start implementing a feature
+## Design a feature
 
-When you are ready to work on a feature:
+When you are ready to work on a feature, design it: Claude decides *how* it will be built and breaks the work into sub-tasks. This does not yet write any implementation.
 
 - If there is only one pending feature:
 
   ```
-  /feature-start
+  /feature-design
   ```
 
 - To name a specific feature:
 
   ```
-  /feature-start improve-error-messages
-  /feature-start "issue 12"
+  /feature-design improve-error-messages
+  /feature-design "issue 12"
   ```
 
-Claude reads the captured requirements in the plan file (fetching the GitHub issue only if they are missing), researches the relevant code, and fleshes out the design and sub-task breakdown in `features/plans/<slug>.md`.
+Claude reads the captured specification in the plan file (fetching the GitHub issue only if it is missing), researches the relevant code, and fleshes out the design and sub-task breakdown in `features/plans/<slug>.md`.
 
-**Review the plan before approving it.** The plan is presented to you before any implementation begins. This is the moment to correct the approach, adjust scope, or add constraints. Implementation does not start until you confirm.
+**Review the design before approving it.** The design and sub-task plan are presented to you before any implementation begins. This is the moment to correct the approach, adjust scope, or add constraints. Implementation does not start until you confirm.
 
 ---
 
-## Work through sub-tasks
+## Implement: work through sub-tasks
 
-Ask Claude to implement sub-tasks one at a time.
+Implementation has no slash command of its own — once the design is approved, ask Claude to implement the sub-tasks one at a time.
 
 - After each one completes, review whatever Claude did (and provide feedback or fix it); `git diff` or the VSCode git plugin are ideal for this.
 

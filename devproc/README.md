@@ -9,8 +9,8 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 | Type | Name | Description |
 |------|------|-------------|
 | Skill | `feature-init` | One-time setup: adds the feature model to `CLAUDE.md`, creates the `features/` directory (and migrates an older `FEATURES.md`/`plans/` layout) |
-| Skill | `feature-create` | Add a new feature to `features/PENDING.md` and create its plan file |
-| Skill | `feature-start` | Move a feature to `features/CURRENT.md` and flesh out its plan file |
+| Skill | `feature-spec` | Create a new feature in `features/PENDING.md` and write its specification into the plan file |
+| Skill | `feature-design` | Move a feature to `features/CURRENT.md` and write its design and sub-task plan |
 | Skill | `feature-checkpoint` | Sync all documentation and tracking to the current state |
 | Skill | `feature-end` | Mark a feature complete and move it to Completed |
 | Skill | `review-full` | Full-codebase code review |
@@ -51,30 +51,30 @@ One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, create
 
 ---
 
-### feature-create
+### feature-spec
 
-**Invoke with:** `/feature-create <description>`
+**Invoke with:** `/feature-spec <description>`
 
-Adds a new entry at the top of `features/PENDING.md`. Derives a lowercase-hyphenated slug from the description and appends it as a tag on the heading (e.g. `### My feature [my-feature]`). The list entry is kept to one or two sentences — implementation detail belongs in the plan file. It always creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section captures the full source-issue content (entire description plus any design/requirements-relevant comments) so a later session can resume from the plan file alone, without re-reading the issue.
+The first step of the lifecycle: create a feature and specify *what* it must do. Adds a new entry at the top of `features/PENDING.md`, deriving a lowercase-hyphenated slug from the description and appending it as a tag on the heading (e.g. `### My feature [my-feature]`). The list entry is kept to one or two sentences — the specification belongs in the plan file. It always creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section captures the full source-issue content (entire description plus any design/requirements-relevant comments) so a later session can resume from the plan file alone, without re-reading the issue.
 
 **Example:**
 ```
-/feature-create "Add dark mode support to the UI"
-/feature-create "issue 12"
+/feature-spec "Add dark mode support to the UI"
+/feature-spec "issue 12"
 ```
 
 ---
 
-### feature-start
+### feature-design
 
-**Invoke with:** `/feature-start [feature name or slug]`
+**Invoke with:** `/feature-design [feature name or slug]`
 
-Moves the named feature from `features/PENDING.md` to `features/CURRENT.md`, then fleshes out `features/plans/<slug>.md` — preserving the `## Requirements` section written by `/feature-create`, filling in the Design section, and adding a numbered sub-task list. The plan file includes a `## Handoff` section kept current so any session can resume without context from the previous one. If only one feature is pending, the argument can be omitted.
+The second step of the lifecycle: decide *how* the feature will be built. Moves the named feature from `features/PENDING.md` to `features/CURRENT.md`, then fleshes out `features/plans/<slug>.md` — preserving the `## Requirements` section written by `/feature-spec`, filling in the Design section, and adding a numbered sub-task list. The plan file includes a `## Handoff` section kept current so any session can resume without context from the previous one. Producing the design does not begin implementation — that is a separate step with no slash command. If only one feature is pending, the argument can be omitted.
 
 **Example:**
 ```
-/feature-start dark-mode-support
-/feature-start "issue 12"
+/feature-design dark-mode-support
+/feature-design "issue 12"
 ```
 
 ---

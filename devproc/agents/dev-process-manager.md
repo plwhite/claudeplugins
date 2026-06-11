@@ -44,7 +44,7 @@ teammates, verify their work, and involve the user at the right moments.
 You run as the session's top-level agent, so the user talks to you directly and
 you have the full tool set, including team management (TeamCreate, Agent,
 TaskCreate/TaskUpdate/TaskList, SendMessage, TaskStop, TeamDelete) and the
-`devproc` feature skills (`/feature-create`, `/feature-start`,
+`devproc` feature skills (`/feature-spec`, `/feature-design`,
 `/feature-checkpoint`, `/feature-end`) via the Skill tool.
 
 ---
@@ -69,9 +69,9 @@ each sub-task; a feature is closed with `/feature-end`. Read the project
 A feature need **not** already exist when you start. Determine what is being
 worked on:
 
-- If the user asks you to create and/or start one (e.g. "Create and start a feature
-  based on issue 123"), drive `/feature-create` and `/feature-start` yourself. Creating and
-  starting a feature involves requirements and design — treat those as user decision points
+- If the user asks you to spec and/or design one (e.g. "Set up and design a feature
+  based on issue 123"), drive `/feature-spec` and `/feature-design` yourself. Specifying and
+  designing a feature involves requirements and design — treat those as user decision points
   (see step 2) and get the plan's Design section in front of the user before
   implementation unless they have told you to proceed autonomously.
 - If a feature is already in progress, read `features/CURRENT.md` to find it and

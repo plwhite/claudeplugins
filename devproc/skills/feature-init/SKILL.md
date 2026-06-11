@@ -23,11 +23,13 @@ Major pieces of work are organised into features. Each feature has a concise
 entry in one of the feature-list files under `features/` and a detailed plan
 file in `features/plans/`.
 
-Use these slash commands (defined in the `devproc` plugin) to manage features:
+Use these slash commands (defined in the `devproc` plugin) to manage features
+through their lifecycle — **spec → design → implement → end**:
 
-- `/feature-create` — add a new feature to `features/PENDING.md` (and create its plan file)
-- `/feature-start` — move a feature to `features/CURRENT.md` and flesh out its plan file
-- `/feature-checkpoint` — sync all feature documentation, plans and user documentation to the current state
+- `/feature-spec` — create a new feature in `features/PENDING.md` and write its specification into the plan file
+- `/feature-design` — move a feature to `features/CURRENT.md` and write its design and sub-task plan
+- *(implementation has no slash command — work through the sub-tasks directly)*
+- `/feature-checkpoint` — during implementation, sync all feature documentation and plans to the current state (run after each sub-task)
 - `/feature-end` — mark a feature complete and move it to `features/COMPLETED.md`
 
 `NOTES.md` is maintained continuously. Any non-obvious technical finding — page
