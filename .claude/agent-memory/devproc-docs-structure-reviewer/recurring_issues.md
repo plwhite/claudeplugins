@@ -137,6 +137,18 @@ Verified clean / good:
 
 Status drift now SEVEN occurrences across sixteen reviews — firmly a process bug, not per-feature.
 
+## Nineteenth review (2026-06-11) — split-features-md four-fix verification pass
+
+All four fixes from eighteenth review verified correct; feature converged:
+1. README.md Documentation table: new `features/` row added between devproc/README.md and setup-files rows (line 34), links to features/, mentions features/plans/. MINOR RESOLVED.
+2. plugin.json: description reworded to "skills to spec, design, implement, and end features (spec → design → implement → end)". Framing now matches the rest of the suite. MINOR RESOLVED.
+3. docs/workflow.md line 28: convoluted either/or replaced with two short sentences. SUGGESTION RESOLVED.
+4. devproc/README.md line 134: dpm alias documented; line 136 stale "creating and starting" → "specifying and designing". SUGGESTION RESOLVED.
+
+NIT (new, very low): devproc/README.md line 134 phrases the alias as "`claude-run --manager`, which also accepts the `dpm` alias" — slightly imprecise: `dpm` is an alias for the `--agent` value (`--agent dpm` = `--agent dev-process-manager`), not for `--manager`. capabilities.md/container.md phrase it as "`--agent dpm` is accepted as an equivalent short alias". Harmless in context. Not worth a fix unless tidying.
+
+No new issues otherwise. Full hierarchy cross-resolves. No orphans. Feature converged — 4 → 0 actionable findings.
+
 ## Eighteenth review (2026-06-11) — split-features-md (#14) close-out
 
 Scope: FEATURES.md → features/ directory split; plans/ → features/plans/; feature-create→feature-spec, feature-start→feature-design; flow reframed spec → design → implement → end.
