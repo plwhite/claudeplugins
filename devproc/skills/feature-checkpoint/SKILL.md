@@ -11,13 +11,13 @@ Bring all project documentation up to date with the current state of the feature
 Before proceeding, check that CLAUDE.md contains a Feature Model section.
 If it doesn't, tell the user to run /feature-init first and stop.
 
-The feature to checkpoint is: $ARGUMENTS (if blank, use whichever feature is currently In Progress in `FEATURES.md`)
+The feature to checkpoint is: $ARGUMENTS (if blank, use whichever feature is currently in progress in `features/CURRENT.md`)
 
 Steps:
 
-1. Read `FEATURES.md` to identify the in-progress feature and its plan file reference.
+1. Read `features/CURRENT.md` to identify the in-progress feature and its plan file reference.
 
-2. Read the plan file (`plans/<slug>.md`). Update it to reflect the actual current state:
+2. Read the plan file (`features/plans/<slug>.md`). Update it to reflect the actual current state:
    - Mark completed sub-tasks with ✓ and a completion date.
    - Move the **▶ NEXT:** marker to the next incomplete sub-task if applicable.
    - For any sub-task that is *partially* complete, add indented bullet points beneath it recording what has been done and what remains. Example:
@@ -53,7 +53,7 @@ Steps:
 
    3. Check `CLAUDE.md` current status section. Update it to accurately reflect what is done and what is next. Keep it high-level — one paragraph per component.
 
-   4. Verify `FEATURES.md` In Progress entry is still accurate (description has not drifted from what the feature is actually doing).
+   4. Verify the `features/CURRENT.md` entry is still accurate (description has not drifted from what the feature is actually doing).
 
 5. Report a brief summary of what was updated.
 

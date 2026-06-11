@@ -19,9 +19,9 @@ Additional requirement from the feature request: `/feature-create` must copy the
 ## Handoff
 
 **Last updated:** 2026-06-11
-**Session summary:** Sub-tasks 1–2 done. `feature-init` rewritten for the `features/` layout with idempotent migration; `feature-create` now always writes a short `features/PENDING.md` entry plus a `features/plans/<slug>.md` slug file whose `## Requirements` section captures the full relevant issue content.
-**Sub-task in progress:** None (Sub-task 2 complete)
-**First action next session:** Begin Sub-task 3 (update `feature-start`, `feature-checkpoint`, `feature-end`).
+**Session summary:** Sub-tasks 1–3 done. All five feature skills now use the `features/` layout: `feature-start` augments the pre-existing slug file (preserving Requirements) and moves entries PENDING→CURRENT; `feature-checkpoint`/`feature-end` repointed to `features/CURRENT.md`/`COMPLETED.md` and `features/plans/<slug>.md`. The `plans/` mention in the review-branch/review-component skills was also fixed.
+**Sub-task in progress:** None (Sub-task 3 complete)
+**First action next session:** Begin Sub-task 4 (update supporting docs: README, workflow.md, plugin.json, agents, workspace CLAUDE.md).
 **Open questions / decisions pending:** None — all resolved (see "Open decisions").
 **Dead ends to avoid:** None
 
@@ -135,10 +135,10 @@ completes the feature and validates the migration logic end-to-end.
 
 1. ✓ (2026-06-11) **Update `feature-init`** — new CLAUDE.md template and FEATURES structure describing the `features/` layout, plus idempotent migration logic (move top-level `plans`/`notes` → `features/plans`, split `FEATURES.md` into the four list files, update CLAUDE.md).
 2. ✓ (2026-06-11) **Update `feature-create`** — always create `features/plans/<slug>.md`; copy the full issue body and relevant comments into its `## Requirements` section; write the short entry to `features/PENDING.md`.
-3. **Update `feature-start`, `feature-checkpoint`, `feature-end`** — operate on `features/{CURRENT,PENDING,DEFERRED,COMPLETED}.md` and `features/plans/<slug>.md` instead of `FEATURES.md` and `plans/<slug>.md`.
+3. ✓ (2026-06-11) **Update `feature-start`, `feature-checkpoint`, `feature-end`** — operate on `features/{CURRENT,PENDING,DEFERRED,COMPLETED}.md` and `features/plans/<slug>.md` instead of `FEATURES.md` and `plans/<slug>.md`. Also fixed the `plans/` reference in the `review-branch`/`review-component` skills.
 4. **Update supporting docs** — `devproc/README.md`, `docs/workflow.md`, `plugin.json`, `dev-process-manager.md`, `docs-structure-reviewer.md`, `code-review-architectural.md`, and the workspace `CLAUDE.md`.
 5. **Migrate this repo** — apply the new scheme here: create `features/`, split `FEATURES.md`, move `plans/*.md` into `features/plans/`, delete top-level `FEATURES.md` and `plans/`, update root `CLAUDE.md`; verify.
 
-**▶ NEXT:** Sub-task 3
+**▶ NEXT:** Sub-task 4
 
 > Run `/feature-checkpoint` after each sub-task completes.
