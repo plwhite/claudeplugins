@@ -137,6 +137,18 @@ Verified clean / good:
 
 Status drift now SEVEN occurrences across sixteen reviews — firmly a process bug, not per-feature.
 
+## Eighteenth review (2026-06-11) — split-features-md (#14) close-out
+
+Scope: FEATURES.md → features/ directory split; plans/ → features/plans/; feature-create→feature-spec, feature-start→feature-design; flow reframed spec → design → implement → end.
+
+Verified clean: all LIVE docs migrated correctly — root CLAUDE.md, docs/workflow.md, docs/capabilities.md, devproc/README.md, all 8 SKILL.md, dev-process-manager.md agent, feature-init template, code-review-architectural agent, plugin.json. No stale FEATURES.md / top-level plans/ / feature-create / feature-start references in live docs. (Stale refs only in out-of-scope historical features/plans/*.md and agent-memory snapshots — correctly ignored.) All README links + setup.md anchors resolve. No orphans introduced. No close-out status drift (CURRENT.md says "No feature currently in progress", split-features-md in COMPLETED dated 2026-06-11) — drift pattern not recurrent this cycle.
+
+Findings (all low severity):
+- MINOR: README.md Documentation table does not surface the `features/` directory at all. A new contributor cannot discover where feature tracking lives from the landing page (it is described in CLAUDE.md but README never points there). Pre-existing (FEATURES.md was never in the README table either) but worth flagging now that features/ is a directory with its own structure.
+- SUGGESTION: docs/workflow.md "Specify a feature" (line 28) sentence is convoluted ("You should do this *either* when you are about to start work on it, *or* if this is a feature that is not covered by a GitHub issue (which would normally imply a small hobby project with less tracking)."). Parenthetical reasoning is hard to parse. Carryover-adjacent to the eighth-review unclosed-paren note (now closed, but the sentence remains awkward).
+- SUGGESTION: Terminology — "dev process manager" (prose) / "dev-process-manager" (slug) / "dpm" alias still three forms (carryover from sixteenth review, deferred). No action unless user wants it.
+- NIT: plugin.json description still frames lifecycle as "Pending → In Progress → Completed" (status flow) while all other docs now lead with "spec → design → implement → end" (action flow). Both valid but inconsistent framing vs the rest of the suite.
+
 ## Seventeenth review (2026-06-03) — dev-process-manager four-fix verification pass
 
 All four fixes verified correct; feature converged:

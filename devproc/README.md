@@ -131,9 +131,9 @@ Runs a code review scoped to files changed in the current feature branch, derive
 
 ### dev-process-manager
 
-**Run as the session agent with:** `claude --agent dev-process-manager` (or, in container mode, `claude-run --manager` — see [docs/container.md](../docs/container.md)).
+**Run as the session agent with:** `claude --agent dev-process-manager` (or, in container mode, `claude-run --manager`, which also accepts the `dpm` alias — see [docs/container.md](../docs/container.md)).
 
-A top-level Opus orchestrator for the feature workflow. Unlike the review agents — which are sub-agents invoked by a skill — this agent *is* the session you talk to. It establishes the feature being worked on (creating and starting one itself if asked), agrees an autonomy boundary with you (e.g. "do sub-tasks 1–4, then check with me"), then for each sub-task spawns a teammate (normally Sonnet), briefs it to run `/feature-checkpoint` on completion, reviews the actual changes before accepting them, and shuts the teammate down. It pauses for you at requirement/design decisions and when you ask to review something. See [docs/capabilities.md](../docs/capabilities.md#dev-process-manager) for the task-oriented guide.
+A top-level Opus orchestrator for the feature workflow. Unlike the review agents — which are sub-agents invoked by a skill — this agent *is* the session you talk to. It establishes the feature being worked on (specifying and designing one itself if asked), agrees an autonomy boundary with you (e.g. "do sub-tasks 1–4, then check with me"), then for each sub-task spawns a teammate (normally Sonnet), briefs it to run `/feature-checkpoint` on completion, reviews the actual changes before accepting them, and shuts the teammate down. It pauses for you at requirement/design decisions and when you ask to review something. See [docs/capabilities.md](../docs/capabilities.md#dev-process-manager) for the task-oriented guide.
 
 ---
 

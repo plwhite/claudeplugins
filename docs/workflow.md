@@ -25,7 +25,7 @@ This guide describes driving the workflow yourself, one step at a time. You can 
 
 ## Specify a feature
 
-When you have a piece of work to track — from a GitHub issue, a design doc, or your own notes — specify it as a feature. This records *what* the feature must do, without yet deciding how. You should do this *either* when you are about to start work on it, *or* if this is a feature that is not covered by a GitHub issue (which would normally imply a small hobby project with less tracking).
+When you have a piece of work to track — from a GitHub issue, a design doc, or your own notes — specify it as a feature. This records *what* the feature must do, without yet deciding how. Specify a feature when you are about to start work on it. You can also specify features that have no backing GitHub issue — common in smaller projects with lighter tracking.
 
 - With a description:
 
