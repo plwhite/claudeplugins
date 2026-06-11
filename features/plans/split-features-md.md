@@ -19,9 +19,9 @@ Additional requirement from the feature request: `/feature-create` must copy the
 ## Handoff
 
 **Last updated:** 2026-06-11
-**Session summary:** Sub-tasks 1–4 done. All five skills plus the review skills, README, workflow.md, plugin.json, and the three affected agents now describe/use the `features/` layout. Workspace `CLAUDE.md` intentionally left until Sub-task 5, where the repo migration rewrites it.
-**Sub-task in progress:** None (Sub-task 4 complete)
-**First action next session:** Begin Sub-task 5 — migrate this repo by running the new `/feature-init` migration logic by hand (create `features/`, split `FEATURES.md`, move `plans/` → `features/plans/`, delete originals, rewrite root `CLAUDE.md`), then verify.
+**Session summary:** All five sub-tasks complete. The `devproc` plugin (skills, agents, docs, plugin.json) now defines the `features/` model, and this repo has been migrated to it (`FEATURES.md` split into `features/{CURRENT,PENDING,DEFERRED,COMPLETED}.md`; `plans/` moved to `features/plans/`; root `CLAUDE.md` rewritten). No stale references remain in live docs.
+**Sub-task in progress:** None — feature implementation complete.
+**First action next session:** Run `/feature-end` (it will trigger a docs-structure review that also refreshes the agent-memory snapshots still describing the old layout).
 **Open questions / decisions pending:** None — all resolved (see "Open decisions").
 **Dead ends to avoid:** None
 
@@ -137,8 +137,8 @@ completes the feature and validates the migration logic end-to-end.
 2. ✓ (2026-06-11) **Update `feature-create`** — always create `features/plans/<slug>.md`; copy the full issue body and relevant comments into its `## Requirements` section; write the short entry to `features/PENDING.md`.
 3. ✓ (2026-06-11) **Update `feature-start`, `feature-checkpoint`, `feature-end`** — operate on `features/{CURRENT,PENDING,DEFERRED,COMPLETED}.md` and `features/plans/<slug>.md` instead of `FEATURES.md` and `plans/<slug>.md`. Also fixed the `plans/` reference in the `review-branch`/`review-component` skills.
 4. ✓ (2026-06-11) **Update supporting docs** — `devproc/README.md`, `docs/workflow.md`, `plugin.json`, `dev-process-manager.md`, `docs-structure-reviewer.md`, `code-review-architectural.md`. (The workspace `CLAUDE.md` is deferred to Sub-task 5, where the repo migration updates its `## Feature model` section as part of dog-fooding.)
-5. **Migrate this repo** — apply the new scheme here: create `features/`, split `FEATURES.md`, move `plans/*.md` into `features/plans/`, delete top-level `FEATURES.md` and `plans/`, update root `CLAUDE.md` (feature-model section, plugin descriptions, current status); verify.
+5. ✓ (2026-06-11) **Migrate this repo** — applied the new scheme here: created `features/` with the four list files, `git mv plans → features/plans`, split `FEATURES.md` (In progress → CURRENT, Completed → COMPLETED, others empty), deleted `FEATURES.md`, and rewrote root `CLAUDE.md` (feature-model section, plugin skill descriptions, current status). Verified no stale references remain in live docs.
 
-**▶ NEXT:** Sub-task 5
+**▶ NEXT:** All sub-tasks complete — ready for `/feature-end`.
 
 > Run `/feature-checkpoint` after each sub-task completes.

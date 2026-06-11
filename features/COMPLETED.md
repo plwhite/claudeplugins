@@ -1,30 +1,9 @@
-# Project features
+# Completed features
 
-Features being developed for this project. Each feature has a level three (`###`) heading and a short, normally one-paragraph description that explains what the feature is. The feature heading should have a slug (such as `initial-development` or `code-coverage-00` so the plan can be found when created.
-
----
-
-## In progress
-
-### Split FEATURES.md into separate files to save tokens [split-features-md]
-
-Replace the single `FEATURES.md` with a `features/` directory holding `CURRENT.md`, `PENDING.md`, `BLOCKED.md` and `COMPLETED.md`, so the large completed list need not be read into context every session. Also rename the `notes`/`plans` slug directory to `features`, make `/feature-create` always create a slug file containing the full issue content, and update `/feature-init` to migrate existing setups. See #14. Sub-task detail in [plans/split-features-md.md](plans/split-features-md.md).
+Features that have been completed, described to reflect what was actually
+developed. Headings must end with the date of completion in YYYY-MM-DD format.
 
 ---
-
-## Pending
-
-*Features that are waiting for development.*
-
----
-
-## Explicitly deferred
-
-*Features that are explicitly deferred; these are not expected to happen but may be resurrected.*
-
----
-
-## Completed
 
 ### Create dev process manager agent [dev-process-manager] — 2026-06-03
 
