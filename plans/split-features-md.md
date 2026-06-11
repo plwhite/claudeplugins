@@ -19,15 +19,21 @@ Additional requirement from the feature request: `/feature-create` must copy the
 ## Handoff
 
 **Last updated:** 2026-06-11
-**Session summary:** Feature plan created. Design drafted and all three open decisions resolved with the user (subdirectory layout, `DEFERRED.md`, full-relevant-content slug files). Implementation not yet started.
-**Sub-task in progress:** None
-**First action next session:** Begin Sub-task 1 (update `feature-init`).
+**Session summary:** Design finalised; all three decisions resolved. Sub-task 1 done — `feature-init` rewritten for the `features/` layout (new CLAUDE.md template, four list-file templates, idempotent migration of `FEATURES.md` + top-level `plans`/`notes`).
+**Sub-task in progress:** None (Sub-task 1 complete)
+**First action next session:** Begin Sub-task 2 (update `feature-create`).
 **Open questions / decisions pending:** None — all resolved (see "Open decisions").
 **Dead ends to avoid:** None
 
 ## Design
 
 ### Goal
+
+**Primary deliverable: the plugin.** The objective is not merely to change this
+repo, but to update the `devproc` plugin (skills, agents, documentation) so that
+*every* project using the plugin adopts the new `features/` model — both via
+`/feature-init` migration of existing projects and as the default for new ones.
+Migrating this repo (Sub-task 5) is dog-fooding that validates the change.
 
 Split the single, ever-growing `FEATURES.md` into a `features/` directory of
 smaller files so that the large Completed list no longer has to be read into
@@ -127,12 +133,12 @@ completes the feature and validates the migration logic end-to-end.
 
 ## Sub-tasks
 
-1. **Update `feature-init`** — new CLAUDE.md template and FEATURES structure describing the `features/` layout, plus idempotent migration logic (move top-level `plans`/`notes` → `features/plans`, split `FEATURES.md` into the four list files, update CLAUDE.md).
+1. ✓ (2026-06-11) **Update `feature-init`** — new CLAUDE.md template and FEATURES structure describing the `features/` layout, plus idempotent migration logic (move top-level `plans`/`notes` → `features/plans`, split `FEATURES.md` into the four list files, update CLAUDE.md).
 2. **Update `feature-create`** — always create `features/plans/<slug>.md`; copy the full issue body and relevant comments into its `## Requirements` section; write the short entry to `features/PENDING.md`.
 3. **Update `feature-start`, `feature-checkpoint`, `feature-end`** — operate on `features/{CURRENT,PENDING,DEFERRED,COMPLETED}.md` and `features/plans/<slug>.md` instead of `FEATURES.md` and `plans/<slug>.md`.
 4. **Update supporting docs** — `devproc/README.md`, `docs/workflow.md`, `plugin.json`, `dev-process-manager.md`, `docs-structure-reviewer.md`, `code-review-architectural.md`, and the workspace `CLAUDE.md`.
 5. **Migrate this repo** — apply the new scheme here: create `features/`, split `FEATURES.md`, move `plans/*.md` into `features/plans/`, delete top-level `FEATURES.md` and `plans/`, update root `CLAUDE.md`; verify.
 
-**▶ NEXT:** Sub-task 1
+**▶ NEXT:** Sub-task 2
 
 > Run `/feature-checkpoint` after each sub-task completes.
