@@ -2,7 +2,9 @@
 
 ## Current status
 
-**In progress: `split-features-md` (#14).** Replaced the single `FEATURES.md` with a `features/` directory: four status-split list files (`CURRENT.md`, `PENDING.md`, `DEFERRED.md`, `COMPLETED.md`) plus the per-feature plan files moved into a `features/plans/` subdirectory, so the large completed list need not be read into context every session. All six sub-tasks done: the feature skills migrate older layouts and always capture the full source-issue spec in the plan file; this repo is migrated; and the lifecycle skills were renamed `feature-create`→`feature-spec` and `feature-start`→`feature-design` (lifecycle: spec → design → implement → end). Ready for `/feature-end`. See [features/plans/split-features-md.md](features/plans/split-features-md.md).
+**No feature currently in progress.**
+
+`split-features-md` completed 2026-06-11 — replaced the single `FEATURES.md` with a `features/` directory (status-split list files `CURRENT.md`/`PENDING.md`/`DEFERRED.md`/`COMPLETED.md` plus per-feature plans under `features/plans/`), so the large completed list no longer loads into context every session. `/feature-init` migrates older layouts; feature creation captures the full source-issue spec in the plan file. The lifecycle skills were also renamed `feature-create`→`feature-spec` and `feature-start`→`feature-design` (flow: spec → design → implement → end).
 
 `dev-process-manager` completed 2026-06-03 — added a top-level Opus "dev process manager" agent (`claude --agent dev-process-manager` / `claude-run --manager`) that orchestrates the feature workflow, spawning a teammate per sub-task and reviewing their work; `claude-run` gained `--manager`/`--agent`/`--model` options passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`.
 
