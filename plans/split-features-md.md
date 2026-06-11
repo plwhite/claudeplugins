@@ -16,6 +16,123 @@ From issue #14 (verbatim):
 
 Additional requirement from the feature request: `/feature-create` must copy the **whole content** of the issue description into the slug file (not just a summary), together with any relevant information from the comments on the issue.
 
+## Handoff
+
+**Last updated:** 2026-06-11
+**Session summary:** Feature plan created. Design drafted and all three open decisions resolved with the user (subdirectory layout, `DEFERRED.md`, full-relevant-content slug files). Implementation not yet started.
+**Sub-task in progress:** None
+**First action next session:** Begin Sub-task 1 (update `feature-init`).
+**Open questions / decisions pending:** None — all resolved (see "Open decisions").
+**Dead ends to avoid:** None
+
 ## Design
 
-*To be fleshed out when the feature starts (`/feature-start`).*
+### Goal
+
+Split the single, ever-growing `FEATURES.md` into a `features/` directory of
+smaller files so that the large Completed list no longer has to be read into
+context every session, and consolidate the per-feature slug/plan files into the
+same directory. Update all five feature skills, the dev-process-manager agent,
+and the supporting documentation to match, and provide a migration path in
+`/feature-init` for existing projects (including this repo).
+
+### Target layout
+
+```
+features/
+  CURRENT.md       ← the In-progress feature(s)        (was FEATURES.md "## In progress")
+  PENDING.md       ← features waiting for development   (was "## Pending")
+  DEFERRED.md      ← deferred work (incl. blocked)       (was "## Explicitly deferred")
+  COMPLETED.md     ← completed features, dated          (was "## Completed")
+  plans/
+    <slug>.md      ← per-feature plan/slug files        (were in plans/)
+```
+
+The four list files replace `FEATURES.md`. The per-feature plan files (currently
+`plans/<slug>.md`) move into a `plans/` **subdirectory** of `features/` and
+become `features/plans/<slug>.md`. Keeping them in their own subdirectory cleanly
+separates the small, frequently-read list files from the slug files and removes
+any possibility of a slug colliding with a list-file name. The top-level `plans/`
+directory (a confusing sibling of `FEATURES.md`) is thereby eliminated, satisfying
+the issue's "the notes directory is a bad name" intent without overloading the
+`features/` root.
+
+`NOTES.md` (the continuously-maintained findings file) is unaffected and stays
+at the project root — it is a different thing from the slug directory the issue
+calls "notes".
+
+### Section → file mapping & headings
+
+Each list file is self-contained with its own top-of-file explanatory blurb and
+the level-3 (`###`) feature entries that were previously under the corresponding
+heading. `CURRENT.md` keeps the "normally only one feature" guidance;
+`COMPLETED.md` keeps the "headings end with YYYY-MM-DD" rule. The old "Explicitly
+deferred" section becomes `DEFERRED.md`: there is no separate "blocked" file —
+being blocked is simply one reason a feature is deferred, so `DEFERRED.md` covers
+both.
+
+### `/feature-create` change
+
+Currently `/feature-create` only *optionally* creates a plan file (when
+pre-given requirements are too long for the FEATURES.md entry). New behaviour:
+it **always** creates `features/plans/<slug>.md`, and when the feature came from a
+GitHub issue it copies everything relevant into a `## Requirements` section of
+that slug file — not just the one-or-two-sentence summary that goes into
+`PENDING.md`. Specifically: the **entire** issue description verbatim (nothing in
+it is assumed irrelevant), plus any comment that bears on design or requirements
+(e.g. "we should use tool X", "we must ensure Y holds"). Comments that are mere
+reactions or scheduling chatter ("great idea", "let's wait until next month") are
+omitted. The objective is that a later session can pick up the feature from the
+slug file alone, without re-reading the GitHub issue. The PENDING.md entry stays
+short and links to the slug file.
+
+### `/feature-init` migration
+
+`/feature-init` becomes idempotent and migration-aware. On a project that still
+has the old layout it must:
+1. If a top-level slug directory exists (`plans/` or the older `notes/`), move it
+   to `features/plans/` (preserving its contents).
+2. If `FEATURES.md` exists, split its four sections into
+   `features/{CURRENT,PENDING,DEFERRED,COMPLETED}.md` (mapping "Explicitly
+   deferred" → DEFERRED), then remove `FEATURES.md`.
+3. Update the `## Feature model` section of `CLAUDE.md` to describe the new
+   layout.
+It must be safe to re-run after migration (detect the new layout and do
+nothing destructive).
+
+### Documentation touch-points
+
+`devproc/README.md`, `docs/workflow.md`, `devproc/.claude-plugin/plugin.json`,
+`devproc/agents/dev-process-manager.md`, `devproc/agents/docs-structure-reviewer.md`,
+`devproc/agents/code-review-architectural.md` (the `plans/` mention), and the
+workspace `CLAUDE.md` all reference `FEATURES.md` / `plans/` and must be updated.
+
+### Dog-fooding this repo
+
+The final sub-task migrates this repository itself using the new scheme: create
+`features/`, split the current `FEATURES.md`, move `plans/*.md` into
+`features/plans/`, delete the top-level `FEATURES.md` and `plans/`, and update the
+root `CLAUDE.md`. This both
+completes the feature and validates the migration logic end-to-end.
+
+### Open decisions (all resolved)
+
+1. **Directory layout.** RESOLVED — the four list files live at the `features/`
+   root; per-feature slug files live in a `features/plans/` subdirectory.
+2. **Deferred vs blocked.** RESOLVED — use `DEFERRED.md`, not `BLOCKED.md`; being
+   blocked is just one reason a feature is deferred, so a single file covers both.
+3. **Issue content in the slug file.** RESOLVED — copy the entire description
+   verbatim plus every comment bearing on design/requirements; omit reactions and
+   scheduling chatter. Goal: resume from the slug file without re-reading the issue.
+
+## Sub-tasks
+
+1. **Update `feature-init`** — new CLAUDE.md template and FEATURES structure describing the `features/` layout, plus idempotent migration logic (move top-level `plans`/`notes` → `features/plans`, split `FEATURES.md` into the four list files, update CLAUDE.md).
+2. **Update `feature-create`** — always create `features/plans/<slug>.md`; copy the full issue body and relevant comments into its `## Requirements` section; write the short entry to `features/PENDING.md`.
+3. **Update `feature-start`, `feature-checkpoint`, `feature-end`** — operate on `features/{CURRENT,PENDING,DEFERRED,COMPLETED}.md` and `features/plans/<slug>.md` instead of `FEATURES.md` and `plans/<slug>.md`.
+4. **Update supporting docs** — `devproc/README.md`, `docs/workflow.md`, `plugin.json`, `dev-process-manager.md`, `docs-structure-reviewer.md`, `code-review-architectural.md`, and the workspace `CLAUDE.md`.
+5. **Migrate this repo** — apply the new scheme here: create `features/`, split `FEATURES.md`, move `plans/*.md` into `features/plans/`, delete top-level `FEATURES.md` and `plans/`, update root `CLAUDE.md`; verify.
+
+**▶ NEXT:** Sub-task 1
+
+> Run `/feature-checkpoint` after each sub-task completes.
