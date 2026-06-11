@@ -12,7 +12,9 @@ Features being developed for this project. Each feature has a level three (`###`
 
 ## Pending
 
-*No features pending.*
+### Split FEATURES.md into separate files to save tokens [split-features-md]
+
+Replace the single `FEATURES.md` with a `features/` directory holding `CURRENT.md`, `PENDING.md`, `BLOCKED.md` and `COMPLETED.md`, so the large completed list need not be read into context every session. Also rename the `notes`/`plans` slug directory to `features`, make `/feature-create` always create a slug file containing the full issue content, and update `/feature-init` to migrate existing setups. See #14. Detailed requirements in [plans/split-features-md.md](plans/split-features-md.md).
 
 ---
 
