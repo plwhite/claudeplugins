@@ -182,9 +182,15 @@ Examples of what to record:
 
 # Memory
 
-Store findings in `.claude/agent-memory/docs-structure-reviewer/`. Record:
+Store findings in `$CLAUDE_PROJECT_DIR/.claude/agent-memory/devproc-docs-structure-reviewer/`
+(the `devproc-` prefix is the plugin namespace this agent runs under, and matches
+the directory the `memory: project` system provisions). Always resolve this path
+against `$CLAUDE_PROJECT_DIR` (the repository root), never against the current
+working directory, so memory lands in the same place no matter where the agent is
+invoked from. Record:
 - Structural conventions observed (entry points, linking patterns, doc types)
 - Recurring issues and whether they were subsequently fixed
 - Project-specific terminology affecting documentation standards
 
-Use a `MEMORY.md` index file. Read it at the start of each review to track improvement over time.
+Use a `$CLAUDE_PROJECT_DIR/.claude/agent-memory/devproc-docs-structure-reviewer/MEMORY.md`
+index file. Read it at the start of each review to track improvement over time.

@@ -31,6 +31,11 @@ type: project
 - bin/ = 4 wrapper scripts (claude-build/run/attach/stop); docker/ = Dockerfile + baked config; both inventoried in CLAUDE.md ## Container mode
 - Out-of-scope for audits: historical plan files under `features/plans/*.md` and `.claude/agent-memory/` snapshots retain old names/paths as point-in-time records.
 
+## Agent memory path (post #23, docs-reviewer-memory-path, 2026-06-16)
+
+- RESOLVED (twentieth review re-audit, 2026-06-16): the prompt prose now points to `$CLAUDE_PROJECT_DIR/.claude/agent-memory/devproc-docs-structure-reviewer/` (both refs, lines 185/195) with a parenthetical explaining the `devproc-` plugin-namespace prefix. NOTES.md and COMPLETED.md updated to match. The LIVE tree is `devproc-docs-structure-reviewer/` (full review history). The stale unprefixed `docs-structure-reviewer/` tree remains on disk — flagged to user for manual deletion (agent does not delete files); not a doc defect.
+
 ## Review history (older entries: see recurring_issues.md and git log)
 
+- 2026-06-16: Twentieth review (docs-reviewer-memory-path, #23 close-out). Feature-tracking files (CURRENT/COMPLETED/PENDING/DEFERRED.md, CLAUDE.md status, NOTES.md, plan) all internally consistent and well-formed; no close-out status drift. Agent prompt memory path correctly anchored to $CLAUDE_PROJECT_DIR. Findings: orphaned duplicate memory tree (docs-structure-reviewer/ vs devproc-docs-structure-reviewer/); prompt path string does not match the runtime-namespaced live dir; features/ still not in README Documentation table (carryover, now MINOR/recurring).
 - 2026-06-11: Eighteenth review (split-features-md, #14 close-out). Verified all live docs migrated to features/ layout + spec/design rename with NO stale references. Live docs all consistent. Findings were minor/suggestion only (see recurring_issues.md). README Documentation table does not surface features/ directory — navigability gap (feature tracking not discoverable from landing page).
