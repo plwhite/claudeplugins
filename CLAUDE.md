@@ -4,6 +4,8 @@
 
 **No feature currently in progress.**
 
+`docs-reviewer-memory-path` completed 2026-06-16 — fixed the `docs-structure-reviewer` agent so it stores memory at a `$CLAUDE_PROJECT_DIR`-anchored path (`$CLAUDE_PROJECT_DIR/.claude/agent-memory/docs-structure-reviewer/`) rather than relative to cwd, which had scattered stray memory trees when the agent was run from subdirectories (#23).
+
 `split-features-md` completed 2026-06-11 — replaced the single `FEATURES.md` with a `features/` directory (status-split list files `CURRENT.md`/`PENDING.md`/`DEFERRED.md`/`COMPLETED.md` plus per-feature plans under `features/plans/`), so the large completed list no longer loads into context every session. `/feature-init` migrates older layouts; feature creation captures the full source-issue spec in the plan file. The lifecycle skills were also renamed `feature-create`→`feature-spec` and `feature-start`→`feature-design` (flow: spec → design → implement → end).
 
 `dev-process-manager` completed 2026-06-03 — added a top-level Opus "dev process manager" agent (`claude --agent dev-process-manager` / `claude-run --manager`) that orchestrates the feature workflow, spawning a teammate per sub-task and reviewing their work; `claude-run` gained `--manager`/`--agent`/`--model` options passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`.
@@ -127,7 +129,7 @@ These apply at all times, not just when completing features:
 
     - `CURRENT.md` — feature(s) in progress (normally exactly one)
     - `PENDING.md` — features waiting for development
-    - `DEFERRED.md` — features explicitly deferred, including those blocked by a dependency
+    - `DEFERRED.md` — features explicitly deferred, including those blocked by a dependency (not expected to happen, but may be resurrected)
     - `COMPLETED.md` — completed features; headings end with the completion date in YYYY-MM-DD format
 
 - **`features/plans/<slug>.md`**
@@ -136,11 +138,11 @@ These apply at all times, not just when completing features:
 
     - Handoff (session state — last updated date, summary, current sub-task, first action next session, open questions, dead ends)
 
-    - Requirements (the full relevant content from the source issue, if any)
+    - Requirements (the full relevant content from the source issue, if the feature came from one — enough to resume without re-reading the issue)
 
     - Design (implementation strategy)
 
-    - Subtask list with short and status markers (`✓`, `▶ NEXT:`)
+    - Subtask list with short descriptions and status markers (`✓`, `▶ NEXT:`)
 
 
 - **`NOTES.md`** — non-obvious findings only. Do not record things derivable from reading the code.

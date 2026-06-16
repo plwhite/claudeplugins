@@ -112,6 +112,27 @@ same agent. **To verify in testing:** whether `--agent` alongside `--continue` i
 accepted cleanly or whether the resumed conversation already retains its agent
 (making the flag redundant but harmless).
 
+## Agent memory paths must be anchored to `$CLAUDE_PROJECT_DIR` (#23)
+
+A bare relative path in an agent prompt (e.g. "Store findings in
+`.claude/agent-memory/...`") resolves against the agent's current working
+directory, not the repo root. The `docs-structure-reviewer` agent was run from
+various directories and created stray `.claude/agent-memory/` trees wherever it
+happened to be. The `memory: project` frontmatter field does not save this — the
+prose path in the prompt body is what governs where files actually land. The fix
+is to write the path as `$CLAUDE_PROJECT_DIR/.claude/agent-memory/...`, which
+Claude Code expands to the project root regardless of cwd, and to use the same
+anchored path for both the write target and the start-of-review `MEMORY.md` read.
+
+A second, subtler point surfaced during the feature-end review: a plugin agent's
+`memory: project` directory is **namespace-prefixed** with the plugin name. The
+runtime tree for this agent is `.claude/agent-memory/devproc-docs-structure-reviewer/`,
+not the bare `.claude/agent-memory/docs-structure-reviewer/` — so the prose path
+must include the `devproc-` prefix to match where memory actually lands, otherwise
+the agent's manual reads/writes miss the automatically provisioned tree. (A stale
+unprefixed `docs-structure-reviewer/` tree from before the fix is a leftover
+artifact and can be deleted manually.)
+
 ### `--agent` does not apply the agent's model to the top-level session
 
 Found in Sub-task 4 testing: `claude --agent dev-process-manager` ran as Sonnet,
