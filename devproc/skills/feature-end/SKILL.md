@@ -15,7 +15,7 @@ Steps:
 
 1. Run a full checkpoint first (all steps from `/feature-checkpoint`): update the plan file sub-task statuses, add any outstanding NOTES.md entries, update CLAUDE.md current status.
 
-2. Confirm all sub-tasks are complete. If any are not, ask the user whether to defer them, drop them, or keep the feature open.
+2. Confirm all sub-tasks are complete — every sub-task marked ✓ **and every one of its sign-off boxes `[x]`** (a ticked sub-task with an unticked box is not done). If any sub-task is incomplete or any sign-off box remains unticked, do not close the feature: either complete the outstanding sign-off, or ask the user whether to defer or drop that sub-task, or keep the feature open.
 
 3. Update the feature-list files (do this *before* the documentation review, so the review sees the feature in its final completed state rather than still in progress):
    - Remove the feature entry from `features/CURRENT.md`.

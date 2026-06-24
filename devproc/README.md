@@ -9,8 +9,8 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 | Type | Name | Description |
 |------|------|-------------|
 | Skill | `feature-init` | One-time setup: adds the feature model to `CLAUDE.md`, creates the `features/` directory (and migrates an older `FEATURES.md`/`plans/` layout) |
-| Skill | `feature-spec` | Create a new feature in `features/PENDING.md` and write its specification into the plan file |
-| Skill | `feature-design` | Move a feature to `features/CURRENT.md` and write its design and sub-task plan |
+| Skill | `feature-spec` | Create a new feature in `features/PENDING.md`, write its specification into the plan file, and agree the sign-off strategy |
+| Skill | `feature-design` | Move a feature to `features/CURRENT.md` and write its design and sub-task plan, with per-sub-task sign-off criteria |
 | Skill | `feature-checkpoint` | Sync all documentation and tracking to the current state |
 | Skill | `feature-end` | Mark a feature complete and move it to Completed |
 | Skill | `review-full` | Full-codebase code review |
@@ -35,7 +35,7 @@ Run `/feature-init` once per project before using any other skills. This writes 
 | `features/PENDING.md` | Features waiting for development |
 | `features/DEFERRED.md` | Features explicitly deferred, including those blocked by a dependency |
 | `features/COMPLETED.md` | Completed features, dated — the large list kept out of routine context |
-| `features/plans/<slug>.md` | Per-feature plan with requirements, design, sub-tasks, and handoff state |
+| `features/plans/<slug>.md` | Per-feature plan with requirements, sign-off strategy, design, sub-tasks (with sign-off checkboxes), and handoff state |
 | `NOTES.md` | Non-obvious technical findings recorded continuously |
 | `CLAUDE.md` | High-level project status only — no implementation detail |
 
@@ -57,6 +57,8 @@ One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, create
 
 The first step of the lifecycle: create a feature and specify *what* it must do. Adds a new entry at the top of `features/PENDING.md`, deriving a lowercase-hyphenated slug from the description and appending it as a tag on the heading (e.g. `### My feature [my-feature]`). The list entry is kept to one or two sentences — the specification belongs in the plan file. It always creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section captures the full source-issue content (entire description plus any design/requirements-relevant comments) so a later session can resume from the plan file alone, without re-reading the issue.
 
+It also agrees the feature's **sign-off strategy** — the quality bar for testing, documentation, code review, and user review across the whole feature (e.g. full test coverage vs none; production docs vs internal notes) — and records it in the plan file's `## Sign-off strategy` section. Deciding *not* to do one of these is legitimate, but it is an explicit, up-front choice you can comment on here.
+
 **Example:**
 ```
 /feature-spec "Add dark mode support to the UI"
@@ -69,7 +71,7 @@ The first step of the lifecycle: create a feature and specify *what* it must do.
 
 **Invoke with:** `/feature-design [feature name or slug]`
 
-The second step of the lifecycle: decide *how* the feature will be built. Moves the named feature from `features/PENDING.md` to `features/CURRENT.md`, then fleshes out `features/plans/<slug>.md` — preserving the `## Requirements` section written by `/feature-spec`, filling in the Design section, and adding a numbered sub-task list. The plan file includes a `## Handoff` section kept current so any session can resume without context from the previous one. Producing the design does not begin implementation — that is a separate step with no slash command. If only one feature is pending, the argument can be omitted.
+The second step of the lifecycle: decide *how* the feature will be built. Moves the named feature from `features/PENDING.md` to `features/CURRENT.md`, then fleshes out `features/plans/<slug>.md` — preserving the `## Requirements` section written by `/feature-spec`, filling in the Design section, and adding a numbered sub-task list. Each sub-task carries its **sign-off criteria** as checkboxes (the applicable subset of testing / docs / code review / user review, derived from the sign-off strategy), agreed with you here — a sub-task is later complete only when all its boxes are ticked. The plan file includes a `## Handoff` section kept current so any session can resume without context from the previous one. Producing the design does not begin implementation — that is a separate step with no slash command. If only one feature is pending, the argument can be omitted.
 
 **Example:**
 ```
@@ -83,9 +85,9 @@ The second step of the lifecycle: decide *how* the feature will be built. Moves 
 
 **Invoke with:** `/feature-checkpoint`
 
-Brings all project documentation up to date with the current implementation state. Updates the plan file (marks completed sub-tasks with ✓, advances the `▶ NEXT:` marker, records partial progress), refreshes the `## Handoff` section with a concrete next action, and checks `NOTES.md` and `CLAUDE.md` for drift.
+Brings all project documentation up to date with the current implementation state. Updates the plan file (marks completed sub-tasks with ✓, advances the `▶ NEXT:` marker, records partial progress), refreshes the `## Handoff` section with a concrete next action, and checks `NOTES.md` and `CLAUDE.md` for drift. It never marks a sub-task complete while any of its sign-off boxes is still unticked — instead it records which are done and which remain, so a mid-sub-task checkpoint still produces an accurate hand-off.
 
-Run after each sub-task completes. The skill is designed to be run proactively, not just on request.
+Run after each sub-task completes, and whenever you want an accurate hand-off mid-sub-task. The skill is designed to be run proactively, not just on request.
 
 ---
 
@@ -93,7 +95,7 @@ Run after each sub-task completes. The skill is designed to be run proactively, 
 
 **Invoke with:** `/feature-end`
 
-Runs a full checkpoint, verifies all sub-tasks are complete, moves the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` (appending the completion date), and triggers a documentation review. The plan file is kept in place as a record.
+Runs a full checkpoint, verifies all sub-tasks are complete with every sign-off box ticked, moves the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` (appending the completion date), and triggers a documentation review. The plan file is kept in place as a record.
 
 ---
 
@@ -133,7 +135,7 @@ Runs a code review scoped to files changed in the current feature branch, derive
 
 **Run as the session agent with:** `claude --agent dev-process-manager` (or, in container mode, `claude-run --manager` — equivalently `claude-run --agent dpm` — see [docs/container.md](../docs/container.md)).
 
-A top-level Opus orchestrator for the feature workflow. Unlike the review agents — which are sub-agents invoked by a skill — this agent *is* the session you talk to. It establishes the feature being worked on (specifying and designing one itself if asked), agrees an autonomy boundary with you (e.g. "do sub-tasks 1–4, then check with me"), then for each sub-task spawns a teammate (normally Sonnet), briefs it to run `/feature-checkpoint` on completion, reviews the actual changes before accepting them, and shuts the teammate down. It pauses for you at requirement/design decisions and when you ask to review something. See [docs/capabilities.md](../docs/capabilities.md#dev-process-manager) for the task-oriented guide.
+A top-level Opus orchestrator for the feature workflow. Unlike the review agents — which are sub-agents invoked by a skill — this agent *is* the session you talk to. It establishes the feature being worked on (specifying and designing one itself if asked), agrees an autonomy boundary with you (e.g. "do sub-tasks 1–4, then check with me"), then for each sub-task spawns a teammate (normally Sonnet), briefs it to run `/feature-checkpoint` on completion, reviews the actual changes before accepting them — accepting a sub-task only once all its sign-off boxes are ticked — and shuts the teammate down. It pauses for you at requirement/design decisions and when you ask to review something. See [docs/capabilities.md](../docs/capabilities.md#dev-process-manager) for the task-oriented guide.
 
 ---
 

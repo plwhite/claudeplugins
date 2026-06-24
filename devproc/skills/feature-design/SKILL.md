@@ -5,10 +5,11 @@ argument-hint: [feature name or slug]
 ---
 
 Design a specified feature: decide *how* it will be built and break the work
-into sub-tasks. This is the second step of the feature lifecycle
-(`feature-spec` → `feature-design` → implement → `feature-end`). It assumes the
-feature has already been specified by `/feature-spec`; it produces the design
-and plan, but does **not** begin implementation.
+into sub-tasks, each with its own **sign-off criteria**. This is the second step
+of the feature lifecycle (`feature-spec` → `feature-design` → implement →
+`feature-end`). It assumes the feature has already been specified by
+`/feature-spec` (which agreed the sign-off strategy); it produces the design and
+plan, but does **not** begin implementation.
 
 Before proceeding, check that CLAUDE.md contains a Feature Model section.
 If it doesn't, tell the user to run /feature-init first and stop.
@@ -40,7 +41,7 @@ Steps:
    - If the feature involves external services, APIs, or unfamiliar areas of the codebase, do reconnaissance before drafting sub-tasks.
    - If the specification is unclear, ask the user before writing the design.
 
-5. Flesh out the plan file `features/plans/<slug>.md`. It normally already exists (created by `/feature-spec`) with a `## Requirements` section and a `## Design` placeholder. **Preserve the `## Requirements` section**, prepend a `## Handoff` section, replace the Design placeholder with the real design, and add a `## Sub-tasks` section. If the file does not exist, create it with all sections. Target structure:
+5. Flesh out the plan file `features/plans/<slug>.md`. It normally already exists (created by `/feature-spec`) with a `## Requirements` section, a `## Sign-off strategy` section, and a `## Design` placeholder. **Preserve the `## Requirements` and `## Sign-off strategy` sections**, prepend a `## Handoff` section, replace the Design placeholder with the real design, and add a `## Sub-tasks` section. If the file does not exist, create it with all sections. Target structure:
 
 ```markdown
 # <Feature title> — Feature Plan
@@ -59,6 +60,11 @@ Steps:
 <Preserved from /feature-spec. If absent and there are no requirements beyond
 the features/PENDING.md summary, this section may be omitted.>
 
+## Sign-off strategy
+
+<Preserved from /feature-spec — the quality bar per sign-off category that the
+per-sub-task criteria below are derived from.>
+
 ## Design
 
 <The output of the planning process goes here. For a simple feature this may be
@@ -71,6 +77,7 @@ and provide corrections before implementation begins.>
 ## Sub-tasks
 
 1. **<Sub-task name>** — <brief description of what success looks like>
+   - [ ] <sign-off criterion>   (see step 6)
 2. **<Sub-task name>** — ...
 ...
 
@@ -81,4 +88,18 @@ and provide corrections before implementation begins.>
 
 Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md` as you discover it, not here. The Design section is the exception: it should capture the key decisions and rationale from the planning process.
 
-6. Summarise the design and sub-task plan to the user. Implementation is a separate step with no slash command of its own — *do not start implementing without user confirmation.*
+6. Give each sub-task its **sign-off criteria**, derived from the `## Sign-off strategy` agreed at `/feature-spec`. Under each sub-task, add a checkbox for every sign-off that applies to it:
+
+   - Start from the four standard categories (testing, docs, code review, user review), plus any feature-specific sign-offs the strategy defined (e.g. a separate manual-test sign-off, or "agent X confirms the output"). List only the categories that genuinely apply to that sub-task — a small internal sub-task may need only one, a risky one may need all of them.
+   - Word each criterion so it is **auditable** — there must be a clear yes/no when the sub-task finishes. "Add tests" is not auditable; "unit tests for the parser, passing" or "user confirms the config syntax" are.
+   - Follow the checkbox convention in the project `CLAUDE.md` (`### Sign-off criteria`): `- [ ]` is pending and `- [x]` is satisfied; a sub-task is complete only when all its boxes are `[x]`. If a sub-task deliberately omits a category the strategy generally requires, note why inline. Feature-level sign-offs (e.g. a single end-of-feature `/review-branch`) belong in `## Sign-off strategy`, not duplicated onto every sub-task.
+
+   Example:
+   ```
+   3. **Add the config parser** — handle the new format
+      - [ ] Testing: unit tests for the parser, passing
+      - [ ] Code review: /review-component the parser
+      - [ ] User review: user confirms the config syntax
+   ```
+
+7. Summarise the design and sub-task plan to the user, and **present each sub-task's sign-off criteria for them to agree or adjust** — this is where the user signs off on what each sub-task must satisfy before it counts as done. Update the criteria to match what they settle on. Implementation is a separate step with no slash command of its own — *do not start implementing without user confirmation.*

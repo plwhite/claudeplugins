@@ -4,6 +4,16 @@ Non-obvious findings. Do not record things derivable from reading the code.
 
 ---
 
+`feature-init` has `disable-model-invocation: true`, so it cannot be launched
+via the Skill tool — attempting it errors out. To "run feature-init" (e.g. to
+test a change to its `## Feature model` template), apply its step 1 by hand:
+update the project `CLAUDE.md` Feature model section to match the template block.
+The project `CLAUDE.md` is therefore kept in sync with the template manually, not
+automatically; a diff of the two (ignoring line-wrapping) is the check that they
+agree.
+
+---
+
 ## gh CLI and sandbox
 
 `gh issue view` and `gh api` time out in sandbox mode even when `WebFetch(domain:api.github.com)` is listed in project permissions. The `WebFetch(...)` permission only covers Claude's WebFetch tool — it has no effect on outbound network access from Bash processes. The sandbox blocks Bash network independently.

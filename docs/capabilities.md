@@ -24,10 +24,10 @@ The manager runs as Opus automatically — `claude-run` takes the model from the
 
 What it does:
 
-- **Establishes the feature.** It reads the in-progress feature and its plan, or — if you ask — creates and starts a new one (e.g. "create and start a feature from issue 19"), getting the design in front of you before any code is written.
+- **Establishes the feature.** It reads the in-progress feature and its plan, or — if you ask — specs and designs a new one (e.g. "spec and design a feature from issue 19"), getting the design in front of you before any code is written.
 - **Agrees an autonomy boundary.** It settles with you up front how far to run unattended, then proceeds without asking at every step until it reaches that boundary.
-- **Delegates each sub-task to a teammate.** For each sub-task it spawns a teammate (normally Sonnet), briefs it with the single sub-task and the context it needs, and requires it to run `/feature-checkpoint` when done.
-- **Reviews the work.** It inspects the actual changes rather than trusting the teammate's report, running a code review where warranted, and sends corrections back if needed.
+- **Delegates each sub-task to a teammate.** For each sub-task it spawns a teammate (normally Sonnet), briefs it with the single sub-task, its sign-off criteria, and the context it needs, and requires it to run `/feature-checkpoint` when done.
+- **Reviews the work.** It inspects the actual changes rather than trusting the teammate's report, running a code review where warranted, and sends corrections back if needed. It accepts a sub-task as done only once all of its sign-off boxes are ticked.
 - **Closes teammates down** once their task is verified complete, and **checks in with you** at requirement/design decisions, when you asked to review something, or when it hits a blocker.
 
 This lets you delegate a batch of work and stay in control of the high-level direction, with the manager keeping the overall context on track while teammates handle the detail. It uses more tokens than driving sub-tasks yourself, in exchange for autonomy.

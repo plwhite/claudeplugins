@@ -54,11 +54,13 @@ TaskCreate/TaskUpdate/TaskList, SendMessage, TaskStop, TeamDelete) and the
 This project tracks work as **features**: each has an entry in one of the
 status-split list files under `features/` (`CURRENT.md`, `PENDING.md`,
 `DEFERRED.md`, `COMPLETED.md`) and a plan in `features/plans/<slug>.md` with a
-Handoff section, a Design section, and a numbered sub-task list. The feature in
-progress is in `features/CURRENT.md`. Progress is saved by running
-`/feature-checkpoint` after
-each sub-task; a feature is closed with `/feature-end`. Read the project
-`CLAUDE.md` for the full model before you start orchestrating.
+Handoff section, a Sign-off strategy section, a Design section, and a numbered
+sub-task list in which each sub-task carries its sign-off criteria as checkboxes.
+The feature in progress is in `features/CURRENT.md`. Progress is saved by running
+`/feature-checkpoint` after each sub-task; a feature is closed with
+`/feature-end`. A sub-task counts as done only when all of its sign-off boxes are
+ticked. Read the project `CLAUDE.md` for the full model — including the sign-off
+criteria — before you start orchestrating.
 
 ---
 
@@ -104,6 +106,8 @@ Agent tool, passing `team_name`, a descriptive `name`, and `model: "sonnet"`
 give each teammate must:
 
 - state the **single sub-task** it owns and what success looks like;
+- spell out the sub-task's **sign-off criteria** (the checkboxes in the plan) and
+  require every one to be satisfied before the sub-task is reported done;
 - point it at the plan file, `NOTES.md`, and any relevant code for context;
 - tell it to record non-obvious findings in `NOTES.md`; and
 - **require it to run `/feature-checkpoint` when its sub-task is complete**, so
@@ -116,13 +120,17 @@ independent and parallelising them is safe.
 
 When a teammate reports completion, do not take it on trust. Inspect the actual
 changes (read the diff and the touched files), confirm the sub-task was done
-correctly and completely, and that `/feature-checkpoint` actually ran. Run a
-proper review where the change warrants it — the project's review skills
-(`/review-branch`, `/review-component`) and review agents are available to you.
+correctly and completely, and that `/feature-checkpoint` actually ran. Then check
+the sub-task's **sign-off boxes**: every one must be genuinely satisfied, not
+merely ticked. Satisfy the ones that are yours to satisfy — e.g. run the code
+review a *code review* box calls for (the project's review skills `/review-branch`
+and `/review-component` and the review agents are available to you), and for a
+*user review* box pause and get the user's confirmation rather than ticking it on
+their behalf.
 
-- If the work is inadequate or wrong, send the teammate specific corrections via
-  SendMessage and let it iterate.
-- If it is good, the sub-task is done.
+- If the work is inadequate or wrong, or a sign-off box is not truly met, send the
+  teammate specific corrections via SendMessage and let it iterate.
+- The sub-task is done only when it is good **and** every sign-off box is ticked.
 
 ### 5. Close the teammate down
 
@@ -147,6 +155,9 @@ genuinely complete, confirm with the user before running `/feature-end`.
   changes.
 - **Checkpoint discipline.** Every sub-task ends with a `/feature-checkpoint`,
   whether the teammate ran it or you do.
+- **Sign-off is not optional.** A sub-task is done only when all of its sign-off
+  boxes are genuinely satisfied. Do not let a box be skipped to save time — if a
+  category should not apply, that is a design-time decision, not a runtime one.
 - **Surface decisions early.** It is cheaper to ask about requirements or design
   before a teammate builds the wrong thing than to rework it after.
 - **Report at boundaries, not constantly.** Within the agreed autonomy boundary,

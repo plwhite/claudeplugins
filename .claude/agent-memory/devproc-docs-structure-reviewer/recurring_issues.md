@@ -6,6 +6,35 @@ type: project
 
 (Prior history retained — see git log for older entries.)
 
+## Twenty-second review (2026-06-25) — subtask-signoff two-fix convergence pass
+
+Verified both targeted fixes from the 21st review:
+1. README.md line 30 Documentation table workflow.md row now ends "…including per-feature sign-off criteria" — surfaces the sign-off model from the landing page. workflow.md (the linked target) delivers on it. 21st-review MINOR carryover RESOLVED.
+2. capabilities.md line 27 now "specs and designs a new one (e.g. 'spec and design a feature from issue 19')" — stale "create and start" pre-rename vocab gone, matches spec/design flow and dev-process-manager.md. 21st-review SUGGESTION RESOLVED.
+
+No new issues introduced (no link/anchor/grammar breakage; no other "create and start" residue in capabilities.md). No orphans. Deferred naming-consistency item (dev process manager / -manager / dpm) excluded per user. Feature fully converged — 0 actionable findings.
+
+## Twenty-first review (2026-06-25) — subtask-signoff (#25) close-out
+
+Scope: new sign-off model added across the whole devproc surface — canonical `### Sign-off criteria` section in CLAUDE.md (synced from feature-init template), plus feature-spec/design/checkpoint/end SKILLs, devproc/README.md, docs/workflow.md, docs/capabilities.md, dev-process-manager agent, plan-file schema (`## Sign-off strategy` section + per-sub-task checkboxes).
+
+Verified clean / strong points:
+- Canonical text discipline EXCELLENT. CLAUDE.md `### Sign-off criteria` (lines 118–156) is byte-identical to the feature-init SKILL.md template block (lines 39–77) bar line-wrapping — the stated requirement that the template reproduce the canonical text holds. NOTES.md documents the manual-sync check (feature-init has disable-model-invocation, so CLAUDE.md is kept in step by hand + diff).
+- Single-source-of-truth honoured: workflow.md and capabilities.md describe the flow narratively and point to canonical defs; they do not re-specify the checkbox convention. Each skill cross-references `CLAUDE.md` `### Sign-off criteria` rather than restating it.
+- "Open set, not closed list" + "auditable" refinements propagated consistently to ALL surfaces (CLAUDE.md, feature-init template, feature-spec step 6, feature-design step 6, workflow.md). No surface frames the four categories as closed.
+- Enforcement correctly placed: checkpoint records partial box state / never ticks on user's behalf (step 2); feature-end verifies no box outstanding (step 2); dev-process-manager accepts sub-task only when boxes ticked (step 4 + Principles). All three agree.
+- Plan-file schema updated in all three places that define it (CLAUDE.md "Documents to support the model", devproc/README.md feature-tracking table line 38, feature-init template) — all now list `## Sign-off strategy` + checkboxes.
+- Feature tracking converged: CURRENT.md "No feature currently in progress"; COMPLETED.md entry dated 2026-06-25, well-formed multi-sentence paragraph; CLAUDE.md status flipped; plan all-✓ with every box [x]. NO close-out status drift (drift pattern now quiet for several cycles).
+- No orphans introduced. docs-structure-reviewer agent memory path still correctly $CLAUDE_PROJECT_DIR-anchored with devproc- prefix (#23 fix held).
+
+Findings (all low severity — feature is in very good shape):
+- MINOR (recurring carryover): README.md Documentation table `features/` row (line 34) describes the plan files as "with per-feature plans in `features/plans/`" but does not mention the sign-off model at all; a landing-page reader can't tell the workflow has a sign-off mechanism. The feature is well-described in workflow.md/capabilities.md which README links to, so this is discoverability-of-detail not a true gap. Low priority.
+- SUGGESTION: capabilities.md "Dev process manager" line 27 still says the manager "creates and starts a new one (e.g. 'create and start a feature from issue 19')" — "create and start" is the pre-rename vocabulary (now spec/design). dev-process-manager.md agent uses "spec and/or design" correctly (step 1). Minor terminology drift in capabilities.md only.
+- SUGGESTION (recurring): "dev process manager" / "dev-process-manager" / "dpm" three forms still in play (carryover from 16th/18th review, deferred by user). No action unless tidying.
+- NIT: stale unprefixed `.claude/agent-memory/docs-structure-reviewer/` tree still on disk alongside the correct `devproc-docs-structure-reviewer/` (flagged 20th review for manual deletion; agent cannot delete files). Not a doc defect.
+
+Net: feature converged with no CRITICAL/MAJOR findings. Sign-off content hangs together across all named files. Two SUGGESTIONs are terminology touch-ups, one MINOR is a long-standing README discoverability carryover.
+
 ## Ninth review (2026-05-04) — security-permissions-docs feature close-out
 
 Scope: new "Block reads of sensitive files" section in `docs/setup.md`, README docs-table row update.

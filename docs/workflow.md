@@ -4,9 +4,9 @@ This guide describes how to work through a software project using `devproc`. The
 
 Each feature moves through a lifecycle, with a slash command for each stage:
 
-1. **Specify** (`/feature-spec`) — create the feature and record *what* it must do.
-2. **Design** (`/feature-design`) — decide *how* to build it and break it into sub-tasks.
-3. **Implement** — work through the sub-tasks (no slash command; `/feature-checkpoint` keeps state in sync as you go).
+1. **Specify** (`/feature-spec`) — create the feature, record *what* it must do, and agree its sign-off strategy.
+2. **Design** (`/feature-design`) — decide *how* to build it, break it into sub-tasks, and set each sub-task's sign-off criteria.
+3. **Implement** — work through the sub-tasks (no slash command; `/feature-checkpoint` keeps state in sync as you go). A sub-task is complete only when all its sign-off boxes are ticked.
 4. **End** (`/feature-end`) — verify completion, close the feature out, and review the docs.
 
 `/feature-init` sets the model up once per repository before any of this.
@@ -49,6 +49,10 @@ When you have a piece of work to track — from a GitHub issue, a design doc, or
 
 This adds an entry to `features/PENDING.md` with a slug (e.g. `[improve-error-messages]`) and creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section holds the captured specification so you never need to re-open the issue.
 
+As part of specifying, Claude proposes a **sign-off strategy** — the quality bar for each of the four sign-off categories (testing, documentation, code review, user review) across the whole feature. For example: 100% test coverage versus basic tests versus none; full production docs versus internal notes only. It is recorded in the plan file's `## Sign-off strategy` section. Skipping a category is fine, but it is a deliberate choice made here where you can comment on it — not something that quietly slips. This is the moment to set the standard the feature will be held to.
+
+Those four categories are the usual set, not a fixed list: if a feature needs it, the strategy can split one (say, separate unit-test and manual-test sign-offs at different stages) or add a specific sign-off of another kind (e.g. "agent X has confirmed the output"). Whatever the criteria, each is worded to be **auditable** — there is a clear yes/no at the point a sub-task finishes. "Have some tests" is not auditable; "unit tests written to the agreed quality bar" or "enough tests that you confirm coverage is sufficient" are.
+
 ---
 
 ## Design a feature
@@ -70,7 +74,18 @@ When you are ready to work on a feature, design it: Claude decides *how* it will
 
 Claude reads the captured specification in the plan file (fetching the GitHub issue only if it is missing), researches the relevant code, and fleshes out the design and sub-task breakdown in `features/plans/<slug>.md`.
 
-**Review the design before approving it.** The design and sub-task plan are presented to you before any implementation begins. This is the moment to correct the approach, adjust scope, or add constraints. Implementation does not start until you confirm.
+Each sub-task is given its own **sign-off criteria** — checkboxes for the categories that apply to it (the relevant subset of testing / docs / code review / user review), derived from the sign-off strategy agreed at spec time. These appear under the sub-task in the plan file, e.g.:
+
+```
+3. **Add the parser** — handle the new config format
+   - [ ] Testing: unit tests for the parser
+   - [ ] Code review: /review-component the parser
+   - [ ] User review: confirm the config syntax
+```
+
+`- [ ]` is pending and `- [x]` is satisfied; the sub-task is complete only once every box is `[x]`.
+
+**Review the design before approving it.** The design, the sub-task plan, and each sub-task's sign-off criteria are presented to you before any implementation begins. This is the moment to correct the approach, adjust scope, add constraints, or change what each sub-task must satisfy before it counts as done. Implementation does not start until you confirm.
 
 ---
 
@@ -78,9 +93,11 @@ Claude reads the captured specification in the plan file (fetching the GitHub is
 
 Implementation has no slash command of its own — once the design is approved, ask Claude to implement the sub-tasks one at a time.
 
-- After each one completes, review whatever Claude did (and provide feedback or fix it); `git diff` or the VSCode git plugin are ideal for this.
+- Work a sub-task until each of its sign-off boxes is satisfied, then tick it. A sub-task is **not done** while any box is unticked: that is the mechanism that stops testing, docs, review, or your confirmation being skipped under time pressure.
 
-- When you are content, run `/feature-checkpoint` to mark the completed sub-task, advance the `▶ NEXT:` marker, and update the Handoff section so the session state is always recorded. Claude will often run this automatically; you can also run it explicitly at any point.
+- After each one completes, review whatever Claude did (and provide feedback or fix it); `git diff` or the VSCode git plugin are ideal for this. (Where a sub-task has a *user review* box, this review is itself the sign-off — tick it once you are content.)
+
+- When you are content and all the sub-task's boxes are ticked, run `/feature-checkpoint` to mark the completed sub-task, advance the `▶ NEXT:` marker, and update the Handoff section so the session state is always recorded. Claude will often run this automatically; you can also run it explicitly at any point — including mid-sub-task, where it records which boxes are done and which remain without marking the sub-task complete.
 
 - Finally, ensure that you have done a git commit so you are ready for the next sub-task.
 
@@ -108,7 +125,7 @@ When all sub-tasks are done:
 
 - Review that you are comfortable with the final state.
 
-- Run `/feature-end` to tell Claude that the feature is done. This will run a full checkpoint, verifying all sub-tasks are marked complete, and move the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` with the completion date. The plan file is kept as a record. It also triggers an intensive docs review over all docs in the project.
+- Run `/feature-end` to tell Claude that the feature is done. This will run a full checkpoint, verifying all sub-tasks are marked complete with every sign-off box ticked, and move the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` with the completion date. The plan file is kept as a record. It also triggers an intensive docs review over all docs in the project.
 
 - Commit the final state changes to git, squash commits as required, and push and merge the feature branch.
 
