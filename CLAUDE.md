@@ -4,6 +4,8 @@
 
 **No feature currently in progress.**
 
+`subtask-signoff` completed 2026-06-25 — added explicit per-sub-task sign-off criteria (testing, docs, code review, user review) to the feature workflow so quality steps are a deliberate up-front choice rather than something skipped. A feature agrees a sign-off *strategy* at `/feature-spec`, `/feature-design` turns it into per-sub-task *checkbox criteria* the user agrees, and a sub-task is complete only when all boxes are `[x]` — enforced by `/feature-checkpoint` and `/feature-end`. The canonical model lives in a new `### Sign-off criteria` section of the `feature-init` CLAUDE.md template; README and `docs/` were updated to match. Categories are an open set and every criterion must be auditable (#25).
+
 `docs-reviewer-memory-path` completed 2026-06-16 — fixed the `docs-structure-reviewer` agent so it stores memory at a `$CLAUDE_PROJECT_DIR`-anchored path (`$CLAUDE_PROJECT_DIR/.claude/agent-memory/docs-structure-reviewer/`) rather than relative to cwd, which had scattered stray memory trees when the agent was run from subdirectories (#23).
 
 `split-features-md` completed 2026-06-11 — replaced the single `FEATURES.md` with a `features/` directory (status-split list files `CURRENT.md`/`PENDING.md`/`DEFERRED.md`/`COMPLETED.md` plus per-feature plans under `features/plans/`), so the large completed list no longer loads into context every session. `/feature-init` migrates older layouts; feature creation captures the full source-issue spec in the plan file. The lifecycle skills were also renamed `feature-create`→`feature-spec` and `feature-start`→`feature-design` (flow: spec → design → implement → end).
@@ -105,13 +107,53 @@ Major pieces of work are organised into features. Each feature has a concise ent
 Use these slash commands (defined in the `devproc` plugin) to manage features
 through their lifecycle — **spec → design → implement → end**:
 
-- `/feature-spec` — create a new feature in `features/PENDING.md` and write its specification into the plan file
-- `/feature-design` — move a feature to `features/CURRENT.md` and write its design and sub-task plan
-- *(implementation has no slash command — work through the sub-tasks directly)*
-- `/feature-checkpoint` — during implementation, sync all feature documentation and plans to the current state (run after each sub-task)
+- `/feature-spec` — create a new feature in `features/PENDING.md`, write its specification into the plan file, and agree the feature's **sign-off strategy**
+- `/feature-design` — move a feature to `features/CURRENT.md`, write its design and sub-task plan, and agree the **sign-off criteria** for each sub-task
+- *(implementation has no slash command — work through the sub-tasks directly; a sub-task is complete only when all its sign-off boxes are ticked)*
+- `/feature-checkpoint` — during implementation, sync all feature documentation and plans to the current state (run after each sub-task and when prompted within subtasks)
 - `/feature-end` — mark a feature complete and move it to `features/COMPLETED.md`
 
 `NOTES.md` is maintained continuously. Any non-obvious technical finding — page structure quirks, API behaviour, design decisions, scope changes — goes there as it is discovered.
+
+### Sign-off criteria
+
+Every feature defines explicit sign-off criteria, so quality steps are a
+deliberate choice rather than something quietly skipped. Four categories cover
+the most likely sign-offs:
+
+- **Testing** — manual or automated checks that the work behaves correctly.
+- **Documentation** — user and architectural docs updated to reflect the change.
+- **Code review** — review of the change (a light per-sub-task agent review, or a full `/review-branch`).
+- **User review** — the user sees and confirms the work.
+
+These four are the usual set, not a closed list: a feature's strategy may split
+one into separate sign-offs (e.g. unit tests and manual tests confirmed at
+different stages) or add a specific sign-off of another kind (e.g. "agent X has
+confirmed the output"). Do not invent sign-offs for their own sake, but do
+capture whatever genuinely gates the work.
+
+Every sign-off criterion must be **auditable**: when a sub-task is finished it
+must be unambiguous whether the criterion is met. "Have some tests" is not
+auditable; "unit tests written to the agreed quality bar" is, and so is "enough
+tests that the user confirms coverage is sufficient" — each has a clear
+done/not-done point. Word every criterion so it has a definite yes/no.
+
+For each category it is legitimate to decide *not* to do it — but that decision
+is made explicitly and up front, where the user can comment on it:
+
+- **Strategy (at `/feature-spec`).** The plan file's `## Sign-off strategy` section records the quality bar per category for the whole feature (e.g. "100% test coverage" vs "basic tests" vs "none"; "full production docs" vs "internal notes only"). The user agrees it.
+- **Criteria (at `/feature-design`).** Each sub-task in `## Sub-tasks` carries the applicable sign-off categories as checkboxes, derived from the strategy. The user agrees them.
+- **Completion (at implement time).** A sub-task may be marked complete (✓) only when every one of its sign-off boxes is ticked.
+
+Checkbox convention:
+
+- `- [ ]` is pending; `- [x]` is satisfied.
+- A sub-task is complete only when all its boxes are `[x]`; an unchecked box means it is not done.
+- Only the categories that apply to a sub-task are listed. A category skipped for the whole feature is justified once in `## Sign-off strategy`; a feature-level sign-off (e.g. one end-of-feature docs review or `/review-branch`) is recorded there too, rather than repeated on every sub-task.
+
+`/feature-checkpoint` may be run at any time, including mid-sub-task: it records
+which boxes are ticked and which remain so the hand-off is accurate, and never
+marks a sub-task complete while a box is still outstanding.
 
 ### Resuming after a session restart
 
@@ -140,9 +182,11 @@ These apply at all times, not just when completing features:
 
     - Requirements (the full relevant content from the source issue, if the feature came from one — enough to resume without re-reading the issue)
 
+    - Sign-off strategy (the quality bar per category — testing, docs, code review, user review — agreed at `/feature-spec`)
+
     - Design (implementation strategy)
 
-    - Subtask list with short descriptions and status markers (`✓`, `▶ NEXT:`)
+    - Subtask list with short descriptions, per-sub-task sign-off checkboxes, and status markers (`✓`, `▶ NEXT:`)
 
 
 - **`NOTES.md`** — non-obvious findings only. Do not record things derivable from reading the code.
