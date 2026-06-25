@@ -10,7 +10,7 @@
 
 `split-features-md` completed 2026-06-11 — replaced the single `FEATURES.md` with a `features/` directory (status-split list files `CURRENT.md`/`PENDING.md`/`DEFERRED.md`/`COMPLETED.md` plus per-feature plans under `features/plans/`), so the large completed list no longer loads into context every session. `/feature-init` migrates older layouts; feature creation captures the full source-issue spec in the plan file. The lifecycle skills were also renamed `feature-create`→`feature-spec` and `feature-start`→`feature-design` (flow: spec → design → implement → end).
 
-`dev-process-manager` completed 2026-06-03 — added a top-level Opus "dev process manager" agent (`claude --agent dev-process-manager` / `claude-run --manager`) that orchestrates the feature workflow, spawning a teammate per sub-task and reviewing their work; `claude-run` gained `--manager`/`--agent`/`--model` options passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`.
+`dev-process-manager` completed 2026-06-03 — added a top-level Opus "Dev Process Manager" agent (`claude --agent dev-process-manager` / `claude-run --manager`) that orchestrates the feature workflow, spawning a teammate per sub-task and reviewing their work; `claude-run` gained `--manager`/`--agent`/`--model` options passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`.
 
 `container-bugs` completed 2026-06-01 — fixed three container-mode issues from #17: corrected the credentials mount path in `claude-run` so automatic login works; added a `run-claude.sh` keep-alive loop so the tmux session survives accidental `exit`/Ctrl-D/Ctrl-C (auto-resumes via `claude --continue`, with a SIGINT trap and a crash-guard); and documented the Shift-highlight copy/paste tip.
 

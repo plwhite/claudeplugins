@@ -4,9 +4,9 @@ This document describes additional capabilities provided by `devproc` beyond the
 
 ---
 
-## Dev process manager
+## Dev Process Manager
 
-The dev process manager is a top-level agent that drives the feature workflow for you semi-autonomously. Instead of you asking Claude to do one sub-task at a time, you run Claude *as* the manager agent and tell it how far to go on its own — for example "work through sub-tasks 1–4 and check with me before 5", or "confirm the design with me first, then implement".
+The Dev Process Manager is a top-level agent that drives the feature workflow for you semi-autonomously. Instead of you asking Claude to do one sub-task at a time, you run Claude *as* the manager agent and tell it how far to go on its own — for example "work through sub-tasks 1–4 and check with me before 5", or "confirm the design with me first, then implement".
 
 Run it as the session agent:
 
