@@ -42,9 +42,9 @@ bash /some/path/claudeplugins/bin/claude-run /path/to/project
 
 This starts a detached container named `claude-<project-dirname>`, mounts the project at `/workspace`, and passes your git identity. Claude starts immediately in the tmux session.
 
-### Run as the dev process manager
+### Run as the Dev Process Manager
 
-By default the container runs an ordinary Claude session. To instead run Claude as the [dev process manager](capabilities.md#dev-process-manager) — the orchestrator that drives the feature workflow semi-autonomously, spawning teammates per sub-task — pass `--manager`:
+By default the container runs an ordinary Claude session. To instead run Claude as the [Dev Process Manager](capabilities.md#dev-process-manager) — the orchestrator that drives the feature workflow semi-autonomously, spawning teammates per sub-task — pass `--manager`:
 
 ```bash
 bash /some/path/claudeplugins/bin/claude-run --manager
