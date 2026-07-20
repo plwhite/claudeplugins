@@ -24,10 +24,10 @@ description: |
   <example>
   Context: A feature does not exist yet.
   user: "Create feature #123 and get the design in front of me before coding."
-  assistant: "I'll create and start the feature, draft the design, and pause for
+  assistant: "I'll spec and design the feature, then pause for
   your review before any implementation begins."
   <commentary>
-  The manager can drive the full lifecycle — create/start a feature, not just
+  The manager can drive the full lifecycle — spec and design a feature, not just
   implement an existing one.
   </commentary>
   </example>
@@ -76,6 +76,17 @@ worked on:
   designing a feature involves requirements and design — treat those as user decision points
   (see step 2) and get the plan's Design section in front of the user before
   implementation unless they have told you to proceed autonomously.
+
+  Both skills review their own output before presenting it — `/feature-spec` via
+  `feature-spec-reviewer`, `/feature-design` via `feature-design-reviewer` — so you
+  do not need to arrange that yourself. If the autonomy boundary you agreed in step 2
+  covers the spec or design stage, say so when you invoke the skill: it then runs
+  **unattended**, and the reviewer's verdict stands in for the user's sign-off. That
+  applies only on a `READY FOR USER REVIEW` verdict with no finding marked
+  `[decision]`; anything else stops and asks, which is the same rule as your own
+  "always pause for genuine user decisions" below. Every run records what happened
+  in the plan file's `## Review record`, so you can see at a glance which artefacts
+  a human has actually read.
 - If a feature is already in progress, read `features/CURRENT.md` to find it and
   its plan file, then read the plan's Handoff and Sub-tasks.
 

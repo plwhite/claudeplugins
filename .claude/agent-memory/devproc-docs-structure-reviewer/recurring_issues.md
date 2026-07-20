@@ -6,6 +6,34 @@ type: project
 
 (Prior history retained — see git log for older entries.)
 
+## Twenty-fourth review (2026-07-21) — spec-design-review-agents four-fix verification pass
+
+All four findings from the 23rd review verified RESOLVED:
+1. MAJOR (feature-init template omitted `## Review record`): FIXED. feature-init SKILL.md template heredoc line 115 now carries the Review record bullet, byte-identical to root CLAUDE.md line 195. Sync invariant holds — whole feature-model block still matches bar line-wrapping.
+2. MINOR (devproc/README.md feature-tracking table omitted review record): FIXED. Line 40 now ends "…handoff state, and a review record". Plan-file schema now consistent across all three places (CLAUDE.md 195, feature-init template 115, devproc/README.md 40).
+3. SUGGESTION (dev-process-manager.md pre-rename "create/start" vocab): FIXED. Examples block now "I'll spec and design the feature" (line 27) / "spec and design a feature" (line 30); step 1 line 74 "spec and/or design". Remaining "Create feature #123" (26) and "Set up and design" (74) are inside user-quote examples — natural, correct to keep. No "create and start" residue anywhere in live docs (only in this memory file + historical plan, both out of scope).
+4. SUGGESTION (README.md workflow row silent on automated review): FIXED. Line 30 now "…including per-feature sign-off criteria and automated spec/design review".
+
+No dangling old-fixture-path refs in live docs: `spec-design-review-agents/tests` matches only agent-memory (this file) and the historical plan file features/plans/spec-design-review-agents.md (describes the move) — both out of scope.
+
+Only new observation (SUGGESTION, cosmetic): CLAUDE.md has a double blank line (196–197) between the Review record bullet and the NOTES.md bullet, where the feature-init template has a single blank (116). Trivial whitespace divergence from the "byte-identical bar line-wrapping" invariant; markdown collapses it so rendering is unaffected. Not worth a fix unless tidying. Net: feature converged, 0 actionable findings.
+
+## Twenty-third review (2026-07-21) — spec-design-review-agents (#20) close-out
+
+Scope: two new review agents (`feature-spec-reviewer`, `feature-design-reviewer`) run at the end of `/feature-spec` and `/feature-design`; new `## Review record` plan-file section; three review modes (reviewed/skipped/unattended); `[rewrite]`/`[decision]` finding markers; verdict strings `VERDICT: READY FOR USER REVIEW` / `VERDICT: NEEDS WORK`; test fixtures moved from `features/plans/spec-design-review-agents/tests/` to `devproc/tests/<agent>/`.
+
+Verified clean / strong:
+- Discoverability of new agents solid: README → devproc/README.md Contents table (rows) + Agent reference sections; README → docs/workflow.md new "## Review before you read it" section (Specify/Design both link to it, anchor #review-before-you-read-it resolves); CLAUDE.md lists both agents.
+- Contract terms consistent across surfaces: verdict strings, `[rewrite]`/`[decision]` markers, mode names (reviewed/skipped/unattended) agree in workflow.md, devproc/README.md, both agent defs, both SKILLs, CLAUDE.md status. Both agents carry the identical "shared contract" guard block above `## Output Format`/`## Verdict`; both SKILLs carry the near-identical step-7 guard.
+- No live-doc reference to the OLD fixture path. Only matches for `spec-design-review-agents/tests` are inside the historical plan file `features/plans/spec-design-review-agents.md` (lines 183/217/221) which correctly *describes the move* — out of scope, not a defect. New location discoverable via devproc/README.md agent-reference lines 162/172 + per-dir README.md in devproc/tests/.
+
+Findings:
+- MAJOR: `devproc/skills/feature-init/SKILL.md` plan-file schema (template heredoc, lines 101–113) omits `## Review record`. CLAUDE.md (line 195) documents it. The heredoc is the canonical source that `/feature-init` writes into a project's CLAUDE.md, and NOTES.md records that the two must be kept byte-identical by hand — so this is both a broken sync invariant and a real gap: new projects get a CLAUDE.md whose plan schema never mentions the section feature-spec/feature-design write to. FIX: add a `- Review record (...)` bullet to the template list, mirroring CLAUDE.md line 195.
+- MINOR: `devproc/README.md` feature-tracking table (line 40) plan-file description lists "requirements, sign-off strategy, design, sub-tasks ... and handoff state" but omits Review record — third place the schema is described, now inconsistent. FIX: add "review record" to the line.
+- SUGGESTION (recurring terminology, now in a live doc): `devproc/agents/dev-process-manager.md` examples block lines 27/30 use pre-rename "create and start the feature" / "create/start a feature" while step 1 (line 74) correctly says "spec and/or design". Same "create and start" residue that was cleaned from capabilities.md at the 21st review, still present here. Not touched by #20.
+- SUGGESTION (recurring carryover): README.md Documentation table workflow.md row (line 30) does not hint the workflow now has a pre-human review step; discoverability-of-detail only (workflow.md, which README links, covers it fully).
+
+
 ## Twenty-second review (2026-06-25) — subtask-signoff two-fix convergence pass
 
 Verified both targeted fixes from the 21st review:

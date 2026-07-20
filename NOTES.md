@@ -164,3 +164,155 @@ overrides it, and an agent whose definition is not in this repo (so the model
 cannot be derived) falls back to no `--model`, i.e. the previous default
 behaviour. Verified the derivation handles both the alias (`opus`) and pinned
 ids (`claude-opus-4-6`).
+
+## Testing a new agent in the session that creates it (#20)
+
+A newly written `devproc/agents/<name>.md` is **not** invocable as an agent type
+in the session that creates it — the available agent types are resolved when the
+session starts, so the file on disk is invisible to the Agent tool until a
+restart. To test a new agent definition in the same session, spawn a
+`general-purpose` agent and instruct it to read the definition file, treat the
+body after the frontmatter as its system prompt, and follow it. That exercises
+the prompt (which is the whole deliverable for a prose agent) but *not* the
+frontmatter wiring — `tools:`, `model:`, and the description-based dispatch are
+untested by this route and need a restarted session to verify.
+
+When doing this, explicitly forbid the test agent from reading the
+`.expected.md` files and the fixture `README.md`: they state the flaw under test
+and the agent will otherwise read the answer off them.
+
+## Spec-review fixtures: sections are not independent (#20)
+
+The `feature-spec-reviewer` fixtures each mutate one section of a shared clean
+baseline, so a case can test one check in isolation. The obvious expectation —
+"the agent must report nothing against the section this case did not target" —
+turned out to be wrong, and three of five cases failed on it in the first round.
+
+Two distinct causes, both instructive:
+
+1. The baseline genuinely had defects. The docs sign-off criterion said "a
+   `NOTES.md` entry for the streaming approach", which presumes a design outcome
+   the requirements never state; the filename date had no timezone. The agent
+   was right on both counts, in the control run too.
+2. The sections are legitimately coupled. A vague `## Requirements` really does
+   make a `## Sign-off strategy` criterion harder to audit ("confirms it is what
+   finance needs" means nothing if nothing states what finance needs), and the
+   agent reported that as a consequence rather than as a fault of the strategy.
+
+The rule is therefore "no BLOCKING or MAJOR findings against the untargeted
+section", with MINOR and SUGGESTION tolerated. A competent reviewer always finds
+polish; only a serious finding against untouched text indicates it is
+mis-firing.
+
+The design-reviewer fixtures needed a third refinement of the same rule: a
+finding against the untargeted section is also legitimate when the *targeted*
+flaw creates it. In `oversized-subtasks`, a planted trivia sub-task bumps a CSV
+library "for the quoting fix", which implies a serialiser choice the design
+never records — a real design gap, but one the control does not exhibit. The
+control not raising it is the evidence that its source is the sub-tasks. The
+wording is now "faulting the untargeted section **on its own terms**".
+
+## Writing review fixtures: expect the agent to find your own bugs (#20)
+
+Across three rounds, every design-reviewer fixture failure was a defect in the
+fixture, not in the agent. Worth knowing before writing the next set, because
+the instinct is to tune the agent until the tests pass, and that would have been
+wrong every time:
+
+- The baseline design took care to avoid a second definition of the *filters*,
+  then left the *column set* undefined — the same failure one layer up.
+- The sign-off strategy's manual large-tenant export was owned by no sub-task,
+  so every box could be ticked without it happening.
+- A sub-task carried `- [ ] User review: none — no user-visible surface yet`: a
+  box that can never legitimately be ticked, so the sub-task could never
+  complete. Waived categories must be *omitted* and explained once at feature
+  level, not written as an unchecked box.
+- The design named CSV serialisation as a distinct layer that no sub-task
+  tested.
+
+Two expectation errors were mine as well: demanding a specific severity where
+reasonable reviewers differ (ordering problems land at BLOCKING or MAJOR
+depending on whether a workaround exists), and assuming the reviewer could
+settle a dependency question by searching this repository — the fixtures
+describe a product that is not this repo, so absence proves nothing. The agent
+now says "unconfirmed" rather than "absent" for components it cannot verify.
+
+One genuine agent bug did surface, from a contradiction between the fixture and
+the prompt: the verdict rule allowed `READY FOR USER REVIEW` with an outstanding
+MAJOR `[rewrite]` finding. Both agents now require no BLOCKING **and** no MAJOR,
+and state that the verdict describes the artefact as it stands rather than as it
+could easily become.
+
+## Testing a skill end to end, and what it caught (#20)
+
+The review step in `/feature-spec` and `/feature-design` was tested by running
+each skill for real against a throwaway project under the scratchpad (a
+`CLAUDE.md` with a Feature model section, `features/` with the status files, and
+for the design tests a pre-seeded pending feature and spec-stage plan). Four
+runs: each skill in reviewed and skipped mode. This is worth repeating for any
+future change to skill prose — none of the four problems below was visible from
+re-reading the instructions.
+
+1. **Review-control tokens polluted `$ARGUMENTS`.** `/feature-design
+   archive-widgets skip review` has the skill match the *whole* string against
+   pending feature names; in `/feature-spec` the token could reach the feature
+   title or slug. Both skills now say to strip the token before interpreting the
+   argument.
+2. **`[decision]` is a reviewer concept**, so with the review skipped the final
+   step said nothing about open questions the author found themselves. Both
+   skills now require surfacing those regardless of whether the review ran.
+3. **The agent contradicted the skill.** `feature-spec-reviewer` twice asked for
+   a `## Handoff` section, which `/feature-spec` explicitly must not create —
+   `/feature-design` adds it on taking the feature into progress. The agent now
+   knows the spec-stage shape. The general lesson: an agent reviewing an
+   artefact produced by a skill needs to know that skill's rules, or it will
+   confidently demand conformance to a different stage's shape.
+4. **The second review pass can be pure waste.** If every outstanding finding is
+   `[decision]`, re-reviewing unchanged questions cannot change the verdict.
+   Both skills now say not to spend the second invocation in that case.
+
+Note also that for a bare one-line feature description, `/feature-spec` will
+reliably end at `NEEDS WORK`: the skill writes a "no requirements beyond the
+summary" placeholder, and the reviewer correctly rates a spec with no
+requirements as blocked. That is working as intended — the questions go to the
+user — but it means `READY FOR USER REVIEW` is not reachable from a one-liner,
+which matters for unattended mode.
+
+## Unattended mode rarely proceeds at spec stage (#20)
+
+Unattended mode proceeds only on `READY FOR USER REVIEW` with zero `[decision]`
+findings. In testing, `/feature-design` reached that state on a small,
+fully-specified feature, but `/feature-spec` did not — twice, on deliberately
+thorough descriptions. Both times the verdict was READY and exactly one
+`[decision]` finding held it: whether whitespace-only notes count as empty, and
+where a user's timezone comes from.
+
+The pattern looks inherent rather than a tuning problem. A spec written from a
+description almost always leaves one thing genuinely worth asking, and a
+`[decision]` blocks regardless of severity — deliberately, since a question is a
+question whatever its severity.
+
+A plausible mitigation, untested: both blocking questions were about *existing
+application infrastructure*, which the stub test project does not have. In a
+real repository those become lookups rather than judgement calls, and the skills
+now say explicitly to establish a fact rather than manufacture a question from
+it. Whether that is enough to make unattended spec runs practical is a question
+for system test, not something the fixtures here can answer.
+
+## Dogfooding: run the reviewers at spec/design time, not feature-end (#20)
+
+The `spec-design-review-agents` sign-off strategy included running
+`feature-spec-reviewer` over this feature's own plan. Done at `/feature-end`, it
+returned NEEDS WORK and named things we had already hit the hard way — the spec
+never scoped "proceed without human review" versus "a lighter human process" as
+distinct outcomes (the gap that later split sub-task 3 into 3 and 4), the
+testing pass condition was unsatisfiable as written (the fixture-rework round),
+and there was no test criterion for the skill changes.
+
+The lesson is only that the spec was loose and the review would have caught it up
+front. There was nothing to *fix* retrospectively — rewriting a shipped spec to
+pass a review dated after the work would falsify the record — so the findings are
+recorded here rather than applied. Going forward this is not a special step:
+running the reviewers is simply what `/feature-spec` and `/feature-design` now
+do, and the value is in running them at spec/design time, not as an end-of-feature
+audit.
