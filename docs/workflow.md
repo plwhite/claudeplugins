@@ -15,7 +15,7 @@ Best practice regarding git is to:
 
 - create a branch for each feature at the start of the process;
 
-- commit changes at each stage, including after every subtask;
+- commit changes at each stage, including after every sub-task;
 
 - finish off by squashing commits as necessary, and merge the branch.
 
@@ -53,6 +53,8 @@ As part of specifying, Claude proposes a **sign-off strategy** — the quality b
 
 Those four categories are the usual set, not a fixed list: if a feature needs it, the strategy can split one (say, separate unit-test and manual-test sign-offs at different stages) or add a specific sign-off of another kind (e.g. "agent X has confirmed the output"). Whatever the criteria, each is worded to be **auditable** — there is a clear yes/no at the point a sub-task finishes. "Have some tests" is not auditable; "unit tests written to the agreed quality bar" or "enough tests that you confirm coverage is sufficient" are.
 
+Before the spec reaches you, the `feature-spec-reviewer` agent reads it — see [Review before you read it](#review-before-you-read-it) below.
+
 ---
 
 ## Design a feature
@@ -78,14 +80,52 @@ Each sub-task is given its own **sign-off criteria** — checkboxes for the cate
 
 ```
 3. **Add the parser** — handle the new config format
-   - [ ] Testing: unit tests for the parser
+   - [ ] Testing: unit tests for the parser, passing
    - [ ] Code review: /review-component the parser
-   - [ ] User review: confirm the config syntax
+   - [ ] User review: user confirms the config syntax
 ```
 
 `- [ ]` is pending and `- [x]` is satisfied; the sub-task is complete only once every box is `[x]`.
 
+Before the design reaches you, the `feature-design-reviewer` agent reads it — see [Review before you read it](#review-before-you-read-it) below.
+
 **Review the design before approving it.** The design, the sub-task plan, and each sub-task's sign-off criteria are presented to you before any implementation begins. This is the moment to correct the approach, adjust scope, add constraints, or change what each sub-task must satisfy before it counts as done. Implementation does not start until you confirm.
+
+---
+
+## Review before you read it
+
+Both `/feature-spec` and `/feature-design` hand their output to a review agent before showing it to you — `feature-spec-reviewer` and `feature-design-reviewer` respectively. The point is that your attention goes on judgement calls rather than on catching vagueness, so that reviewing a spec or design is quicker and needs less back-and-forth.
+
+Each agent checks that the artefact is complete and clear, that its delivery criteria are explicit and auditable, and that anything blocking the next stage is surfaced. It ends with a one-line verdict: `READY FOR USER REVIEW` or `NEEDS WORK`.
+
+What happens to a finding depends on how it is marked, not on how severe it is:
+
+- **`[rewrite]`** — Claude fixes it before you see the artefact. Vague wording, a criterion with no clear yes/no, a requirement no sub-task covers.
+- **`[decision]`** — it comes to you as a question. Claude will not resolve it by choosing: a plausible guess is worse than an open question, because nobody knows it was made.
+
+You are told what the review changed, any questions it raised, and the verdict.
+
+### The three modes
+
+- **Reviewed (default).** The agent reviews, Claude fixes what it can, and the artefact is presented to you with the questions and the verdict. You still sign off.
+- **Skipped.** Add an explicit instruction — `--no-review`, or "skip review" — and no agent runs. The report says so plainly.
+- **Unattended.** Tell Claude to run without checking in ("don't stop for me", "run it unattended"), and the verdict stands in for your sign-off. It proceeds **only** on `READY FOR USER REVIEW` with no `[decision]` finding; a `NEEDS WORK` verdict or a single question stops it and asks you regardless. Asking to skip the review *cancels* unattended mode rather than combining with it — with nothing checked, there is no verdict to stand in for your judgement.
+
+In practice unattended runs stop more often at the spec stage than at the design stage, because a spec written from a description usually leaves at least one thing worth asking.
+
+### The review record
+
+Every run appends a line to the plan file's `## Review record`, whatever happened:
+
+```
+## Review record
+
+- 2026-06-11 — Spec reviewed by `feature-spec-reviewer`: VERDICT: READY FOR USER REVIEW. Presented to the user for sign-off.
+- 2026-06-12 — Design review: N/A — skipped on the user's instruction. Presented to the user for sign-off, unreviewed.
+```
+
+The line is written even when nothing was checked, which is what makes the section worth trusting: a missing line means the stage has not run, not that someone forgot to record it. When an artefact is accepted unattended, the line says so explicitly — "no human has read this design" — and for a design the Handoff section says it too, so a session resuming later does not have to go looking.
 
 ---
 

@@ -17,6 +17,8 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 | Skill | `review-component` | Code review scoped to a described component or area |
 | Skill | `review-branch` | Code review scoped to files changed in the current branch |
 | Agent | `dev-process-manager` | Top-level orchestrator: drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user (`claude --agent dev-process-manager`) |
+| Agent | `feature-spec-reviewer` | Reviews a feature spec before a human reads it: requirements clarity, auditable delivery criteria, blocking issues; ends with a verdict |
+| Agent | `feature-design-reviewer` | Reviews a feature design and sub-task plan before a human reads it: requirement coverage, recorded rationale, auditable sub-task criteria, blocking issues; ends with a verdict |
 | Agent | `docs-structure-reviewer` | Audits documentation structure and quality, producing actionable findings without modifying files |
 | Agent | `code-review-architectural` | Architectural review: module boundaries, coupling, design fit (`claude-opus-4-6`) |
 | Agent | `code-review-simplicity` | Simplicity review: unnecessary complexity, duplication, dead code |
@@ -35,7 +37,7 @@ Run `/feature-init` once per project before using any other skills. This writes 
 | `features/PENDING.md` | Features waiting for development |
 | `features/DEFERRED.md` | Features explicitly deferred, including those blocked by a dependency |
 | `features/COMPLETED.md` | Completed features, dated — the large list kept out of routine context |
-| `features/plans/<slug>.md` | Per-feature plan with requirements, sign-off strategy, design, sub-tasks (with sign-off checkboxes), and handoff state |
+| `features/plans/<slug>.md` | Per-feature plan with requirements, sign-off strategy, design, sub-tasks (with sign-off checkboxes), handoff state, and a review record |
 | `NOTES.md` | Non-obvious technical findings recorded continuously |
 | `CLAUDE.md` | High-level project status only — no implementation detail |
 
@@ -59,6 +61,12 @@ The first step of the lifecycle: create a feature and specify *what* it must do.
 
 It also agrees the feature's **sign-off strategy** — the quality bar for testing, documentation, code review, and user review across the whole feature (e.g. full test coverage vs none; production docs vs internal notes) — and records it in the plan file's `## Sign-off strategy` section. Deciding *not* to do one of these is legitimate, but it is an explicit, up-front choice you can comment on here.
 
+Before the spec reaches you, the `feature-spec-reviewer` agent reviews it. Findings it marks `[rewrite]` are fixed for you; findings it marks `[decision]` are put to you as questions rather than guessed at. You are told what the review changed and what its verdict was. Skip it with an explicit instruction (`--no-review`, or "skip review"), in which case the report says so.
+
+If you have asked for an unattended run, the verdict stands in for your sign-off — but only on `READY FOR USER REVIEW` with no `[decision]` finding; anything else stops and asks you regardless. A skipped review cancels unattended mode rather than compounding with it.
+
+Every run appends a line to the plan file's `## Review record`, including one reading `N/A — skipped on the user's instruction`. That makes the section trustworthy evidence of what has been checked: an absent line means the stage has not run, not that nobody bothered to write it down.
+
 **Example:**
 ```
 /feature-spec "Add dark mode support to the UI"
@@ -72,6 +80,12 @@ It also agrees the feature's **sign-off strategy** — the quality bar for testi
 **Invoke with:** `/feature-design [feature name or slug]`
 
 The second step of the lifecycle: decide *how* the feature will be built. Moves the named feature from `features/PENDING.md` to `features/CURRENT.md`, then fleshes out `features/plans/<slug>.md` — preserving the `## Requirements` section written by `/feature-spec`, filling in the Design section, and adding a numbered sub-task list. Each sub-task carries its **sign-off criteria** as checkboxes (the applicable subset of testing / docs / code review / user review, derived from the sign-off strategy), agreed with you here — a sub-task is later complete only when all its boxes are ticked. The plan file includes a `## Handoff` section kept current so any session can resume without context from the previous one. Producing the design does not begin implementation — that is a separate step with no slash command. If only one feature is pending, the argument can be omitted.
+
+Before the design reaches you, the `feature-design-reviewer` agent reviews it — requirement coverage, recorded rationale, auditable sub-task criteria, and anything blocking implementation. Findings it marks `[rewrite]` are fixed for you; findings it marks `[decision]` are put to you as questions. Skip it with an explicit instruction (`--no-review`, or "skip review"), in which case the report says so.
+
+If you have asked for an unattended run, the verdict stands in for your sign-off and implementation may begin without you having seen the design — but only on `READY FOR USER REVIEW` with no `[decision]` finding; anything else stops and asks you regardless. A skipped review cancels unattended mode.
+
+As at spec time, every run appends a line to the plan file's `## Review record`, beneath the spec-stage line rather than replacing it — the section is the feature's review history. When a design is accepted unattended, the `## Handoff` summary says so too, so a resuming session sees it without going looking.
 
 **Example:**
 ```
@@ -136,6 +150,26 @@ Runs a code review scoped to files changed in the current feature branch, derive
 **Run as the session agent with:** `claude --agent dev-process-manager` (or, in container mode, `claude-run --manager` — equivalently `claude-run --agent dpm` — see [docs/container.md](../docs/container.md)).
 
 A top-level Opus orchestrator for the feature workflow. Unlike the review agents — which are sub-agents invoked by a skill — this agent *is* the session you talk to. It establishes the feature being worked on (specifying and designing one itself if asked), agrees an autonomy boundary with you (e.g. "do sub-tasks 1–4, then check with me"), then for each sub-task spawns a teammate (normally Sonnet), briefs it to run `/feature-checkpoint` on completion, reviews the actual changes before accepting them — accepting a sub-task only once all its sign-off boxes are ticked — and shuts the teammate down. It pauses for you at requirement/design decisions and when you ask to review something. See [docs/capabilities.md](../docs/capabilities.md#dev-process-manager) for the task-oriented guide.
+
+---
+
+### feature-spec-reviewer
+
+Reviews a feature specification — the `## Requirements` and `## Sign-off strategy` sections of a plan file — and reports what a human would otherwise have to catch. It checks that the spec is complete and unambiguous (in particular that source-issue content was captured rather than deferred to), that every sign-off category is present and worded auditably, that blocking issues are surfaced, and that the spec states *what* without pre-empting the design.
+
+Findings are classified BLOCKING / MAJOR / MINOR / SUGGESTION, and each is marked `[rewrite]` (the calling skill can fix it by rewording) or `[decision]` (it needs an answer from the user). Output ends with an explicit `VERDICT: READY FOR USER REVIEW` or `VERDICT: NEEDS WORK` — ready only when there are no BLOCKING and no MAJOR findings. It never modifies files.
+
+Invoked automatically at the end of `/feature-spec`, before the spec is presented. Test fixtures for the agent live in `devproc/tests/feature-spec-reviewer/`.
+
+---
+
+### feature-design-reviewer
+
+Reviews a feature design and its sub-task plan — the `## Design` and `## Sub-tasks` sections of a plan file. It traces every requirement to the part of the design that delivers it, checks that decisions are recorded with their rationale (and that rejected alternatives are noted), that each sub-task's sign-off criteria are auditable and no weaker than the agreed strategy, that ticking every sub-task would actually complete the feature, and that the breakdown is sensibly sized and ordered. It reads `## Requirements` and `## Sign-off strategy` as context but does not review them — that is `feature-spec-reviewer`'s job.
+
+Findings and verdict use the same scheme as `feature-spec-reviewer`: BLOCKING / MAJOR / MINOR / SUGGESTION, each marked `[rewrite]` or `[decision]`, ending in `VERDICT: READY FOR USER REVIEW` or `VERDICT: NEEDS WORK`. It never modifies files, and does not propose a replacement design of its own.
+
+Invoked automatically at the end of `/feature-design`, before the design is presented. Test fixtures live in `devproc/tests/feature-design-reviewer/`.
 
 ---
 

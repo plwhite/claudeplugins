@@ -24,7 +24,7 @@ The manager runs as Opus automatically — `claude-run` takes the model from the
 
 What it does:
 
-- **Establishes the feature.** It reads the in-progress feature and its plan, or — if you ask — specs and designs a new one (e.g. "spec and design a feature from issue 19"), getting the design in front of you before any code is written.
+- **Establishes the feature.** It reads the in-progress feature and its plan, or — if you ask — specs and designs a new one (e.g. "spec and design a feature from issue 19"), getting the design in front of you before any code is written. The spec and design skills review their own output first (see [workflow.md](workflow.md#review-before-you-read-it)); where your autonomy boundary covers those stages they run unattended, and a clean reviewer verdict stands in for your sign-off — but a blocking finding or an open question stops the run and comes to you regardless.
 - **Agrees an autonomy boundary.** It settles with you up front how far to run unattended, then proceeds without asking at every step until it reaches that boundary.
 - **Delegates each sub-task to a teammate.** For each sub-task it spawns a teammate (normally Sonnet), briefs it with the single sub-task, its sign-off criteria, and the context it needs, and requires it to run `/feature-checkpoint` when done.
 - **Reviews the work.** It inspects the actual changes rather than trusting the teammate's report, running a code review where warranted, and sends corrections back if needed. It accepts a sub-task as done only once all of its sign-off boxes are ticked.

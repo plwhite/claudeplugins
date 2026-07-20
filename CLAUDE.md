@@ -4,6 +4,8 @@
 
 **No feature currently in progress.**
 
+`spec-design-review-agents` completed 2026-07-21 — added `feature-spec-reviewer` and `feature-design-reviewer`, run at the end of `/feature-spec` and `/feature-design` before the artefact reaches the human, so completeness, auditable delivery criteria, and blocking issues are caught first (#20). Each agent ends with a `READY FOR USER REVIEW` / `NEEDS WORK` verdict and marks findings `[rewrite]` (the skill fixes them) or `[decision]` (put to the user). Three modes: reviewed (default), skipped on explicit instruction, and unattended — where a clean verdict stands in for human sign-off, gated on `READY` with no `[decision]`, and a `## Review record` line in the plan file records what was checked. Test fixtures live under `devproc/tests/<agent>/`.
+
 `subtask-signoff` completed 2026-06-25 — added explicit per-sub-task sign-off criteria (testing, docs, code review, user review) to the feature workflow so quality steps are a deliberate up-front choice rather than something skipped. A feature agrees a sign-off *strategy* at `/feature-spec`, `/feature-design` turns it into per-sub-task *checkbox criteria* the user agrees, and a sub-task is complete only when all boxes are `[x]` — enforced by `/feature-checkpoint` and `/feature-end`. The canonical model lives in a new `### Sign-off criteria` section of the `feature-init` CLAUDE.md template; README and `docs/` were updated to match. Categories are an open set and every criterion must be auditable (#25).
 
 `docs-reviewer-memory-path` completed 2026-06-16 — fixed the `docs-structure-reviewer` agent so it stores memory at a `$CLAUDE_PROJECT_DIR`-anchored path (`$CLAUDE_PROJECT_DIR/.claude/agent-memory/docs-structure-reviewer/`) rather than relative to cwd, which had scattered stray memory trees when the agent was run from subdirectories (#23).
@@ -60,6 +62,8 @@ Contents:
 - `devproc/skills/review-component/SKILL.md` — code review scoped to a described component (resolves natural-language description to files)
 - `devproc/skills/review-branch/SKILL.md` — code review scoped to files changed in the current branch (uses git diff for scope and context)
 - `devproc/agents/dev-process-manager.md` — top-level Opus orchestrator (`claude --agent dev-process-manager`); drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user
+- `devproc/agents/feature-spec-reviewer.md` — reviews a feature spec (requirements and sign-off strategy) before a human reads it, ending with a `READY FOR USER REVIEW` / `NEEDS WORK` verdict
+- `devproc/agents/feature-design-reviewer.md` — reviews a feature design and its sub-task plan (requirement coverage, recorded rationale, auditable criteria) before a human reads it, ending with the same verdict
 - `devproc/agents/docs-structure-reviewer.md` — audits documentation structure and quality, producing actionable findings
 - `devproc/agents/code-review-architectural.md` — architectural review agent (`claude-opus-4-6`)
 - `devproc/agents/code-review-simplicity.md` — simplicity and dead-code review agent
@@ -149,7 +153,7 @@ Checkbox convention:
 
 - `- [ ]` is pending; `- [x]` is satisfied.
 - A sub-task is complete only when all its boxes are `[x]`; an unchecked box means it is not done.
-- Only the categories that apply to a sub-task are listed. A category skipped for the whole feature is justified once in `## Sign-off strategy`; a feature-level sign-off (e.g. one end-of-feature docs review or `/review-branch`) is recorded there too, rather than repeated on every sub-task.
+- Only the categories that apply to a sub-task are listed. When a category does not apply, omit it — never write a placeholder such as `- [ ] User review: none`, which can never be ticked and so blocks the sub-task from ever completing. A category skipped for the whole feature is justified once in `## Sign-off strategy`; a feature-level sign-off (e.g. one end-of-feature docs review or `/review-branch`) is recorded there too, rather than repeated on every sub-task.
 
 `/feature-checkpoint` may be run at any time, including mid-sub-task: it records
 which boxes are ticked and which remain so the hand-off is accurate, and never
@@ -188,6 +192,7 @@ These apply at all times, not just when completing features:
 
     - Subtask list with short descriptions, per-sub-task sign-off checkboxes, and status markers (`✓`, `▶ NEXT:`)
 
+    - Review record (a log, appended by `/feature-spec` and `/feature-design`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped. Always the last section of the file; a line is written every time, so an absent line means the stage has not run. Preserve it across edits.)
 
 - **`NOTES.md`** — non-obvious findings only. Do not record things derivable from reading the code.
 

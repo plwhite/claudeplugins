@@ -70,7 +70,7 @@ Checkbox convention:
 
 - `- [ ]` is pending; `- [x]` is satisfied.
 - A sub-task is complete only when all its boxes are `[x]`; an unchecked box means it is not done.
-- Only the categories that apply to a sub-task are listed. A category skipped for the whole feature is justified once in `## Sign-off strategy`; a feature-level sign-off (e.g. one end-of-feature docs review or `/review-branch`) is recorded there too, rather than repeated on every sub-task.
+- Only the categories that apply to a sub-task are listed. When a category does not apply, omit it — never write a placeholder such as `- [ ] User review: none`, which can never be ticked and so blocks the sub-task from ever completing. A category skipped for the whole feature is justified once in `## Sign-off strategy`; a feature-level sign-off (e.g. one end-of-feature docs review or `/review-branch`) is recorded there too, rather than repeated on every sub-task.
 
 `/feature-checkpoint` may be run at any time, including mid-sub-task: it records
 which boxes are ticked and which remain so the hand-off is accurate, and never
@@ -111,6 +111,8 @@ These apply at all times, not just when completing features:
     - Design (implementation strategy)
 
     - Subtask list with short descriptions, per-sub-task sign-off checkboxes, and status markers (`✓`, `▶ NEXT:`)
+
+    - Review record (a log, appended by `/feature-spec` and `/feature-design`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped. Always the last section of the file; a line is written every time, so an absent line means the stage has not run. Preserve it across edits.)
 
 - **`NOTES.md`** — non-obvious findings only. Do not record things derivable from reading the code.
 
