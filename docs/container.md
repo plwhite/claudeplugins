@@ -8,7 +8,7 @@ The container:
 - Mounts the project directory read-write at `/workspace`.
 - Bakes in the `devproc` plugin so the full feature workflow is available.
 - Uses a "YOLO" `~/.claude/` config: `--dangerously-skip-permissions`, bypass-permissions mode, onboarding skipped.
-- Passes your Claude login credentials (from `~/.claude/.credentials.json`) automatically.
+- Copies in your Claude login credentials (from `~/.claude/.credentials.json`) automatically when the container starts.
 - Does not pass git remote credentials — only local git operations (`git status`, `git diff`, `git log`) are available inside the container.
 
 ## Prerequisites
@@ -98,6 +98,22 @@ The `reset` at the end of the attach script cleans up the terminal after you det
 
 Copying text out of the tmux session can be awkward: a normal click-drag selection is captured by tmux rather than your terminal. To select text for the system clipboard, **hold Shift while highlighting** — this bypasses tmux and uses your terminal emulator's own selection, so the usual copy (and paste) shortcuts work as expected.
 
+## Refresh credentials mid-session
+
+Credentials are copied into the container once, at startup — they are not bind-mounted, so a token refreshed on the host afterwards does not automatically propagate in. If the OAuth token expires during a long-running session, refresh it in place rather than restarting the container (which would lose session context):
+
+```bash
+bash /some/path/claudeplugins/bin/claude-creds-refresh
+```
+
+Or with an explicit path:
+
+```bash
+bash /some/path/claudeplugins/bin/claude-creds-refresh /path/to/project
+```
+
+This forces a host-side token refresh (in case the host's own copy is also stale), then copies the refreshed credentials into the running container.
+
 ## Stop and remove the container
 
 From the project directory that the container is running on:
@@ -119,14 +135,15 @@ This stops and removes the container. Work is preserved in the project directory
 If you want to call the scripts without specifying the full path each time, symlink them into a directory on your `PATH`:
 
 ```bash
-ln -s /some/path/claudeplugins/bin/claude-build  ~/.local/bin
-ln -s /some/path/claudeplugins/bin/claude-run    ~/.local/bin
-ln -s /some/path/claudeplugins/bin/claude-attach ~/.local/bin
-ln -s /some/path/claudeplugins/bin/claude-stop   ~/.local/bin
+ln -s /some/path/claudeplugins/bin/claude-build         ~/.local/bin
+ln -s /some/path/claudeplugins/bin/claude-run           ~/.local/bin
+ln -s /some/path/claudeplugins/bin/claude-attach        ~/.local/bin
+ln -s /some/path/claudeplugins/bin/claude-creds-refresh ~/.local/bin
+ln -s /some/path/claudeplugins/bin/claude-stop          ~/.local/bin
 ```
 
 Ensure `~/.local/bin` is on your `$PATH`; if it is not, add `export PATH="$HOME/.local/bin:$PATH"` to your shell profile (`.bashrc`, `.zshrc`, etc.).
 
 The scripts handle symlinks correctly — they resolve their own path before locating the repo root, so the build context is always correct.
 
-After symlinking you can run `claude-build`, `claude-run`, `claude-attach`, and `claude-stop` directly from any directory.
+After symlinking you can run `claude-build`, `claude-run`, `claude-attach`, `claude-creds-refresh`, and `claude-stop` directly from any directory.
