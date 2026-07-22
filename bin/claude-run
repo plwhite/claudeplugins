@@ -121,16 +121,40 @@ if [[ -n "$MODEL" ]]; then
     extra_env+=(-e CLAUDE_MODEL="$MODEL")
 fi
 
-docker run -d \
+# Refresh the host's token before creating anything, in case it is already
+# stale — Claude Code only refreshes on use, so simply reading the file
+# wouldn't trigger it, and the container would start from a copy that's dead
+# on arrival. The forced use (`claude -p`) is a full API round-trip costing a
+# few seconds, so skip it while the token still has at least 5 minutes to
+# live; if the expiry can't be read (missing jq, unexpected format), assume
+# stale and refresh.
+expires_ms="$(jq -r '.claudeAiOauth.expiresAt // 0' "$HOME/.claude/.credentials.json" 2>/dev/null || echo 0)"
+[[ "$expires_ms" =~ ^[0-9]+$ ]] || expires_ms=0
+if (( expires_ms / 1000 < $(date +%s) + 300 )); then
+    claude -p hello > /dev/null
+fi
+
+docker create \
     -v "$PROJECT":/workspace \
-    -v "$HOME/.claude/.credentials.json":/home/claude/.claude/.credentials.json:ro \
     -e GIT_AUTHOR_NAME="$GIT_NAME" \
     -e GIT_AUTHOR_EMAIL="$GIT_EMAIL" \
     -e GIT_COMMITTER_NAME="$GIT_NAME" \
     -e GIT_COMMITTER_EMAIL="$GIT_EMAIL" \
     "${extra_env[@]}" \
     --name "$CONTAINER" \
-    claudedev
+    claudedev > /dev/null
+
+# Credentials are copied in rather than bind-mounted: Claude Code refreshes
+# them via atomic rename, which changes the file's inode, and a single-file
+# bind mount stays pinned to the old one — so a mounted container never sees a
+# refreshed token. Copying into the container before it starts avoids any
+# race with the entrypoint trying to read the file early. Ownership is fixed
+# up with chown once the container is running, since `docker cp` preserves
+# the UID/GID of the source file. If the token expires mid-session, refresh
+# it in place with claude-creds-refresh instead of restarting the container.
+docker cp "$HOME/.claude/.credentials.json" "$CONTAINER:/home/claude/.claude/.credentials.json"
+docker start "$CONTAINER" > /dev/null
+docker exec -u root "$CONTAINER" chown claude:claude /home/claude/.claude/.credentials.json
 
 echo "Started container: $CONTAINER"
 if [[ -n "$AGENT" ]]; then
