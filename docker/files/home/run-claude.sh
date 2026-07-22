@@ -26,6 +26,16 @@ if [[ -n "${CLAUDE_MODEL:-}" ]]; then
     agent_args+=(--model "$CLAUDE_MODEL")
 fi
 
+# Warm-up run before an agent session. In a fresh container the first Claude
+# startup is what installs the devproc plugin (from extraKnownMarketplaces /
+# enabledPlugins in settings.json), and `--agent` validation happens before that
+# sync completes — so `claude --agent dev-process-manager` always fails on the
+# very first run. A throwaway non-agent run loads the plugins, after which the
+# agent lookup succeeds.
+if [[ ${#agent_args[@]} -gt 0 ]]; then
+    claude -p hello > /dev/null || true
+fi
+
 # First launch starts a fresh conversation; every relaunch resumes it.
 # `--continue` auto-resumes the most recent conversation in this directory
 # (unlike `-r`/`--resume`, which with no session ID opens an interactive picker).
