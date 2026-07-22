@@ -299,6 +299,26 @@ now say explicitly to establish a fact rather than manufacture a question from
 it. Whether that is enough to make unattended spec runs practical is a question
 for system test, not something the fixtures here can answer.
 
+## First container run installs plugins; `--agent` fails until then
+
+In a fresh container, the devproc plugin is not installed until Claude's first
+startup processes `extraKnownMarketplaces`/`enabledPlugins` from the baked-in
+`settings.json` — and `--agent` validation happens before that sync completes.
+So `claude --agent dev-process-manager` **always** fails on the very first run
+in a new container (the exact failure `claude-run --manager` hit: entrypoint →
+tmux → `run-claude.sh` makes the agent launch the first-ever invocation).
+Retrying without a successful run in between still fails; one successful
+non-agent run installs the plugins and after that the agent lookup works
+permanently. Confirmed by testing: a manual `claude --agent dev-process-manager`
+in an already-used container works fine.
+
+Fix: `run-claude.sh` does a throwaway warm-up (`claude -p hello > /dev/null`)
+before the keep-alive loop, guarded on an agent being selected — plain
+`claude-run` never hit the bug, and the warm-up costs a model call and a few
+seconds of startup. The warm-up's throwaway conversation is never resumed: the
+first real launch is plain `claude` (fresh), and later `--continue` relaunches
+resume the interactive session, which is more recent.
+
 ## Dogfooding: run the reviewers at spec/design time, not feature-end (#20)
 
 The `spec-design-review-agents` sign-off strategy included running
