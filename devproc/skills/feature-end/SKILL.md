@@ -27,7 +27,7 @@ Steps:
 <Two to four sentences summarising what was built, what data was committed, and any notable decisions. No tables, no sub-task lists.>
 ```
 
-4. Call @docs-structure-reviewer to perform a full review that the structure of the documentation is still valid. Apply its feedback, then call it again to confirm. If each call does not have fewer issues than the previous one (i.e. you are converging) ask for user input.
+4. Call @docs-structure-reviewer to perform a full review that the structure of the documentation is still valid. Apply its feedback, then call it again to confirm. If each call does not have fewer issues than the previous one (i.e. you are converging) ask for user input. (This run is the default feature-level **docs review (agent)** sign-off; if the feature's `## Sign-off strategy` recorded a different or additional docs-review arrangement, honour that too.)
 
 5. The plan file (`features/plans/<slug>.md`) can be left as-is to serve as a record of how the feature unfolded.
 

@@ -8,8 +8,8 @@ Create a new feature and capture its specification. This is the first step of
 the feature lifecycle (`feature-spec` → `feature-design` → implement →
 `feature-end`): it sets up the feature's tracking entry, records *what* the
 feature must do, and agrees the feature's **sign-off strategy** (the quality bar
-for testing, docs, code review, and user review), leaving *how* to
-`/feature-design`.
+per sign-off category, as defined in the project CLAUDE.md under `### Sign-off
+criteria`), leaving *how* to `/feature-design`.
 
 Before proceeding, check that CLAUDE.md contains a Feature Model section.
 If it doesn't, tell the user to run /feature-init first and stop.
@@ -67,18 +67,11 @@ Keep this entry concise — no implementation detail, no sub-tasks. The full spe
    - **If the user supplied detailed requirements directly:** record them here verbatim or lightly tidied.
    - **If there is nothing beyond the one-or-two-sentence PENDING.md entry:** write `*No requirements beyond the summary in `features/PENDING.md`; design to be determined by `/feature-design`.*`
 
-6. Populate the `## Sign-off strategy` section — the quality bar the feature will be held to, which `/feature-design` later turns into per-sub-task sign-off criteria. The four categories below are the most likely sign-offs; cover each of them, proposing a sensible default for *this* feature and its risk:
+6. Populate the `## Sign-off strategy` section — the quality bar the feature will be held to, which `/feature-design` later turns into per-sub-task sign-off criteria. The sign-off model — the standard categories, the auditability rule, and the rule that every review sign-off names its performer (agent or user) — is defined in the project CLAUDE.md under `### Sign-off criteria`. Apply that model rather than restating or reinventing it. For this feature:
 
-   - **Testing** — e.g. "full automated coverage of new logic", "basic happy-path tests", or "none (prose-only change)".
-   - **Documentation** — e.g. "full production docs, updated as we go", or "internal `NOTES.md` only".
-   - **Code review** — e.g. "per-sub-task light agent review", "a single `/review-branch` before `/feature-end`", or "none".
-   - **User review** — e.g. "user confirms each sub-task", or "user reviews only at feature end".
-
-   These four are the usual set, not a closed list. If the feature genuinely needs it, split a category into separate sign-offs (e.g. unit tests and manual tests confirmed at different stages) or add a specific sign-off of another kind (e.g. "agent X has confirmed the output"). Do not invent sign-offs for their own sake.
-
-   Word every entry so it is **auditable** — there must be a clear yes/no at the point a sub-task finishes. "Have some tests" is not auditable; "unit tests written to the agreed quality bar" or "enough tests that the user confirms coverage is sufficient" are.
-
-   Choosing *not* to do a category is legitimate, but state it explicitly as "None — <reason>" so the choice is visible and the user can comment on it. Base the proposal on the feature: higher-risk or user-facing work warrants stronger testing and review than a small internal change.
+   - Propose a bar for **every standard category**, suited to the feature and its risk: higher-risk or user-facing work warrants stronger testing and review than a small internal change (e.g. Testing: "full automated coverage of new logic" vs "none (prose-only change)"; Code review: "a single agent `/review-branch` before `/feature-end`" vs "user reviews the diff of each sub-task").
+   - Choosing *not* to do a category is legitimate, but state it explicitly as "None — <reason>" so the choice is visible and the user can comment on it.
+   - Split a category or add a feature-specific sign-off where the work genuinely needs it, per the model; do not invent sign-offs for their own sake.
 
 > Step 7 below is near-identical in `feature-spec` and `feature-design`. If you change the review invocation, the finding-handling rules, the two-invocation cap, the unattended-mode gate, or the `## Review record` format, update both — a silent divergence in the unattended gate is the worst case, since it governs when human sign-off is bypassed. If you add or remove a finding marker, update both agents' `## Output Format` too: the markers are the contract between them.
 
