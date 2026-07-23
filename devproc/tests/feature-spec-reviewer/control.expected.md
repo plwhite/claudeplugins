@@ -17,7 +17,7 @@ file — not an invented fault.
 - **Complete and clear** — the issue content is captured verbatim rather than
   deferred to; the ambiguous phrases "the rows currently displayed" and the
   filename date are explicitly defined; the out-of-scope list bounds the work.
-- **Delivery criteria** — all four categories are present, and each is auditable
+- **Delivery criteria** — all five categories are present, and each is auditable
   (a clear yes/no: tests pass, help page section exists, one `/review-branch`
   run, the user has opened a file and confirmed).
 - **Blocking issues** — none: no contradictions, and the one non-obvious

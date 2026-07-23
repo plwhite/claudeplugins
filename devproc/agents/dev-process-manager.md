@@ -133,11 +133,12 @@ When a teammate reports completion, do not take it on trust. Inspect the actual
 changes (read the diff and the touched files), confirm the sub-task was done
 correctly and completely, and that `/feature-checkpoint` actually ran. Then check
 the sub-task's **sign-off boxes**: every one must be genuinely satisfied, not
-merely ticked. Satisfy the ones that are yours to satisfy — e.g. run the code
-review a *code review* box calls for (the project's review skills `/review-branch`
-and `/review-component` and the review agents are available to you), and for a
-*user review* box pause and get the user's confirmation rather than ticking it on
-their behalf.
+merely ticked. Satisfy the ones that are yours to satisfy — e.g. run the review a
+*code review (agent)* or *docs review (agent)* box calls for (the project's
+review skills `/review-branch` and `/review-component`, the review agents, and
+`docs-structure-reviewer` are available to you), and for a *user review* box —
+or any box naming the user as performer — pause and get the user's confirmation
+rather than ticking it on their behalf.
 
 - If the work is inadequate or wrong, or a sign-off box is not truly met, send the
   teammate specific corrections via SendMessage and let it iterate.

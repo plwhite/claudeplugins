@@ -1,7 +1,7 @@
 # Expected findings — `non-auditable-criteria.md`
 
 **Flaw under test:** delivery criteria. The `## Sign-off strategy` entries are
-not auditable, and two categories are silently absent. The `## Requirements`
+not auditable, and three categories are silently absent. The `## Requirements`
 section is the clean one from `control.md` and must not be faulted.
 
 ## Required findings
@@ -14,9 +14,10 @@ covering **all three** of:
    that gives auditable wording.
 2. **Documentation is not auditable** — "Update the docs as needed" leaves both
    the scope and the done point undefined. Must be reported.
-3. **Missing categories** — code review and user review are absent entirely,
-   rather than being recorded as an explicit "None — <reason>". Must be
-   reported. A single finding naming both categories is acceptable.
+3. **Missing categories** — code review, docs review, and user review are
+   absent entirely, rather than being recorded as an explicit "None — <reason>".
+   Must be reported. A single finding naming all the missing categories is
+   acceptable, as is one that names only some of them.
 
 At least one finding should note that the bar is conspicuously light given the
 change is user-facing and the data goes to finance.

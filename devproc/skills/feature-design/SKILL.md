@@ -95,17 +95,17 @@ section of the file.>
 
 Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md` as you discover it, not here. The Design section is the exception: it should capture the key decisions and rationale from the planning process.
 
-6. Give each sub-task its **sign-off criteria**, derived from the `## Sign-off strategy` agreed at `/feature-spec`. Under each sub-task, add a checkbox for every sign-off that applies to it:
+6. Give each sub-task its **sign-off criteria**, derived from the `## Sign-off strategy` agreed at `/feature-spec`. The conventions these must follow — the standard categories, the checkbox format, auditability, performer attribution on review boxes, omitting categories that do not apply rather than writing untickable placeholders, and recording feature-level sign-offs in `## Sign-off strategy` rather than on every sub-task — are defined in the project CLAUDE.md under `### Sign-off criteria`. Apply them. Specific to this step:
 
-   - Start from the four standard categories (testing, docs, code review, user review), plus any feature-specific sign-offs the strategy defined (e.g. a separate manual-test sign-off, or "agent X confirms the output"). List only the categories that genuinely apply to that sub-task — a small internal sub-task may need only one, a risky one may need all of them.
-   - Word each criterion so it is **auditable** — there must be a clear yes/no when the sub-task finishes. "Add tests" is not auditable; "unit tests for the parser, passing" or "user confirms the config syntax" are.
-   - Follow the checkbox convention in the project `CLAUDE.md` (`### Sign-off criteria`): `- [ ]` is pending and `- [x]` is satisfied; a sub-task is complete only when all its boxes are `[x]`. When a category does not apply to a sub-task, **leave it out** — do not write a placeholder box such as `- [ ] User review: none`, which can never legitimately be ticked and so blocks the sub-task from ever completing. If the omission is one a reader might question, justify it once where it belongs: a feature-wide skip in `## Sign-off strategy`, or a note beneath the sub-task list for a case that recurs across several sub-tasks (e.g. "sub-tasks 1–2 carry no user review — no user-visible surface until sub-task 3"). Feature-level sign-offs (e.g. a single end-of-feature `/review-branch`) live in `## Sign-off strategy`, not duplicated onto every sub-task.
+   - Under each sub-task, add a checkbox for every sign-off that applies to it — the applicable standard categories plus any feature-specific sign-offs the strategy defined. List only what genuinely applies: a small internal sub-task may need only one box, a risky one may need all of them.
+   - If an omission is one a reader might question, justify it once where it belongs: a feature-wide skip in `## Sign-off strategy`, or a note beneath the sub-task list for a case that recurs across several sub-tasks (e.g. "sub-tasks 1–2 carry no user review — no user-visible surface until sub-task 3").
 
    Example:
    ```
    3. **Add the config parser** — handle the new format
       - [ ] Testing: unit tests for the parser, passing
-      - [ ] Code review: /review-component the parser
+      - [ ] Code review (agent): /review-component the parser
+      - [ ] Docs review (agent): docs-structure-reviewer over the updated config docs
       - [ ] User review: user confirms the config syntax
    ```
 

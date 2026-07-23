@@ -44,7 +44,9 @@ user's local date at the time of export.
 - **Documentation** — User-facing help page section describing the export and
   its column meanings, plus a `NOTES.md` entry recording how the large-export
   memory constraint was met.
-- **Code review** — One `/review-branch` before `/feature-end`.
+- **Docs review** — One agent docs review (`docs-structure-reviewer`) over the
+  updated docs at `/feature-end`.
+- **Code review** — One agent `/review-branch` before `/feature-end`.
 - **User review** — The user opens an exported file and confirms it is what
   finance needs, before the export sub-task is marked complete.
 
@@ -91,8 +93,9 @@ existing filter controls.
 
 **▶ NEXT:** Sub-task 1
 
-> Feature-level sign-off: one `/review-branch` before `/feature-end`, per the
-> sign-off strategy, rather than a code-review box on each sub-task.
+> Feature-level sign-off: one agent `/review-branch` and one agent docs review
+> (`docs-structure-reviewer`) at `/feature-end`, per the sign-off strategy,
+> rather than code-review or docs-review boxes on each sub-task.
 
 > Sub-tasks 1 and 2 carry no user-review box: there is no user-visible surface
 > until sub-task 3, where the user review for the feature sits.

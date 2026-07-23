@@ -53,6 +53,8 @@ Read `## Requirements` and `## Sign-off strategy` for context — they are what 
 
 Read the codebase. A design that names files, components, or commands can be checked against what exists, and a design whose foundations are not there is the most valuable thing you can find. Use Glob and Grep freely.
 
+Read the project's `CLAUDE.md` too — its `### Sign-off criteria` section is the canonical statement of the sign-off model (categories, checkbox convention, auditability, performer attribution on review boxes) that the sub-task criteria must follow. Your delivery-criteria checks enforce that section.
+
 ---
 
 ## Review Criteria
@@ -69,6 +71,7 @@ Read the codebase. A design that names files, components, or commands can be che
 - **Every sub-task carries sign-off criteria**, as checkboxes, unless the project's model explicitly puts that sign-off at feature level.
 - **Criteria are derived from the agreed `## Sign-off strategy`.** Flag a sub-task whose criteria are weaker than the strategy demands — that is the strategy being quietly eroded. Flag equally where a category the strategy requires has silently vanished from every sub-task.
 - **Each criterion is auditable** — a clear yes/no at the point the sub-task finishes. "Tests added" is not auditable. "Unit tests for the parser, passing" is.
+- **Each review criterion names its performer** — a review box (code review, docs review, or otherwise) carries the parenthetical convention from `### Sign-off criteria`: `Code review (agent): ...`, `Docs review (agent): ...`, or `Code review (user): ...`. A bare `Code review:` or `Docs review:` box is ambiguous and is a finding. (A **User review** box needs no parenthetical.)
 - **Completion means delivery.** If every sub-task were ticked, would the feature be done? Look for the work that no sub-task owns: migration, cleanup, wiring the new thing into the place that calls it, updating the caller, deleting what it replaced.
 
 ### 3. Blocking issues

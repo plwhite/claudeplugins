@@ -38,16 +38,21 @@ it is discovered.
 
 ### Sign-off criteria
 
+This section is the **canonical statement of the sign-off model**. The
+`devproc` skills and review agents apply the rules written here rather than
+carrying their own copies — when the model changes, it changes here.
+
 Every feature defines explicit sign-off criteria, so quality steps are a
-deliberate choice rather than something quietly skipped. Four categories cover
+deliberate choice rather than something quietly skipped. Five categories cover
 the most likely sign-offs:
 
 - **Testing** — manual or automated checks that the work behaves correctly.
 - **Documentation** — user and architectural docs updated to reflect the change.
-- **Code review** — review of the change (a light per-sub-task agent review, or a full `/review-branch`).
+- **Code review** — review of the code, by an agent (e.g. a light per-sub-task agent review, or a full `/review-branch`) or by the user.
+- **Docs review** — review of the updated documentation, by an agent (e.g. `docs-structure-reviewer`) or by the user. This is a review activity like code review — checking what was done, not writing it — and it has its own category because it is the sign-off most routinely missed.
 - **User review** — the user sees and confirms the work.
 
-These four are the usual set, not a closed list: a feature's strategy may split
+These five are the usual set, not a closed list: a feature's strategy may split
 one into separate sign-offs (e.g. unit tests and manual tests confirmed at
 different stages) or add a specific sign-off of another kind (e.g. "agent X has
 confirmed the output"). Do not invent sign-offs for their own sake, but do
@@ -58,6 +63,15 @@ must be unambiguous whether the criterion is met. "Have some tests" is not
 auditable; "unit tests written to the agreed quality bar" is, and so is "enough
 tests that the user confirms coverage is sufficient" — each has a clear
 done/not-done point. Word every criterion so it has a definite yes/no.
+
+Part of being auditable is that any review sign-off — code review, docs
+review, or otherwise — says **who performs it**: an agent (naming the skill or
+agent, e.g. `/review-branch`, `docs-structure-reviewer`) or the user. A bare
+"code review" box is ambiguous. In checkbox labels, write the performer in
+parentheses — e.g. `- [ ] Code review (agent): /review-component the parser`,
+`- [ ] Docs review (agent): docs-structure-reviewer over the updated docs`, or
+`- [ ] Code review (user): user reads the parser diff`. (A **User review**
+box needs no parenthetical — the user is the performer by definition.)
 
 For each category it is legitimate to decide *not* to do it — but that decision
 is made explicitly and up front, where the user can comment on it:
@@ -106,7 +120,7 @@ These apply at all times, not just when completing features:
 
     - Requirements (the full relevant content from the source issue, if the feature came from one — enough to resume without re-reading the issue)
 
-    - Sign-off strategy (the quality bar per category — testing, docs, code review, user review — agreed at `/feature-spec`)
+    - Sign-off strategy (the quality bar per sign-off category — see `### Sign-off criteria` — agreed at `/feature-spec`)
 
     - Design (implementation strategy)
 

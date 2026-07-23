@@ -49,9 +49,9 @@ When you have a piece of work to track — from a GitHub issue, a design doc, or
 
 This adds an entry to `features/PENDING.md` with a slug (e.g. `[improve-error-messages]`) and creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section holds the captured specification so you never need to re-open the issue.
 
-As part of specifying, Claude proposes a **sign-off strategy** — the quality bar for each of the four sign-off categories (testing, documentation, code review, user review) across the whole feature. For example: 100% test coverage versus basic tests versus none; full production docs versus internal notes only. It is recorded in the plan file's `## Sign-off strategy` section. Skipping a category is fine, but it is a deliberate choice made here where you can comment on it — not something that quietly slips. This is the moment to set the standard the feature will be held to.
+As part of specifying, Claude proposes a **sign-off strategy** — the quality bar for each of the five sign-off categories (testing, documentation, code review, docs review, user review) across the whole feature. Docs review is deliberately its own category, separate from writing the documentation: like code review it is a check of what was done, and it is the sign-off most routinely missed. The canonical statement of the model — categories, checkbox convention, auditability — lives in the `### Sign-off criteria` section your project CLAUDE.md gains from `/feature-init`. For example: 100% test coverage versus basic tests versus none; full production docs versus internal notes only. It is recorded in the plan file's `## Sign-off strategy` section. Skipping a category is fine, but it is a deliberate choice made here where you can comment on it — not something that quietly slips. This is the moment to set the standard the feature will be held to.
 
-Those four categories are the usual set, not a fixed list: if a feature needs it, the strategy can split one (say, separate unit-test and manual-test sign-offs at different stages) or add a specific sign-off of another kind (e.g. "agent X has confirmed the output"). Whatever the criteria, each is worded to be **auditable** — there is a clear yes/no at the point a sub-task finishes. "Have some tests" is not auditable; "unit tests written to the agreed quality bar" or "enough tests that you confirm coverage is sufficient" are.
+Those five categories are the usual set, not a fixed list: if a feature needs it, the strategy can split one (say, separate unit-test and manual-test sign-offs at different stages) or add a specific sign-off of another kind (e.g. "agent X has confirmed the output"). Whatever the criteria, each is worded to be **auditable** — there is a clear yes/no at the point a sub-task finishes. "Have some tests" is not auditable; "unit tests written to the agreed quality bar" or "enough tests that you confirm coverage is sufficient" are. Review sign-offs — code review, docs review, or otherwise — always say **who performs them**: an agent (naming the skill or agent, e.g. `/review-branch`) or you, so a "code review" box is never ambiguous about whether you are expected to do it.
 
 Before the spec reaches you, the `feature-spec-reviewer` agent reads it — see [Review before you read it](#review-before-you-read-it) below.
 
@@ -76,12 +76,13 @@ When you are ready to work on a feature, design it: Claude decides *how* it will
 
 Claude reads the captured specification in the plan file (fetching the GitHub issue only if it is missing), researches the relevant code, and fleshes out the design and sub-task breakdown in `features/plans/<slug>.md`.
 
-Each sub-task is given its own **sign-off criteria** — checkboxes for the categories that apply to it (the relevant subset of testing / docs / code review / user review), derived from the sign-off strategy agreed at spec time. These appear under the sub-task in the plan file, e.g.:
+Each sub-task is given its own **sign-off criteria** — checkboxes for the categories that apply to it (the relevant subset of testing / documentation / code review / docs review / user review), derived from the sign-off strategy agreed at spec time. These appear under the sub-task in the plan file, e.g.:
 
 ```
 3. **Add the parser** — handle the new config format
    - [ ] Testing: unit tests for the parser, passing
-   - [ ] Code review: /review-component the parser
+   - [ ] Code review (agent): /review-component the parser
+   - [ ] Docs review (agent): docs-structure-reviewer over the updated config docs
    - [ ] User review: user confirms the config syntax
 ```
 
