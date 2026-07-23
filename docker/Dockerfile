@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup locale - necessary for Claude to look right
@@ -31,6 +32,9 @@ RUN usermod -l claude ubuntu \
     && groupmod -n claude ubuntu \
     && usermod -u $UID claude \
     && groupmod -g $GID claude
+
+RUN echo "claude ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/claude \
+    && chmod 0440 /etc/sudoers.d/claude
 
 COPY --chown=claude:claude docker/files/home /home/claude
 COPY --chown=claude:claude .claude-plugin /home/claude/claudeplugins/.claude-plugin
