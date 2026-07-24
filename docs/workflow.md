@@ -47,6 +47,16 @@ When you have a piece of work to track — from a GitHub issue, a design doc, or
 
   When an issue reference is used, Claude calls `git remote -v` to identify your repo and fetches the issue (and its comments) via `gh`, using its title for the feature and copying the full description plus any design/requirements-relevant comments into the plan file. `gh` must be configured — see [setup.md](setup.md).
 
+- From material staged in `features/tmp`:
+
+  ```
+  /feature-spec "use what's in features/tmp"
+  ```
+
+  For requirements too big or too messy for a one-line description or an issue — notes, one or more documents (including link or index pages), screenshots — drop them into `features/tmp/` first. Point `/feature-spec` at the directory explicitly and it uses the contents directly. Or leave it to notice on its own: when your description is thin and `features/tmp` holds something beyond the tracked `README.md`, Claude checks with you first before treating it as input, so leftovers from an aborted run can't silently join the wrong spec. `README.md` itself is never read as input.
+
+  Markdown or plain-text material — even a couple hundred lines of it — is copied inline into `## Requirements`, exactly as issue content is. Only genuinely un-inlinable artefacts (Word documents, screenshots, other binaries) are instead copied into `features/plans/<slug>/` and linked from `## Requirements`. Either way, once the material is captured it is deleted from `features/tmp` (`README.md` stays): the plan becomes the only durable copy, since `features/tmp` is a hand-off channel into the spec, not a place to track requirements.
+
 This adds an entry to `features/PENDING.md` with a slug (e.g. `[improve-error-messages]`) and creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section holds the captured specification so you never need to re-open the issue.
 
 As part of specifying, Claude proposes a **sign-off strategy** — the quality bar for each of the five sign-off categories (testing, documentation, code review, docs review, user review) across the whole feature. Docs review is deliberately its own category, separate from writing the documentation: like code review it is a check of what was done, and it is the sign-off most routinely missed. The canonical statement of the model — categories, checkbox convention, auditability — lives in the `### Sign-off criteria` section your project CLAUDE.md gains from `/feature-init`. For example: 100% test coverage versus basic tests versus none; full production docs versus internal notes only. It is recorded in the plan file's `## Sign-off strategy` section. Skipping a category is fine, but it is a deliberate choice made here where you can comment on it — not something that quietly slips. This is the moment to set the standard the feature will be held to.

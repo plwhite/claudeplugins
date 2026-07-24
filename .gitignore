@@ -1,0 +1,2 @@
+features/tmp/*
+!features/tmp/README.md

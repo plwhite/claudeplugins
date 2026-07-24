@@ -6,6 +6,47 @@ type: project
 
 (Prior history retained — see git log for older entries.)
 
+## Twenty-sixth review, second pass (2026-07-24) — two-fix convergence, CLEAN
+
+Both 26th-review findings verified RESOLVED; feature converged:
+1. MAJOR (COMPLETED.md orphaned heading): FIXED. `### Add design and spec review agents [spec-design-review-agents] — 2026-07-21` now sits at line 12 above its paragraph; spec-requirements-input (line 8) is back to a single paragraph; chronological order correct (07-24, 07-21, 06-25...). Each completed entry = one dated `###` heading + one paragraph, per feature-model rule.
+2. MINOR (plan Handoff stale): FIXED. spec-requirements-input.md Handoff now reads "Feature complete and closed... First action next session: None — feature completed and moved to COMPLETED.md on 2026-07-24."
+No new issues introduced. All prior integration (tmp route across 7 surfaces, byte-identical invariant) still holds. 2 → 0 actionable findings. Docs converge clean.
+
+## Twenty-sixth review (2026-07-24) — spec-requirements-input convergence pass
+
+Re-audit after fixes to the 25th review. All four 25th-review findings verified RESOLVED:
+- workflow.md line 56 run-on split into two sentences; explicit-vs-auto-detect confirmation nuance now crisp ("Point ... explicitly ... uses the contents directly. Or leave it to notice ... Claude checks with you first"). FIXED.
+- devproc/README.md Setup para (line 30) now names features/tmp scaffolding. FIXED.
+- CLAUDE.md line 213 + feature-init template line 131 now both carry the "Optionally, a sibling features/plans/<slug>/ directory holds un-inlinable requirements artefacts..." bullet, byte-identical. FIXED both.
+- README.md line 34 features/ row now mentions "a features/tmp/ staging area for requirements input". FIXED.
+
+Byte-identical invariant HOLDS (CLAUDE.md 213 == feature-init template 131). tmp scaffolding all consistent: .gitignore = `features/tmp/*` then `!features/tmp/README.md`; features/tmp/README.md == feature-init heredoc. Close-out: CURRENT.md "No feature currently in progress" ✓.
+
+NEW PRIMARY FINDING — MAJOR (feature-list structural regression, first of its kind):
+- COMPLETED.md: the previously-completed `spec-design-review-agents` (#20, completed 2026-07-21, has plan file features/plans/spec-design-review-agents.md, listed in root CLAUDE.md status) has NO entry of its own — no `### ... [spec-design-review-agents] — 2026-07-21` heading, no slug, no date (grep for the slug in COMPLETED.md returns nothing). Its description paragraph is orphaned as a SECOND paragraph (line 12) under the new spec-requirements-input heading (line 8), which now carries two paragraphs describing two distinct features — violates the feature-model "one paragraph max, own heading+date per feature" rule. Root cause pattern: when /feature-end for spec-requirements-input prepended the new entry, the prior top entry's `###` heading was lost/merged. Effect: spec-design-review-agents is no longer independently discoverable or dated in the completed list. This is a NEW class of close-out drift (previously drift was status-block/in-progress-flip; this is a heading-loss-on-prepend in COMPLETED.md).
+
+MINOR:
+- features/plans/spec-requirements-input.md `## Handoff` is stale post-/feature-end: still says "First action next session: Begin Sub-task 5" and lists the feature-level sign-offs (/review-branch, docs-structure-reviewer) as "still owed before /feature-end". Feature is closed (in COMPLETED.md), so handoff should read as done or the plan be left with a final-state handoff. Low priority — plan is kept as a historical record — but a final checkpoint normally squares this.
+
+## Twenty-fifth review (2026-07-24) — spec-requirements-input close-out
+
+Scope: third `/feature-spec` input route via git-ignored `features/tmp/` scratch dir. Docs changed: docs/workflow.md ("Specify a feature" gained "From material staged in features/tmp" bullet), devproc/README.md (Contents table + Feature-tracking table new `features/tmp/` row + feature-init/feature-spec skill-ref sections), CLAUDE.md (devproc bullets + "Documents to support the model" new features/tmp bullet), feature-init/feature-spec SKILL.md (feature-init step 5 scaffolds tmp + .gitignore; feature-spec new step 2 detect + step 6 capture/clear), features/tmp/README.md (new).
+
+Verified STRONG:
+- Byte-identical invariant HOLDS: CLAUDE.md line 228 features/tmp bullet == feature-init template lines 131–134 (modulo wrap). NOTES.md line 390–393 records the para-normalised equality check.
+- feature-init template features/tmp/README.md heredoc (lines 229–237) == live features/tmp/README.md byte-for-byte.
+- .gitignore (`features/tmp/*` then `!features/tmp/README.md`) matches feature-init step 5 ordering instruction exactly.
+- Concept consistent across all 7 surfaces; explicit-vs-auto-detect + "README.md never read/removed" + "cleared after capture, README persists" agree in workflow.md, feature-spec SKILL step 2, devproc/README.md.
+- Discoverability OK: README → workflow.md "Specify a feature" bullet; README → devproc/README.md tables + skill sections; features/tmp/README.md is in-situ (reached by browsing features/, not separately linked — correct, like an in-dir explainer).
+- CURRENT.md still lists the feature in progress + CLAUDE.md ## Current status un-flipped: CORRECT pre-/feature-end state (docs review is the sign-off gate before /feature-end). Per brief, not flagged.
+
+Findings (all low severity — feature converged):
+- MINOR: workflow.md line 56 — one long run-on sentence merges the explicit-pointer and auto-detect routes; the nuance that only auto-detect asks for confirmation (explicit does not) is not crisp. Split into two sentences.
+- SUGGESTION: devproc/README.md Setup paragraph line 30 enumerates what feature-init creates (features/ + four status files) but omits features/tmp, while the Contents table (line 11) and tracking table (line 41) both include it. Add a clause for internal consistency.
+- SUGGESTION: CLAUDE.md "Documents to support the model" + feature-init template list features/plans/<slug>.md but never mention the sibling features/plans/<slug>/ artefact subdir that appears when un-inlinable binaries are captured (covered in workflow.md + feature-spec SKILL only). Edge case; schema doc could note it.
+- SUGGESTION: README.md line 34 features/ row does not hint at the tmp staging input (landing-page discoverability-of-detail; workflow.md covers it fully). Recurring README-table-omits-detail pattern.
+
 ## Twenty-fourth review (2026-07-21) — spec-design-review-agents four-fix verification pass
 
 All four findings from the 23rd review verified RESOLVED:
