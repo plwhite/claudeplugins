@@ -6,6 +6,23 @@ type: project
 
 (Prior history retained — see git log for older entries.)
 
+## Twenty-eighth review, second pass (2026-07-24) — delete-demo-plugin one-fix convergence, CLEAN
+
+The single MINOR finding verified RESOLVED. delete-demo-plugin.md `## Handoff` now terminal and consistent with the rest of the file: Session summary = "Feature complete and closed ... Moved to features/COMPLETED.md via /feature-end on 2026-07-24" (no more "not committed"); "Sub-task in progress: None — all sub-tasks complete"; "First action next session: None"; Open questions/Dead ends = None. Matches `## Sub-tasks` (both ✓, all boxes [x]), `## Review record`, and COMPLETED.md dated heading. History-bearing sections (Requirements onward, line 12+) untouched. No new issues introduced. Feature fully converged — 1 → 0 actionable findings.
+
+## Twenty-eighth review (2026-07-24) — delete-demo-plugin (#42) close-out (post-/feature-end)
+
+Re-audit after the feature moved CURRENT→COMPLETED. Demo-removal sweep: CLEAN. `demo/` dir gone (Glob demo/** empty). marketplace.json plugins array = devproc only (valid JSON). README Plugins table = single devproc row, no demo link. CLAUDE.md `## demo plugin` section gone; status para at line 7 describes the completed deletion (legitimate status record, matches COMPLETED.md — NOT a live demo reference). NOTES.md: no demo; the "Docker build context" note (line 40-42) now says Dockerfile COPYs only `devproc/`, stale demo-COPY claim corrected. devproc/README.md, docs/*, CONTRIBUTING.md, setup-files/README.md, Dockerfile: zero demo. `\bdemo\b` case-insensitive hits only in out-of-scope sets (CLAUDE.md status para, features/COMPLETED.md, historical plan files, both agent-memory trees). COMPLETED.md `### Delete the demo plugin [delete-demo-plugin] — 2026-07-24` well-formed (dated heading + single para); no heading-loss-on-prepend regression this cycle (the 26th-review COMPLETED.md structural bug did NOT recur — spec-requirements-input and spec-design-review-agents entries now both have their own dated headings). CURRENT.md/PENDING.md both "No feature..."; all links resolve; no orphans.
+
+ONE actionable finding — MINOR (recurring class: stale plan Handoff post-/feature-end, 3rd occurrence — cf. 26th review spec-requirements-input, 25th review):
+- features/plans/delete-demo-plugin.md `## Handoff` contradicts the rest of the same file. Handoff (lines 5-8) still reads "Sub-task in progress: Sub-task 2 — mechanical work complete; two user sign-off boxes outstanding", "First action next session: Obtain the two user sign-offs ... Then run /feature-checkpoint and /feature-end", and "Changes ... not committed" — i.e. describes the feature as mid-flight. But `## Sub-tasks` marks both ✓ with every box [x] and states "All sub-tasks complete ... Ready for /feature-end" (line 120), the entry is in COMPLETED.md, and git is clean/committed. A final checkpoint normally squares this; low priority since the plan is a historical record, but it is an internal inconsistency introduced by close-out. Pattern now firmly recurring: /feature-end does not rewrite the plan Handoff to a terminal state.
+
+Note (not a defect, carryover): stale unprefixed `.claude/agent-memory/docs-structure-reviewer/` tree still on disk beside the correct `devproc-docs-structure-reviewer/`; flagged since 20th review for manual deletion (agent cannot delete files). Unrelated to demo.
+
+## Twenty-seventh review (2026-07-24) — delete-demo-plugin (#42), demo-removal sweep
+
+Scoped audit: did deleting the `demo/` plugin leave broken links or orphaned references in CURRENT docs? Result CLEAN. `demo/` dir gone (Glob demo/** empty). All current-doc surfaces have ZERO "demo" substring: README.md (Plugins table now single devproc row; no demo link), CLAUDE.md (`## demo plugin` section gone), NOTES.md (stale Dockerfile-COPYs-demo note corrected/removed), marketplace.json (plugins array = devproc only, valid JSON), devproc/README.md, docs/*, CONTRIBUTING.md, docker/Dockerfile, plugin.json. No live `[demo](demo/README.md)` link anywhere. Only live mention is features/CURRENT.md's own `### Delete the demo plugin [delete-demo-plugin]` entry (the in-progress feature about the deletion) linking to plans/delete-demo-plugin.md (exists) — legitimate, not a defect. All other demo mentions are in out-of-scope historical records (features/COMPLETED.md, features/plans/{plugin-documentation,claude-container,docs-usability-issue6,claudeignore-docs,delete-demo-plugin}.md) and .claude/agent-memory snapshots — correctly retained as history. 0 actionable findings.
+
 ## Twenty-sixth review, second pass (2026-07-24) — two-fix convergence, CLEAN
 
 Both 26th-review findings verified RESOLVED; feature converged:

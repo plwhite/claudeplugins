@@ -4,6 +4,8 @@
 
 **No feature currently in progress.**
 
+`delete-demo-plugin` completed 2026-07-24 — removed the trivial `demo/` plugin (#42), which existed only to verify that plugins load in this context and had outlived its purpose, along with every *live* reference: the `demo/` directory, its `.claude-plugin/marketplace.json` entry, the root `README.md` Plugins-table row, the `## demo plugin` section of this file, and a stale `NOTES.md` note that wrongly claimed the Dockerfile COPYs `demo/`. By decision at spec sign-off, historical records and regenerable agent memory that mention demo were left intact — "delete completely" was scoped to live references only, verified by a word-boundary `\bdemo\b` search. Docs/config-only change.
+
 `spec-requirements-input` completed 2026-07-24 — gave `/feature-spec` a third requirements-input route (a git-ignored `features/tmp` scratch directory) alongside a GitHub issue and a one-line description, so a user can hand it a multi-line chunk of requirements material that fits neither. `/feature-init` now scaffolds `features/tmp/` with a tracked `README.md` and the `.gitignore` rules that ignore its contents except that README; `/feature-spec` uses material there (when pointed at it explicitly, or auto-detected with confirmation), inlining text into `## Requirements` and copying only genuinely un-inlinable artefacts into `features/plans/<slug>/`, then clearing `tmp` so the plan is the single durable copy. `docs/workflow.md`, `devproc/README.md`, and the `feature-init` CLAUDE.md template were updated to match. Prompt-and-docs-only change; no backing issue.
 
 `spec-design-review-agents` completed 2026-07-21 — added `feature-spec-reviewer` and `feature-design-reviewer`, run at the end of `/feature-spec` and `/feature-design` before the artefact reaches the human, so completeness, auditable delivery criteria, and blocking issues are caught first (#20). Each agent ends with a `READY FOR USER REVIEW` / `NEEDS WORK` verdict and marks findings `[rewrite]` (the skill fixes them) or `[decision]` (put to the user). Three modes: reviewed (default), skipped on explicit instruction, and unattended — where a clean verdict stands in for human sign-off, gated on `READY` with no `[decision]`, and a `## Review record` line in the plan file records what was checked. Test fixtures live under `devproc/tests/<agent>/`.
@@ -33,19 +35,6 @@ plugin-name/
   agents/
     agent-name.md        ← frontmatter: name, description
 ```
-
-## demo plugin
-
-Location: `demo/`
-
-Trivial demo plugin to test plugin structure.
-
-Contents:
-- `demo/.claude-plugin/plugin.json`
-- `demo/skills/demo-skill/SKILL.md`
-- `demo/agents/demo-agent.md`
-
-See `demo/README.md` for full usage documentation.
 
 ## devproc plugin
 

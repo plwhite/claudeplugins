@@ -6,7 +6,7 @@ type: project
 
 ## Entry points
 
-- `README.md` — primary landing page ("Claude Code setup and workflows"); Instructions list + Documentation table + Plugins table; links to docs/{setup,workflow,capabilities,container}.md, devproc/README.md, demo/README.md, setup-files/README.md, marketplace.json, CONTRIBUTING.md
+- `README.md` — primary landing page ("Claude Code setup and workflows"); Instructions list + Documentation table + Plugins table; links to docs/{setup,workflow,capabilities,container}.md, devproc/README.md, setup-files/README.md, marketplace.json, CONTRIBUTING.md. (demo/README.md link REMOVED by delete-demo-plugin, #42, 2026-07-24 — demo plugin deleted; devproc is now the only plugin.)
 - `CLAUDE.md` — agent entry point; workspace guide, plugin inventory, full feature-model section
 - `docs/setup.md` — getting-started (sandbox, git hook, sensitive-file deny-list, gh, devproc install, .claudeignore) — 8 ordered steps
 - `docs/workflow.md` — imperative feature lifecycle guide (spec → design → implement → end)
