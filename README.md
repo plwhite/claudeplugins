@@ -28,7 +28,7 @@ This repository contains descriptions and tooling for a set of best practices us
 |----------|---------------|
 | [docs/setup.md](docs/setup.md) | Environment setup: sandbox, git hook, sensitive-file deny-list, `gh`, devproc install, `.claudeignore` |
 | [docs/workflow.md](docs/workflow.md) | Task-oriented guide: managing features from backlog to completion, including per-feature sign-off criteria and automated spec/design review |
-| [docs/capabilities.md](docs/capabilities.md) | Code review and documentation review |
+| [docs/capabilities.md](docs/capabilities.md) | Semi-autonomous workflow management, code review, documentation review, and internal docs hygiene |
 | [docs/container.md](docs/container.md) | Container mode: running Claude with full permissions in an isolated Docker container |
 | [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |
 | [features/](features/) | Feature tracking: current, pending, deferred, and completed features, with per-feature plans in `features/plans/` and a `features/tmp/` staging area for requirements input |

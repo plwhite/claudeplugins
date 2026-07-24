@@ -409,3 +409,178 @@ recorded here rather than applied. Going forward this is not a special step:
 running the reviewers is simply what `/feature-spec` and `/feature-design` now
 do, and the value is in running them at spec/design time, not as an end-of-feature
 audit.
+
+## `internal-docs-reviewer` fixtures are directories, not single files (Sub-task 1, #46)
+
+`feature-spec-reviewer`/`feature-design-reviewer` fixtures are one `.md` file
+per case because those agents review one file. `internal-docs-reviewer`
+reviews a *set* of files together — some checks (a `CLAUDE.md` status entry
+duplicating `features/COMPLETED.md`, a `NOTES.md` claim contradicted by a
+config file, a `.claude/rules/*.md` claim contradicted by the hook it
+describes) only make sense with more than one file present. So each case
+under `devproc/tests/internal-docs-reviewer/` is a small fixture *directory*
+(`<case>/`, using real relative paths like `CLAUDE.md`, `features/COMPLETED.md`,
+`.claude/rules/...`) paired with a top-level `<case>.expected.md`, and the
+agent is pointed at the directory as if it were the repository root.
+
+(Historical: at Sub-task 1 the agent carried `memory: project`. **Superseded
+2026-07-25** — the agent was made *stateless* (see the caller-owns-memory note
+below), so it has no memory directory and fixture runs neither read nor write
+any memory; the settled-decision record now lives with the
+`/internal-docs-prune` skill.)
+
+## Writing a genuine `judgment` fixture is harder than it looks (Sub-task 1, #46)
+
+The first `judgment/NOTES.md` fixture — a note that local dev DB seeding takes
+about 40 seconds — failed on first test: a general-purpose agent playing the
+`internal-docs-reviewer` persona correctly found **no** finding, because the
+entry is, on reflection, exactly what NOTES.md's durability criterion asks
+for (a lasting environmental gotcha, not contradicted by anything). A
+"borderline" fixture has to actually exhibit the *symptoms* the review
+criteria call out as suspect — not just be a plausible edge case in the
+fixture author's head. The fix: rewrote the entry as a dated, stopgap-flavoured
+note about a flaky test ("flaked twice this week... bumped the timeout as a
+stopgap") — language that visibly resembles the durability criterion's own
+listed suspect categories (transient remark, completed-workaround post-mortem)
+while still holding one durable nugget worth keeping (profile the CSV writer
+on recurrence). Re-tested and got the expected `judgment`/`condense` result.
+General lesson for any future fixture in this class: write the *symptom* the
+criterion names, don't just assert ambiguity and hope.
+
+## Validating `/internal-docs-prune`'s application logic without a live agent (Sub-task 2, #46)
+
+`internal-docs-reviewer` is a newly written agent (Sub-task 1), so — per the
+"Testing a new agent in the session that creates it" note above — it is not
+invocable as an agent type in this session either. The skill's Testing box
+("a worked run confirms...") was therefore validated a level down: using the
+reviewer's *known* findings, taken verbatim from its fixtures'
+`.expected.md` files, as the input to the skill's application steps (Step 4
+`redundant`/`stale` auto-apply, Step 5 `judgment` escalation, the Step 4
+`move` write→verify→remove ordering), executed by hand against **copies of
+the fixtures under `/tmp`**, never against `devproc/tests/` or real repo
+docs.
+
+What each scenario proved:
+- **Unattended, `redundant`+`stale` auto-apply, `judgment` deferred:** applied
+  the `redundant` fixture's delete finding and the `stale` fixture's delete
+  finding; both landed cleanly. The `judgment` fixture's NOTES.md was left
+  completely untouched — confirming unattended mode takes no action on
+  `judgment`, only lists it.
+- **Interactive, `judgment` default:** applied the `judgment` fixture's
+  finding via `condense` (the fixed default), confirming `delete` is never
+  used for a `judgment` finding by default.
+- **Move without loss:** the `redundant` fixture itself isn't a clean move
+  test — its destination (`features/COMPLETED.md`) already has the content,
+  since that's *why* it's redundant. Built a derived copy with the
+  destination entry stripped out first, then applied the skill's exact
+  ordering (write destination → re-read to verify → only then remove from
+  source). Confirmed both that the content lands at the destination and
+  disappears from the source, and — separately — that if the post-write
+  verification were to fail, the source is left untouched and the anchor
+  text is provably still there (a deliberate second run with the write step
+  skipped).
+- **Idempotency:** the auto-applied `redundant` fixture's `CLAUDE.md`, after
+  pruning, was byte-identical to the `idempotent/` fixture's `CLAUDE.md` (the
+  fixture representing "output of a previous prune pass") — i.e. auto-apply
+  reaches exactly the steady state a second pass is expected to find nothing
+  further to do with.
+
+This exercises the skill's *application* logic (the actual deliverable this
+sub-task adds) faithfully, but not the end-to-end path of spawning the real
+agent and parsing its live prose output — that remains untested until a
+session restart makes `internal-docs-reviewer` invocable, same caveat as
+Sub-task 1's fixture validation.
+
+## Sub-task 3 three-way consistency check (#46)
+
+The status-section cap is now stated in three places and must agree. Wording
+compared, paraphrase-for-paraphrase:
+
+- `feature-init/SKILL.md` template (`### Documents to support the model` →
+  `CLAUDE.md` bullet): "holds **only** the in-progress feature (if any) plus
+  **at most one line** for the single most recent completion. Older
+  completion entries live in `features/COMPLETED.md` only and are deleted
+  from `CLAUDE.md` — `/feature-end` performs this trim when it closes a
+  feature."
+- `feature-end/SKILL.md` step 3 (new bullet, added alongside the existing
+  `COMPLETED.md` entry step): "retain only the in-progress feature (if any is
+  starting next) plus **at most one line** for this single most-recent
+  completion; delete any older completion entries or status lines. Nothing
+  is lost — that content is already preserved in `features/COMPLETED.md`."
+- `internal-docs-reviewer.md` (frontmatter `description` example, and
+  criterion 2's `CLAUDE.md` duplication check): assumes the same target —
+  "the feature in progress, plus at most one line for the most recent
+  completion; older completions live in `features/COMPLETED.md` only" — and
+  treats a status entry as `redundant` precisely when it duplicates
+  `features/COMPLETED.md`.
+
+All three name the same cap (in-progress feature, if any, + at most one
+most-recent-completion line; everything older deleted from `CLAUDE.md` and
+preserved only in `COMPLETED.md`). No contradiction found — the reviewer's
+existing wording did not need editing, matching the manager's instruction not
+to touch the agent in this sub-task.
+
+Deliberately left alone per scope: the project's own root `/workspace/CLAUDE.md`
+`## Current status` section is *not* trimmed to this cap as part of this
+sub-task — that's `/internal-docs-prune`'s job (or a future `/feature-end`
+run), not a prevention-rule edit.
+
+## internal-docs-prune documentation placement (sub-task 4)
+
+`internal-docs-reviewer` was grouped next to `docs-structure-reviewer` in both
+`devproc/README.md`'s Contents table and its `## Agent reference` section
+(rather than at the end, alphabetically, or beside the code-review agents) —
+the two are thematically paired (both are read-only findings-only review
+agents over documentation), even though one covers internal docs and the
+other user-facing docs. Same reasoning for the equivalent root `CLAUDE.md`
+contents-list placement.
+
+`docs/workflow.md`'s new `## Keep internal docs tidy` section was placed at
+the very end, after `## Complete a feature`, rather than folded into the
+"Complete a feature" section or inserted earlier in the lifecycle — it isn't
+a lifecycle step, it's an ongoing hygiene task, so it reads better as a
+standalone bookend than as a sub-point of any one stage. Its heading anchor
+(`#keep-internal-docs-tidy`) is linked from `docs/capabilities.md`, and the
+new capabilities.md section's anchor (`#internal-docs-hygiene`) is linked back
+from workflow.md — checked both resolve under GitHub's heading-to-anchor
+convention (lowercase, spaces to hyphens) since Markdown doesn't fail loudly
+on a broken in-repo anchor.
+
+The `feature-init` CLAUDE.md template already stated the status-cap and
+referenced `/internal-docs-prune` (added in sub-task 3) — verified it against
+the shipped skill/agent behaviour and left it untouched, per the manager's
+brief not to rewrite what already covers the requirement.
+
+## Memory belongs to the skill, not the agent (#46, code-review resolution)
+
+The requirement "uses project-scoped agent memory to avoid re-litigating
+borderline entries" was first wired as `memory: project` on the
+`internal-docs-reviewer` agent. That is **non-functional**: the agent is
+read-only and finishes *before* the calling session decides anything, so it can
+never observe an outcome to record. Resolved 2026-07-25 (code review) by
+inverting ownership:
+
+- The **agent is stateless** — no `memory:` field, no memory section. It
+  re-reports every borderline `judgment` call on every run.
+- The **skill owns the record** of settled `judgment` calls, under
+  `.claude/agent-memory/devproc-internal-docs-reviewer/MEMORY.md`. It reads the
+  record at Step 5 to suppress a call already decided (unless the anchor text
+  has changed since), and writes it only when an interactive decision settles a
+  call. Only the caller sees the decision, so only the caller can remember it.
+
+The key framing: this memory is a **convenience** (it stops the skill re-asking
+about calls the user already ruled on), never a correctness gate. Nothing is
+lost or wrongly applied without it — `redundant`/`stale` gate the real changes,
+and those are re-verified live on every run and never remembered.
+
+Two findings-contract constraints were settled at the same review, both
+following from what the gating classes *mean*:
+- **`redundant` ⇒ `delete` only.** The class means the content is already at
+  its canonical home, so `move` would write a duplicate and there is nothing to
+  condense.
+- **`judgment` + `move` applies on plain confirmation.** The interactive
+  default is the agent's *proposed* action (`condense` or `move`), never
+  `delete`; action and gating class vary independently, so a `judgment` finding
+  can legitimately be a `move`. Invalid class/action pairings
+  (`redundant`+non-`delete`, `judgment`+`delete`) are rejected as defects in the
+  skill's Step 3, so Steps 4/5 can assume a valid action.

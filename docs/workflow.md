@@ -180,3 +180,9 @@ When all sub-tasks are done:
 
 - Commit the final state changes to git, squash commits as required, and push and merge the feature branch.
 
+---
+
+## Keep internal docs tidy
+
+`CLAUDE.md`, `NOTES.md`, and `.claude/rules/*.md` accumulate drift over time — status entries that duplicate `features/COMPLETED.md`, stale notes, judgment calls nobody revisited. Run `/internal-docs-prune` periodically — e.g. after a batch of completed features, or whenever one of these files starts to feel bloated — to clear it out. See [capabilities.md](capabilities.md#internal-docs-hygiene) for what it does and how it gates findings by class.
+

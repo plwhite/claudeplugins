@@ -126,7 +126,7 @@ These apply at all times, not just when completing features:
 
     - Subtask list with short descriptions, per-sub-task sign-off checkboxes, and status markers (`✓`, `▶ NEXT:`)
 
-    - Review record (a log, appended by `/feature-spec` and `/feature-design`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped. Always the last section of the file; a line is written every time, so an absent line means the stage has not run. Preserve it across edits.)
+    - Review record (a log, appended by `/feature-spec`, `/feature-design`, and `/feature-end`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped. Always the last section of the file; a line is written every time, so an absent line means the stage has not run. Preserve it across edits.)
 
     Optionally, a sibling `features/plans/<slug>/` directory holds un-inlinable requirements artefacts (screenshots, Word docs, other binaries) that `/feature-spec` copied in and linked from `## Requirements`.
 
@@ -137,7 +137,13 @@ These apply at all times, not just when completing features:
 
 - **`NOTES.md`** — non-obvious findings only. Do not record things derivable from reading the code.
 
-- **`CLAUDE.md`** — high-level status only. No plan detail, no implementation notes.
+- **`CLAUDE.md`** — high-level status only. No plan detail, no implementation
+  notes. Its `## Current status` section is capped: it holds **only** the
+  in-progress feature (if any) plus **at most one line** for the single most
+  recent completion. Older completion entries live in `features/COMPLETED.md`
+  only and are deleted from `CLAUDE.md` — `/feature-end` performs this trim
+  when it closes a feature. `/internal-docs-prune` is the periodic-cleanup
+  tool for any drift beyond that (here or elsewhere in the internal docs).
 ~~~
 
 ## 2. Migrate an older layout if present
