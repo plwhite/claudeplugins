@@ -20,7 +20,8 @@ type: project
 - `features/CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md` — status-split list files (replaced single `FEATURES.md`)
 - `features/plans/<slug>.md` — per-feature plans (moved from top-level `plans/`)
 - Lifecycle skills renamed: `feature-create`→`feature-spec`, `feature-start`→`feature-design`. Flow = **spec → design → implement → end**. `feature-init` = one-time setup/migration; `feature-checkpoint` = during-implementation sync.
-- Plan-file schema now: Handoff / Requirements / Design / Sub-tasks (Requirements is back — captures full source-issue spec).
+- Plan-file schema now: Handoff / Requirements / Sign-off strategy / Design / Sub-tasks / Review record.
+- `features/tmp/` (post spec-requirements-input, 2026-07-24): git-ignored `/feature-spec` staging scratch dir; only tracked file is `features/tmp/README.md`. `.gitignore` = `features/tmp/*` then `!features/tmp/README.md`. Third `/feature-spec` input route (alongside description + GitHub issue). Documented in workflow.md, devproc/README.md, CLAUDE.md "Documents to support the model", both feature-init/feature-spec SKILLs. feature-init template README + CLAUDE.md tmp bullet are byte-identical-invariant copies.
 
 ## Conventions observed
 

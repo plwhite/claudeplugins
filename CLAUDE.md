@@ -4,6 +4,8 @@
 
 **No feature currently in progress.**
 
+`spec-requirements-input` completed 2026-07-24 — gave `/feature-spec` a third requirements-input route (a git-ignored `features/tmp` scratch directory) alongside a GitHub issue and a one-line description, so a user can hand it a multi-line chunk of requirements material that fits neither. `/feature-init` now scaffolds `features/tmp/` with a tracked `README.md` and the `.gitignore` rules that ignore its contents except that README; `/feature-spec` uses material there (when pointed at it explicitly, or auto-detected with confirmation), inlining text into `## Requirements` and copying only genuinely un-inlinable artefacts into `features/plans/<slug>/`, then clearing `tmp` so the plan is the single durable copy. `docs/workflow.md`, `devproc/README.md`, and the `feature-init` CLAUDE.md template were updated to match. Prompt-and-docs-only change; no backing issue.
+
 `spec-design-review-agents` completed 2026-07-21 — added `feature-spec-reviewer` and `feature-design-reviewer`, run at the end of `/feature-spec` and `/feature-design` before the artefact reaches the human, so completeness, auditable delivery criteria, and blocking issues are caught first (#20). Each agent ends with a `READY FOR USER REVIEW` / `NEEDS WORK` verdict and marks findings `[rewrite]` (the skill fixes them) or `[decision]` (put to the user). Three modes: reviewed (default), skipped on explicit instruction, and unattended — where a clean verdict stands in for human sign-off, gated on `READY` with no `[decision]`, and a `## Review record` line in the plan file records what was checked. Test fixtures live under `devproc/tests/<agent>/`.
 
 `subtask-signoff` completed 2026-06-25 — added explicit per-sub-task sign-off criteria (testing, docs, code review, user review) to the feature workflow so quality steps are a deliberate up-front choice rather than something skipped. A feature agrees a sign-off *strategy* at `/feature-spec`, `/feature-design` turns it into per-sub-task *checkbox criteria* the user agrees, and a sub-task is complete only when all boxes are `[x]` — enforced by `/feature-checkpoint` and `/feature-end`. The canonical model lives in a new `### Sign-off criteria` section of the `feature-init` CLAUDE.md template; README and `docs/` were updated to match. Categories are an open set and every criterion must be auditable (#25).
@@ -53,8 +55,8 @@ Skills and agents for feature lifecycle management, workflow orchestration, and 
 
 Contents:
 - `devproc/.claude-plugin/plugin.json`
-- `devproc/skills/feature-init/SKILL.md` — one-time setup: writes feature model to CLAUDE.md, creates the `features/` directory, and migrates an older `FEATURES.md`/`plans/` layout
-- `devproc/skills/feature-spec/SKILL.md` — create a new feature in `features/PENDING.md` and write its specification (full issue content) into the plan file
+- `devproc/skills/feature-init/SKILL.md` — one-time setup: writes feature model to CLAUDE.md, creates the `features/` directory including a git-ignored `features/tmp` scratch directory, and migrates an older `FEATURES.md`/`plans/` layout
+- `devproc/skills/feature-spec/SKILL.md` — create a new feature in `features/PENDING.md` and write its specification into the plan file, from a GitHub issue, a one-line description, or requirements material staged in `features/tmp`
 - `devproc/skills/feature-design/SKILL.md` — move a feature to `features/CURRENT.md` and write its design and sub-task plan
 - `devproc/skills/feature-checkpoint/SKILL.md` — sync all documentation to current state
 - `devproc/skills/feature-end/SKILL.md` — mark a feature complete and move it to `features/COMPLETED.md`
@@ -207,6 +209,10 @@ These apply at all times, not just when completing features:
     - Subtask list with short descriptions, per-sub-task sign-off checkboxes, and status markers (`✓`, `▶ NEXT:`)
 
     - Review record (a log, appended by `/feature-spec` and `/feature-design`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped. Always the last section of the file; a line is written every time, so an absent line means the stage has not run. Preserve it across edits.)
+
+    Optionally, a sibling `features/plans/<slug>/` directory holds un-inlinable requirements artefacts (screenshots, Word docs, other binaries) that `/feature-spec` copied in and linked from `## Requirements`.
+
+- **`features/tmp/`** — git-ignored scratch space for staging requirements material as input to `/feature-spec`; a hand-off channel, not a store — its contents (other than the tracked `README.md`) are captured into the plan and then removed.
 
 - **`NOTES.md`** — non-obvious findings only. Do not record things derivable from reading the code.
 

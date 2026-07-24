@@ -8,8 +8,8 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 
 | Type | Name | Description |
 |------|------|-------------|
-| Skill | `feature-init` | One-time setup: adds the feature model to `CLAUDE.md`, creates the `features/` directory (and migrates an older `FEATURES.md`/`plans/` layout) |
-| Skill | `feature-spec` | Create a new feature in `features/PENDING.md`, write its specification into the plan file, and agree the sign-off strategy |
+| Skill | `feature-init` | One-time setup: adds the feature model to `CLAUDE.md`, creates the `features/` directory including a git-ignored `features/tmp` scratch directory (and migrates an older `FEATURES.md`/`plans/` layout) |
+| Skill | `feature-spec` | Create a new feature in `features/PENDING.md`, write its specification into the plan file (from a GitHub issue, a one-line description, or material staged in `features/tmp`), and agree the sign-off strategy |
 | Skill | `feature-design` | Move a feature to `features/CURRENT.md` and write its design and sub-task plan, with per-sub-task sign-off criteria |
 | Skill | `feature-checkpoint` | Sync all documentation and tracking to the current state |
 | Skill | `feature-end` | Mark a feature complete and move it to Completed |
@@ -27,7 +27,7 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 
 ## Setup
 
-Run `/feature-init` once per project before using any other skills. This writes the feature model section to `CLAUDE.md` and creates the `features/` directory, whose feature list is split across four files by status (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) so the large completed list need not be read into context every session. It also migrates an older single-file layout (`FEATURES.md` plus a top-level `plans/` or `notes/` directory) to the new structure. Safe to re-run — it updates existing content rather than overwriting it.
+Run `/feature-init` once per project before using any other skills. This writes the feature model section to `CLAUDE.md` and creates the `features/` directory, whose feature list is split across four files by status (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) so the large completed list need not be read into context every session. It also creates a git-ignored `features/tmp/` scratch directory for staging requirements material as input to `/feature-spec`, and migrates an older single-file layout (`FEATURES.md` plus a top-level `plans/` or `notes/` directory) to the new structure. Safe to re-run — it updates existing content rather than overwriting it.
 
 ### Feature tracking files
 
@@ -38,6 +38,7 @@ Run `/feature-init` once per project before using any other skills. This writes 
 | `features/DEFERRED.md` | Features explicitly deferred, including those blocked by a dependency |
 | `features/COMPLETED.md` | Completed features, dated — the large list kept out of routine context |
 | `features/plans/<slug>.md` | Per-feature plan with requirements, sign-off strategy, design, sub-tasks (with sign-off checkboxes), handoff state, and a review record |
+| `features/tmp/` | Git-ignored scratch space for staging requirements material as input to `/feature-spec`; only the tracked `README.md` persists — not a store for tracking requirements |
 | `NOTES.md` | Non-obvious technical findings recorded continuously |
 | `CLAUDE.md` | High-level project status only — no implementation detail |
 
@@ -49,7 +50,7 @@ Run `/feature-init` once per project before using any other skills. This writes 
 
 **Invoke with:** `/feature-init`
 
-One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, creates the `features/` directory with its four status files (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) and a `features/plans/` subdirectory, and migrates an older `FEATURES.md`/`plans/` layout if present. Safe to re-run.
+One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, creates the `features/` directory with its four status files (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) and a `features/plans/` subdirectory, and migrates an older `FEATURES.md`/`plans/` layout if present. It also scaffolds `features/tmp/` — a git-ignored scratch directory where you can stage requirements material as input to `/feature-spec` — creating or updating `.gitignore` as needed. Safe to re-run.
 
 ---
 
@@ -57,7 +58,7 @@ One-time project setup. Adds a `## Feature model` section to `CLAUDE.md`, create
 
 **Invoke with:** `/feature-spec <description>`
 
-The first step of the lifecycle: create a feature and specify *what* it must do. Adds a new entry at the top of `features/PENDING.md`, deriving a lowercase-hyphenated slug from the description and appending it as a tag on the heading (e.g. `### My feature [my-feature]`). The list entry is kept to one or two sentences — the specification belongs in the plan file. It always creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section captures the full source-issue content (entire description plus any design/requirements-relevant comments) so a later session can resume from the plan file alone, without re-reading the issue.
+The first step of the lifecycle: create a feature and specify *what* it must do. Adds a new entry at the top of `features/PENDING.md`, deriving a lowercase-hyphenated slug from the description and appending it as a tag on the heading (e.g. `### My feature [my-feature]`). The list entry is kept to one or two sentences — the specification belongs in the plan file. It always creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section captures the specification — verbatim from the source issue (entire description plus any design/requirements-relevant comments), from the one-line description, or from material staged in `features/tmp` — so a later session can resume from the plan file alone. That third route ([docs/workflow.md](../docs/workflow.md) covers the mechanics) is used when you point `/feature-spec` at `features/tmp` or it auto-detects material there, and the directory is cleared once captured (the tracked `README.md` stays).
 
 It also agrees the feature's **sign-off strategy** — the quality bar for testing, documentation, code review, docs review, and user review across the whole feature (e.g. full test coverage vs none; production docs vs internal notes) — and records it in the plan file's `## Sign-off strategy` section. Review sign-offs always state whether an agent or the user performs them. Deciding *not* to do one of these is legitimate, but it is an explicit, up-front choice you can comment on here. (The canonical statement of the sign-off model lives in the `### Sign-off criteria` section that `/feature-init` writes into the project CLAUDE.md; the skills and review agents defer to it.)
 
@@ -71,6 +72,7 @@ Every run appends a line to the plan file's `## Review record`, including one re
 ```
 /feature-spec "Add dark mode support to the UI"
 /feature-spec "issue 12"
+/feature-spec "use what's in features/tmp"
 ```
 
 ---

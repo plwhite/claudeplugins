@@ -271,6 +271,66 @@ re-reading the instructions.
    `[decision]`, re-reviewing unchanged questions cannot change the verdict.
    Both skills now say not to spend the second invocation in that case.
 
+## `/home/claude/claudeplugins` is a live plugin copy, separate from this repo
+
+`/home/claude/claudeplugins` is registered as the `local-plugins` marketplace
+(`~/.claude/settings.json` → `enabledPlugins: {"devproc@local-plugins": true}`,
+`extraKnownMarketplaces.local-plugins.source.path: /home/claude/claudeplugins`)
+— it is **not** a symlink into `/workspace`, just a separate directory that
+happened to start as a copy of `/workspace/devproc`. This is the copy the
+`Skill`/`Agent` tools actually load `devproc:*` skills and agents from in this
+session, so it is where skill-prose changes must be made to be testable/usable
+right away — but it is invisible to git. `git status` in `/workspace` confirms
+`devproc/skills/feature-init/SKILL.md` (Sub-task 1's change) has **no tracked
+diff**: Sub-task 1's scaffolding step and Sub-task 2's `features/tmp` ingestion
+route (this file) exist only under `/home/claude/claudeplugins/devproc/`, not
+under the git-tracked `/workspace/devproc/`.
+
+**Consequence for this feature:** edited skill files must live under the
+git-tracked `/workspace/devproc/`, not only the live copy. **Resolved for
+Sub-tasks 1 and 2** (2026-07-24): the manager ported
+`feature-init/SKILL.md` and `feature-spec/SKILL.md` from
+`/home/claude/claudeplugins/devproc/` into `/workspace/devproc/`; `diff -q`
+confirms the two trees are back in sync for both files and `git status` now
+tracks them. **Policy for the remaining sub-tasks:** make `devproc/` edits
+directly in `/workspace/devproc/` (the deliverable) so no porting is needed; the
+live copy may drift and that is fine. Diffing the two trees remains the check
+before `/feature-end`.
+
+## Wording `docs/workflow.md` (Sub-task 3) must match
+
+`devproc/skills/feature-spec/SKILL.md` (edited in Sub-task 2, currently only at
+`/home/claude/claudeplugins/devproc/skills/feature-spec/SKILL.md` — see above)
+now describes the `features/tmp` route as new step 2, with population/clearing
+folded into step 6 (was step 5; all step numbers from 2 onward shifted by one
+throughout the file — the GitHub-issue step stayed step 1). For `docs/workflow.md`
+"Specify a feature" (currently lines 26–54) to describe the same behaviour
+consistently, it should cover, in the same register as the existing "With a
+description" / "From a GitHub issue" bullets (lines 30–46):
+
+- **A third route, parallel to the existing two:** material staged in
+  `features/tmp/` — notes, one or more documents, a document with links,
+  screenshots. Suggest a third bullet, e.g. "From material staged in
+  `features/tmp`:", mirroring the existing bullets' format.
+- **Two ways it gets used:** the user explicitly points `/feature-spec` at
+  `features/tmp` ("use what's in features/tmp"), or `/feature-spec`
+  auto-detects it (command-line description thin, directory holds something
+  beyond the tracked `README.md`) — and in the auto-detect case it **confirms
+  with the user before ingesting**, so leftover material from an aborted run
+  cannot silently join an unrelated feature's spec. `README.md` itself is
+  never ingested.
+- **Inline vs. copy:** markdown/plain-text content (even a couple hundred
+  lines) is copied inline into `## Requirements`, matching how issue content is
+  already handled; only genuinely un-inlinable artefacts (Word docs,
+  screenshots, other binaries) are copied into `features/plans/<slug>/` and
+  linked — a narrow exception, not a default for anything that arrived as a
+  file.
+- **Clearing `tmp` after capture:** once ingested (inlined or copied under
+  `features/plans/<slug>/`), the material is deleted from `features/tmp`
+  (`README.md` stays) so the plan is the only durable copy — `features/tmp` is
+  a hand-off channel, not a store, matching the "Requirements do not belong in
+  code directories" constraint already in the project `CLAUDE.md`.
+
 Note also that for a bare one-line feature description, `/feature-spec` will
 reliably end at `NEEDS WORK`: the skill writes a "no requirements beyond the
 summary" placeholder, and the reviewer correctly rates a spec with no
@@ -318,6 +378,19 @@ before the keep-alive loop, guarded on an agent being selected — plain
 seconds of startup. The warm-up's throwaway conversation is never resumed: the
 first real launch is plain `claude` (fresh), and later `--continue` relaunches
 resume the interactive session, which is more recent.
+
+## Sub-task 4 consistency check method
+
+To verify the `feature-init` CLAUDE.md template's "Documents to support the
+model" list and this repo's `/workspace/CLAUDE.md` copy agree "ignoring
+line-wrapping" (the check NOTES.md and the plan both call for), a byte diff is
+the wrong tool — the two files wrap the same prose at different column widths
+by design (the template is indented under a numbered step; `CLAUDE.md` is
+top-level). The check that actually answers the question: split each section
+into paragraphs on blank lines, collapse all whitespace within each paragraph
+to single spaces, then compare the resulting paragraph lists for exact
+equality. Confirmed equal for both files after adding the new `features/tmp/`
+bullet to both.
 
 ## Dogfooding: run the reviewers at spec/design time, not feature-end (#20)
 

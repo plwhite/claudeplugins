@@ -128,6 +128,13 @@ These apply at all times, not just when completing features:
 
     - Review record (a log, appended by `/feature-spec` and `/feature-design`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped. Always the last section of the file; a line is written every time, so an absent line means the stage has not run. Preserve it across edits.)
 
+    Optionally, a sibling `features/plans/<slug>/` directory holds un-inlinable requirements artefacts (screenshots, Word docs, other binaries) that `/feature-spec` copied in and linked from `## Requirements`.
+
+- **`features/tmp/`** — git-ignored scratch space for staging requirements
+  material as input to `/feature-spec`; a hand-off channel, not a store —
+  its contents (other than the tracked `README.md`) are captured into the
+  plan and then removed.
+
 - **`NOTES.md`** — non-obvious findings only. Do not record things derivable from reading the code.
 
 - **`CLAUDE.md`** — high-level status only. No plan detail, no implementation notes.
@@ -213,3 +220,39 @@ developed. Headings must end with the date of completion in YYYY-MM-DD format.
 ## 4. Ensure the plans directory exists
 
 Create the `features/plans/` directory if it does not exist.
+
+## 5. Ensure the tmp scratch directory exists and is git-ignored
+
+Create `features/tmp/` if it does not exist, and create `features/tmp/README.md`
+from the template below **only if it does not already exist** (do not overwrite
+an existing one):
+
+~~~markdown
+# features/tmp
+
+Scratch space for dropping requirements material — notes, documents,
+screenshots — as input to `/feature-spec`. Contents here are git-ignored and
+transient: `/feature-spec` captures anything it uses into the feature's plan
+file and then removes it from here.
+
+Do not use this directory to *track* requirements. Requirements live in
+issues or, once captured, in the plan file under `features/plans/`.
+~~~
+
+Then ensure `.gitignore` at the repo root contains the following two lines,
+so `features/tmp` contents are ignored but its README is kept:
+
+```gitignore
+features/tmp/*
+!features/tmp/README.md
+```
+
+If `.gitignore` does not exist, create it with just these two lines. If it
+already exists, add the two lines only if they are not already present
+(check for both lines individually — do not add a duplicate of either).
+`features/tmp/*` must come **before** `!features/tmp/README.md` — the negation
+only takes effect after the ignore rule. So: if exactly one of the two lines is
+present, add the missing one immediately adjacent (keeping `features/tmp/*`
+above `!features/tmp/README.md`), not at the end of the file; and if both are
+already present but in the wrong order, move `features/tmp/*` above the
+negation.
