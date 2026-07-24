@@ -6,6 +6,35 @@ type: project
 
 (Prior history retained — see git log for older entries.)
 
+## Twenty-ninth review (2026-07-25) — internal-docs-prune (#46) pre-/feature-end docs review
+
+Scope: new `/internal-docs-prune` skill + stateless `internal-docs-reviewer` agent. Docs touched: capabilities.md (new `## Internal docs hygiene` section), workflow.md (new `## Keep internal docs tidy` pointer), devproc/README.md (Contents-table + skill-ref + agent-ref rows), plugin.json (description extended), CLAUDE.md (devproc contents list + status). This review IS the pre-/feature-end docs-review sign-off gate.
+
+Verified STRONG:
+- Cross-link anchors resolve both ways: capabilities.md `## Internal docs hygiene`→`#internal-docs-hygiene` (linked from workflow.md L187 + devproc/README L154); workflow.md `## Keep internal docs tidy`→`#keep-internal-docs-tidy` (linked from capabilities.md L108). All correct.
+- Three key facts CONSISTENT across all surfaces: (1) agent stateless / skill owns settled-`judgment` memory under `.claude/agent-memory/devproc-internal-docs-reviewer/` — capabilities L106, devproc/README L154, SKILL L187-215, agent L218-230, NOTES L557-567 all agree; (2) `redundant`⇒always `delete` — capabilities L101, agent contract L126-134, SKILL L57-65; (3) `judgment`=`condense`|`move` never `delete`, interactive default = agent's proposed action — capabilities L103, SKILL Step 5. No drift.
+- Both new sections open with what-they-are (hierarchical clarity OK). Placement of both as trailing "bookend" sections is deliberate (NOTES L542). Discoverable via README→capabilities/workflow and CLAUDE→devproc/README multiple paths.
+
+PRIMARY FINDING — MAJOR (close-out status drift, now INVERTED form — recurring class, ~8th occurrence):
+- Feature-tracking surfaces contradict each other on lifecycle state. COMPLETED.md L8 carries a dated entry `### ...[internal-docs-prune] — 2026-07-25` AND CURRENT.md is empty (no feature) — i.e. says DONE. But CLAUDE.md `## Current status` L5 says "internal-docs-prune in progress" and plan Handoff L6-8 says pre-/feature-end (docs review = this run = last gate). So COMPLETED.md + empty CURRENT.md are PREMATURE (moved before /feature-end actually ran). Breaks the documented resume path (workflow.md "Resume after a session restart" says read CURRENT.md to find the active feature — finds nothing while CLAUDE.md says one is active). Fix direction is the user's call: either revert the premature COMPLETED move (put entry back in CURRENT.md, remove COMPLETED entry) until /feature-end runs, OR flip CLAUDE.md status + plan Handoff to terminal if the feature really is closing now.
+
+MINOR:
+- devproc/README.md L3 and CLAUDE.md L43 one-line plugin summaries omit "internal docs hygiene" (CLAUDE.md L43 also omits "documentation review"), while plugin.json now enumerates it as a distinct capability area. Capability enumeration inconsistent across the three summaries.
+- README.md Documentation table L31 capabilities.md row = "Code review and documentation review" — omits Dev Process Manager AND Internal docs hygiene. Recurring "README table omits detail" pattern; discoverability-of-detail only (section reachable via the doc).
+
+SUGGESTION:
+- capabilities.md L106 memory sentence: skill's memory living under the *reviewer agent's* namespace may momentarily puzzle given the stateless emphasis; a half-clause on the namespacing would preempt it. Very low priority.
+
+## Twenty-ninth review, second pass (2026-07-25) — internal-docs-prune convergence, CLEAN
+
+All findings verified RESOLVED; feature converged (4→0 actionable):
+- MAJOR (tracking drift): FIXED via finalise-the-close-out direction. Now all four surfaces agree DONE — CURRENT.md empty; COMPLETED.md dated entry 2026-07-25; CLAUDE.md `## Current status` L5 leads with "`internal-docs-prune` completed 2026-07-25 —" recent-completion line (style matches sibling completed lines); plan Handoff L6 "✅ COMPLETE — closed 2026-07-25 via /feature-end", First-action = N/A. No inversion left.
+- MINOR 1: FIXED. devproc/README.md L3 + CLAUDE.md L43 both "…code review, documentation review, and internal docs hygiene" — now matches plugin.json's four capability areas.
+- MINOR 2: FIXED. README.md L31 = "Semi-autonomous workflow management, code review, documentation review, and internal docs hygiene".
+- SUGGESTION: APPLIED. capabilities.md L106 now "(namespaced by the agent it pairs with, though the skill, not the stateless reviewer agent, owns it)".
+No new inconsistency introduced. Note (out of scope, not a regression): CLAUDE.md `## Current status` still carries ~8 historical completed lines, exceeding the new "in-progress + one recent-completion" cap — but trimming is `/internal-docs-prune`'s job, not this feature's close-out (NOTES.md L524-526), so correctly not done here.
+
+
 ## Twenty-eighth review, second pass (2026-07-24) — delete-demo-plugin one-fix convergence, CLEAN
 
 The single MINOR finding verified RESOLVED. delete-demo-plugin.md `## Handoff` now terminal and consistent with the rest of the file: Session summary = "Feature complete and closed ... Moved to features/COMPLETED.md via /feature-end on 2026-07-24" (no more "not committed"); "Sub-task in progress: None — all sub-tasks complete"; "First action next session: None"; Open questions/Dead ends = None. Matches `## Sub-tasks` (both ✓, all boxes [x]), `## Review record`, and COMPLETED.md dated heading. History-bearing sections (Requirements onward, line 12+) untouched. No new issues introduced. Feature fully converged — 1 → 0 actionable findings.

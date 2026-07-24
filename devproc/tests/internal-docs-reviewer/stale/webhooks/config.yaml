@@ -1,0 +1,3 @@
+# Payment webhook delivery settings
+max_attempts: 5
+backoff_seconds: 10

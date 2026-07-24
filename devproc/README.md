@@ -1,6 +1,6 @@
 # devproc plugin
 
-Skills and agents for feature lifecycle management, workflow orchestration, code review, and documentation review.
+Skills and agents for feature lifecycle management, workflow orchestration, code review, documentation review, and internal docs hygiene.
 
 For task-oriented guides to using these capabilities, see [docs/workflow.md](../docs/workflow.md) and [docs/capabilities.md](../docs/capabilities.md).
 
@@ -16,10 +16,12 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 | Skill | `review-full` | Full-codebase code review |
 | Skill | `review-component` | Code review scoped to a described component or area |
 | Skill | `review-branch` | Code review scoped to files changed in the current branch |
+| Skill | `internal-docs-prune` | Prune internal Claude-facing docs (root and nested `CLAUDE.md` files, `NOTES.md`, `.claude/rules/*.md`) — spawns `internal-docs-reviewer`, auto-applies redundant/stale findings, escalates or defers judgment findings |
 | Agent | `dev-process-manager` | Top-level orchestrator: drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user (`claude --agent dev-process-manager`) |
 | Agent | `feature-spec-reviewer` | Reviews a feature spec before a human reads it: requirements clarity, auditable delivery criteria, blocking issues; ends with a verdict |
 | Agent | `feature-design-reviewer` | Reviews a feature design and sub-task plan before a human reads it: requirement coverage, recorded rationale, auditable sub-task criteria, blocking issues; ends with a verdict |
 | Agent | `docs-structure-reviewer` | Audits documentation structure and quality, producing actionable findings without modifying files |
+| Agent | `internal-docs-reviewer` | Reviews internal Claude-facing docs for `redundant`, `stale`, or `judgment` findings, each tagged with a gating class and action, without modifying files |
 | Agent | `code-review-architectural` | Architectural review: module boundaries, coupling, design fit (`claude-opus-4-6`) |
 | Agent | `code-review-simplicity` | Simplicity review: unnecessary complexity, duplication, dead code |
 | Agent | `code-review-general` | General review: correctness, error handling, robustness, performance |
@@ -145,6 +147,20 @@ Runs a code review scoped to files changed in the current feature branch, derive
 
 ---
 
+### internal-docs-prune
+
+**Invoke with:** `/internal-docs-prune [unattended]`
+
+Prunes this repository's internal, Claude-facing documentation — root and nested `CLAUDE.md` files, `NOTES.md`, and `.claude/rules/*.md` — as distinct from user-facing `docs/`, which it never touches. It spawns the read-only `internal-docs-reviewer` agent and applies its findings by gating class: `redundant` and `stale` are auto-applied, `judgment` is escalated to you (interactive, the default) or deferred (unattended). It owns the record of settled `judgment` calls (kept under `.claude/agent-memory/devproc-internal-docs-reviewer/`, since the agent is stateless) so repeat runs don't re-ask about calls you already decided. Reports a summary of what was deleted, moved, condensed, and retained. See [docs/capabilities.md](../docs/capabilities.md#internal-docs-hygiene) for the gating model, the no-content-loss move semantics, and idempotency.
+
+**Example:**
+```
+/internal-docs-prune
+/internal-docs-prune unattended
+```
+
+---
+
 ## Agent reference
 
 ### dev-process-manager
@@ -178,6 +194,16 @@ Invoked automatically at the end of `/feature-design`, before the design is pres
 ### docs-structure-reviewer
 
 Audits documentation structure and quality. Traces all documents reachable from `README.md` and `CLAUDE.md`, checks discoverability, architectural completeness, procedural rigour, and stylistic consistency. Output is a prioritised list of findings (CRITICAL / MAJOR / MINOR / SUGGESTION) — never modifies files itself. Invoked automatically after `/feature-end`.
+
+---
+
+### internal-docs-reviewer
+
+Reviews a repository's internal, Claude-facing documentation — root and nested `CLAUDE.md` files, `NOTES.md`, and `.claude/rules/*.md` — for content that has gone stale, become redundant with a canonical source elsewhere, or is of borderline enough value that a human should decide. It enforces each file's own stated rules (e.g. `CLAUDE.md`'s "high-level status only", `NOTES.md`'s "non-obvious findings only") plus two fixed criteria per file type — audience relevance and duplication for `CLAUDE.md`; currency and durability for `NOTES.md` — and never touches user-facing `docs/`, `README.md`, or `CONTRIBUTING.md`.
+
+Every finding carries an exact anchor, a gating class (`redundant` / `stale` / `judgment`), and an action (`delete` / `move` → destination / `condense`) — the contract `/internal-docs-prune` parses to decide what to apply automatically and what to escalate. `redundant` findings are always `delete` (the content already exists at its canonical source). It never modifies files itself, and it is stateless: it re-reports every borderline `judgment` call on each run, leaving the skill to suppress those already decided.
+
+Invoked by `/internal-docs-prune`. Test fixtures live in `devproc/tests/internal-docs-reviewer/`.
 
 ---
 

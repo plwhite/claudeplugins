@@ -2,7 +2,7 @@
 
 ## Current status
 
-**No feature currently in progress.**
+`internal-docs-prune` completed 2026-07-25 — added prevention rules and a periodic-cleanup tool for the internal, Claude-facing docs (`CLAUDE.md` root and nested, `NOTES.md`, `.claude/rules/*.md`) that grow append-only (#46). Ships a read-only `internal-docs-reviewer` agent that emits findings tagged with a gating class (`redundant`/`stale`/`judgment`) and action (`delete`/`move`/`condense`), and a `/internal-docs-prune` skill that applies them by class — auto-applying redundant/stale, escalating judgment (interactive) or deferring it (unattended), with moves done write-verify-remove so nothing is lost. Three findings-contract decisions were settled at code review: the reviewer agent is **stateless** with the *skill* owning the settled-`judgment` memory (only the caller sees a decision, so only it can remember it); `redundant`⇒`delete`; and `judgment`+`move` applies the move on plain confirmation. Prevention rules cap the `## Current status` section (enforced in `/feature-end`, stated in the `feature-init` template). Prompt-and-docs-only change.
 
 `delete-demo-plugin` completed 2026-07-24 — removed the trivial `demo/` plugin (#42), which existed only to verify that plugins load in this context and had outlived its purpose, along with every *live* reference: the `demo/` directory, its `.claude-plugin/marketplace.json` entry, the root `README.md` Plugins-table row, the `## demo plugin` section of this file, and a stale `NOTES.md` note that wrongly claimed the Dockerfile COPYs `demo/`. By decision at spec sign-off, historical records and regenerable agent memory that mention demo were left intact — "delete completely" was scoped to live references only, verified by a word-boundary `\bdemo\b` search. Docs/config-only change.
 
@@ -40,7 +40,7 @@ plugin-name/
 
 Location: `devproc/`
 
-Skills and agents for feature lifecycle management, workflow orchestration, and code review.
+Skills and agents for feature lifecycle management, workflow orchestration, code review, documentation review, and internal docs hygiene.
 
 Contents:
 - `devproc/.claude-plugin/plugin.json`
@@ -52,10 +52,12 @@ Contents:
 - `devproc/skills/review-full/SKILL.md` — full-codebase code review; auto-applies code-level findings, escalates architectural changes
 - `devproc/skills/review-component/SKILL.md` — code review scoped to a described component (resolves natural-language description to files)
 - `devproc/skills/review-branch/SKILL.md` — code review scoped to files changed in the current branch (uses git diff for scope and context)
+- `devproc/skills/internal-docs-prune/SKILL.md` — prune internal Claude-facing docs (root and nested `CLAUDE.md` files, `NOTES.md`, `.claude/rules/*.md`): spawn `internal-docs-reviewer`, auto-apply redundant/stale findings without content loss, escalate or defer judgment findings
 - `devproc/agents/dev-process-manager.md` — top-level Opus orchestrator (`claude --agent dev-process-manager`); drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user
 - `devproc/agents/feature-spec-reviewer.md` — reviews a feature spec (requirements and sign-off strategy) before a human reads it, ending with a `READY FOR USER REVIEW` / `NEEDS WORK` verdict
 - `devproc/agents/feature-design-reviewer.md` — reviews a feature design and its sub-task plan (requirement coverage, recorded rationale, auditable criteria) before a human reads it, ending with the same verdict
 - `devproc/agents/docs-structure-reviewer.md` — audits documentation structure and quality, producing actionable findings
+- `devproc/agents/internal-docs-reviewer.md` — reviews internal Claude-facing docs for redundant, stale, or judgment-call content, producing gated findings (action + class) without modifying files
 - `devproc/agents/code-review-architectural.md` — architectural review agent (`claude-opus-4-6`)
 - `devproc/agents/code-review-simplicity.md` — simplicity and dead-code review agent
 - `devproc/agents/code-review-general.md` — correctness and robustness review agent
@@ -197,7 +199,7 @@ These apply at all times, not just when completing features:
 
     - Subtask list with short descriptions, per-sub-task sign-off checkboxes, and status markers (`✓`, `▶ NEXT:`)
 
-    - Review record (a log, appended by `/feature-spec` and `/feature-design`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped. Always the last section of the file; a line is written every time, so an absent line means the stage has not run. Preserve it across edits.)
+    - Review record (a log, appended by `/feature-spec`, `/feature-design`, and `/feature-end`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped. Always the last section of the file; a line is written every time, so an absent line means the stage has not run. Preserve it across edits.)
 
     Optionally, a sibling `features/plans/<slug>/` directory holds un-inlinable requirements artefacts (screenshots, Word docs, other binaries) that `/feature-spec` copied in and linked from `## Requirements`.
 
