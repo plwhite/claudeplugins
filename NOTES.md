@@ -39,7 +39,7 @@ On macOS with a MITM proxy and custom CA, Go-based tools like `gh` may additiona
 
 ## Docker build context must be repo root when baking plugins
 
-The container Dockerfile COPYs plugin directories (`devproc/`, `demo/`) from the repo. This requires the build context to be the repo root, not `docker/` — so the command is `docker build -f docker/Dockerfile .` not `docker build docker`. The config files copy path therefore changes from `files/home` to `docker/files/home`. The old `docker build docker` form will fail silently on the COPY steps if the repo root is not the context.
+The container Dockerfile COPYs the plugin directory (`devproc/`) from the repo. This requires the build context to be the repo root, not `docker/` — so the command is `docker build -f docker/Dockerfile .` not `docker build docker`. The config files copy path therefore changes from `files/home` to `docker/files/home`. The old `docker build docker` form will fail silently on the COPY steps if the repo root is not the context.
 
 `ARG UID`/`ARG GID` are declared without defaults so that a bare `docker build` fails visibly rather than silently using UID 1000. The build script always passes `$(id -u)`/`$(id -g)`.
 
