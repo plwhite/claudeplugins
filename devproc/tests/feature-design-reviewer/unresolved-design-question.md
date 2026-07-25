@@ -104,11 +104,10 @@ server cannot know the user's timezone and the two dates differ near midnight.
    - [ ] Testing: automated tests for filter application (including a filter set spanning more than one page), passing; a 200,000-row export completes with flat server memory
 4. **Help page section and implementation notes** — user-facing documentation of the export, and the memory-constraint record
    - [ ] Documentation: help page section describing the export and its column meanings; `NOTES.md` entry recording how the large-export memory constraint was met
+5. **Final sign-off criteria** — end-of-feature gates for this feature, per `## Sign-off strategy`
+   - [ ] Code review (agent): /review-branch over all changed files
+   - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
 
 **▶ NEXT:** Sub-task 1
-
-> Feature-level sign-off: one agent `/review-branch` and one agent docs review
-> (`docs-structure-reviewer`) at `/feature-end`, per the sign-off strategy,
-> rather than code-review or docs-review boxes on each sub-task.
 
 > Run `/feature-checkpoint` after each sub-task completes.

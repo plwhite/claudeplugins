@@ -46,7 +46,10 @@ The findings should also raise at least one of:
   reviewable nowhere. The control does not raise this, which is the evidence
   that the sub-tasks, not the design, are its source.
 - Any finding faulting the absence of per-sub-task code-review boxes: the
-  strategy puts code review at feature level and the plan records it beneath the
-  sub-task list.
+  strategy puts code review at feature level, and sub-task 6 ("Final sign-off
+  criteria") carries it as an explicit box, which is the correct place for it.
+- Any finding faulting sub-task 6 ("Final sign-off criteria") itself — it
+  correctly materialises the strategy's `/review-branch` and
+  `docs-structure-reviewer` gates and is not part of this case's flaw.
 
 **Expected verdict:** `NEEDS WORK`

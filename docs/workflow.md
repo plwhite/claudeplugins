@@ -98,6 +98,8 @@ Each sub-task is given its own **sign-off criteria** — checkboxes for the cate
 
 `- [ ]` is pending and `- [x]` is satisfied; the sub-task is complete only once every box is `[x]`.
 
+Where the sign-off strategy defines any end-of-feature gate — a single `/review-branch` before the feature closes, one `docs-structure-reviewer` pass, a final user review — Claude adds it as a last sub-task, **"Final sign-off criteria"**, one checkbox per gate. This only happens when such gates actually exist; a feature whose sign-offs are all satisfied within earlier sub-tasks gets no final sub-task. A box that `/feature-end` performs itself (typically the docs-review box, since `/feature-end` runs that review as it closes the feature) is marked "(performed at `/feature-end`)" — the one box expected to stay unticked until then.
+
 Before the design reaches you, the `feature-design-reviewer` agent reads it — see [Review before you read it](#review-before-you-read-it) below.
 
 **Review the design before approving it.** The design, the sub-task plan, and each sub-task's sign-off criteria are presented to you before any implementation begins. This is the moment to correct the approach, adjust scope, add constraints, or change what each sub-task must satisfy before it counts as done. Implementation does not start until you confirm.
@@ -176,7 +178,7 @@ When all sub-tasks are done:
 
 - Review that you are comfortable with the final state.
 
-- Run `/feature-end` to tell Claude that the feature is done. This will run a full checkpoint, verifying all sub-tasks are marked complete with every sign-off box ticked, and move the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` with the completion date. The plan file is kept as a record. It also triggers an intensive docs review over all docs in the project.
+- Run `/feature-end` to tell Claude that the feature is done. This will run a full checkpoint, verifying all sub-tasks are marked complete with every sign-off box ticked — except a "Final sign-off criteria" box marked "(performed at `/feature-end`)", which is expected to still be open at this point, since this step is what performs and ticks it — and move the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` with the completion date. The plan file is kept as a record. It also triggers an intensive docs review over all docs in the project — the same review that ticks the annotated docs-review box, so there is only ever one close-out docs review.
 
 - Commit the final state changes to git, squash commits as required, and push and merge the feature branch.
 

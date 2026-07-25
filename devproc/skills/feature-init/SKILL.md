@@ -76,19 +76,22 @@ box needs no parenthetical — the user is the performer by definition.)
 For each category it is legitimate to decide *not* to do it — but that decision
 is made explicitly and up front, where the user can comment on it:
 
-- **Strategy (at `/feature-spec`).** The plan file's `## Sign-off strategy` section records the quality bar per category for the whole feature (e.g. "100% test coverage" vs "basic tests" vs "none"; "full production docs" vs "internal notes only"). The user agrees it.
-- **Criteria (at `/feature-design`).** Each sub-task in `## Sub-tasks` carries the applicable sign-off categories as checkboxes, derived from the strategy. The user agrees them.
+- **Strategy (at `/feature-spec`).** The plan file's `## Sign-off strategy` section records the quality bar per category for the whole feature (e.g. "100% test coverage" vs "basic tests" vs "none"; "full production docs" vs "internal notes only"), including the bar for any end-of-feature gates (e.g. "one `/review-branch` before end", "one `docs-structure-reviewer` review", "final user review"). The user agrees it.
+- **Criteria (at `/feature-design`).** Each sub-task in `## Sub-tasks` carries the applicable sign-off categories as checkboxes, derived from the strategy. Where the strategy defines end-of-feature gates, `/feature-design` also materialises them as an explicit final sub-task named **"Final sign-off criteria"**, one checkbox per gate — added only when such gates actually exist, never as an empty placeholder. The user agrees them.
 - **Completion (at implement time).** A sub-task may be marked complete (✓) only when every one of its sign-off boxes is ticked.
 
 Checkbox convention:
 
 - `- [ ]` is pending; `- [x]` is satisfied.
 - A sub-task is complete only when all its boxes are `[x]`; an unchecked box means it is not done.
-- Only the categories that apply to a sub-task are listed. When a category does not apply, omit it — never write a placeholder such as `- [ ] User review: none`, which can never be ticked and so blocks the sub-task from ever completing. A category skipped for the whole feature is justified once in `## Sign-off strategy`; a feature-level sign-off (e.g. one end-of-feature docs review or `/review-branch`) is recorded there too, rather than repeated on every sub-task.
+- Only the categories that apply to a sub-task are listed. When a category does not apply, omit it — never write a placeholder such as `- [ ] User review: none`, which can never be ticked and so blocks the sub-task from ever completing. A category skipped for the whole feature is justified once in `## Sign-off strategy`. But a sign-off that gates completion of the feature must not live only in that strategy prose: where the strategy defines end-of-feature gates, they are materialised as the "Final sign-off criteria" sub-task described above, one checkbox per gate, rather than recorded once and left unchecked against anything.
+- A box that is **performed by `/feature-end` itself** (e.g. the close-out docs review, since `/feature-end` runs it as part of closing the feature) carries the annotation "(performed at `/feature-end`)". This is the one box in the final sub-task legitimately left unticked before `/feature-end` runs — `/feature-checkpoint` and a resuming session must treat that as expected, not as an incomplete feature. Every other box, in the final sub-task and in all other sub-tasks, must be ticked before `/feature-end` starts.
 
 `/feature-checkpoint` may be run at any time, including mid-sub-task: it records
 which boxes are ticked and which remain so the hand-off is accurate, and never
-marks a sub-task complete while a box is still outstanding.
+marks a sub-task complete while a box is still outstanding — except the one
+`/feature-end`-performed box noted above, whose unticked state before `/feature-end`
+runs is the model's expected state, not a sign of incompleteness.
 
 ### Resuming after a session restart
 

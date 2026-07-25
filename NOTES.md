@@ -501,6 +501,61 @@ referenced `/internal-docs-prune` (added in sub-task 3) — verified it against
 the shipped skill/agent behaviour and left it untouched, per the manager's
 brief not to rewrite what already covers the requirement.
 
+## Sub-task 7 dry-run: `/feature-design` step 6 produces the right shape both ways (#47)
+
+Reasoning walkthrough (no live skill invocation — traced the updated
+`devproc/skills/feature-design/SKILL.md` step 6 instructions by hand against
+two representative strategies), as the dry-run evidence for Sub-task 7's
+Testing box.
+
+**Scenario A — gates exist.** A feature ("add rate limiting to the public
+API") whose `## Sign-off strategy` has: Testing and Documentation scoped to
+specific sub-tasks; Code review = "one agent `/review-branch` before
+`/feature-end`"; Docs review = "one agent `docs-structure-reviewer` over the
+updated docs at `/feature-end`"; User review tied to one specific sub-task
+(not end-of-feature). Step 6's new bullets: only Code review and Docs review
+are genuine end-of-feature gates (once-only, not owned by any ordinary
+sub-task) — Testing/Documentation/User review are all already per-sub-task, so
+they are not gates. Result: a last sub-task is added —
+
+```
+N. **Final sign-off criteria** — end-of-feature gates for this feature, per `## Sign-off strategy`
+   - [ ] Code review (agent): /review-branch over all changed files
+   - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
+```
+
+Confirms two things worth recording: (1) the annotation attaches to *only* the
+docs-review box, not the code-review box — `/review-branch` is performed by a
+separate skill invocation before `/feature-end` runs, so it is not
+`/feature-end`-performed and must not carry the annotation; getting this wrong
+either way (annotating both, or neither) would be a real bug. (2) This exactly
+reproduces the shape used throughout Sub-task 5's fixtures and this feature's
+own Sub-task 7, which is expected — they were built from this same reading of
+step 6.
+
+**Scenario B — no gates.** A feature ("rename a config field for clarity")
+whose strategy is: Testing on the one sub-task; Documentation = "None — no
+user-facing or architectural doc touches this field"; Code review = "user
+reads the diff" (tied to the one sub-task, not an agent end-of-feature gate);
+Docs review = "None — no docs affected"; User review folded into the same
+sub-task's code-review box. Step 6: no category here is a genuine end-of-feature
+gate (nothing is "once, at close, by an agent, owned by no sub-task"), so no
+"Final sign-off criteria" sub-task is added — the plan ends at its ordinary
+sub-task(s), matching the spec-stage settled decision that the sub-task is
+conditional, not mandatory.
+
+One design point the dry-run confirms works as intended: the step 5
+target-structure template itself shows the final sub-task as `N. **Final
+sign-off criteria** — <only when ... omitted entirely otherwise — see step
+6>` — the caveat is inline in the template line, not only in step 6's prose.
+That stops the literal-minded misreading "the template always has one, so
+always add it," which a template-only skim could otherwise produce.
+
+Also confirms `feature-design-reviewer`'s Sub-task 4 criteria are consistent
+with both outcomes: it would flag a missing final sub-task in Scenario A if
+omitted, and would flag an unwarranted one in Scenario B if incorrectly added
+— neither false-positives on the correct output of either scenario.
+
 ## Memory belongs to the skill, not the agent (#46, code-review resolution)
 
 The requirement "uses project-scoped agent memory to avoid re-litigating
