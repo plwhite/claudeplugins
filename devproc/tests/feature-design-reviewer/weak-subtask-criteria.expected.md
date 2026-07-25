@@ -39,7 +39,10 @@ explicitly.
 - Any **BLOCKING or MAJOR** finding against `## Design`, which is the clean
   baseline. MINOR findings and SUGGESTIONs there are tolerated.
 - Any finding faulting the absence of per-sub-task code-review boxes: the
-  strategy puts code review at feature level and the plan records it beneath the
-  sub-task list.
+  strategy puts code review at feature level, and sub-task 5 ("Final sign-off
+  criteria") carries it as an explicit box, which is the correct place for it.
+- Any finding faulting sub-task 5 ("Final sign-off criteria") itself — it
+  correctly materialises the strategy's `/review-branch` and
+  `docs-structure-reviewer` gates and is not part of this case's flaw.
 
 **Expected verdict:** `NEEDS WORK`

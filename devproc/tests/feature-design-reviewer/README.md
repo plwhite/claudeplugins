@@ -38,6 +38,7 @@ cause in practice — a design written too quickly to record its own reasoning.
 | `weak-subtask-criteria` | Delivery criteria |
 | `unresolved-design-question` | Blocking issues |
 | `oversized-subtasks` | Sub-task quality |
+| `missing-final-signoff` | Delivery criteria — end-of-feature gates left in strategy prose instead of a "Final sign-off criteria" sub-task |
 
 ## Running the tests
 

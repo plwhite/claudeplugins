@@ -123,12 +123,11 @@ the only way to satisfy the requirement without guessing at a timezone.
    - [ ] User review: the user opens an exported file from a filtered report and confirms it is what finance needs
 4. **Help page section and implementation notes** — user-facing documentation of the export, and the memory-constraint record
    - [ ] Documentation: help page section describing the export and its column meanings; `NOTES.md` entry recording how the large-export memory constraint was met
+5. **Final sign-off criteria** — end-of-feature gates for this feature, per `## Sign-off strategy`
+   - [ ] Code review (agent): /review-branch over all changed files
+   - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
 
 **▶ NEXT:** Sub-task 1
-
-> Feature-level sign-off: one agent `/review-branch` and one agent docs review
-> (`docs-structure-reviewer`) at `/feature-end`, per the sign-off strategy,
-> rather than code-review or docs-review boxes on each sub-task.
 
 > Sub-tasks 1 and 2 carry no user-review box: there is no user-visible surface
 > until sub-task 3, where the user review for the feature sits.

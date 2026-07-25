@@ -77,7 +77,7 @@ If you want a deeper structural assessment (using `claude-opus-4-6` in a slow pa
 
 To audit the documentation structure and quality of a codebase, ask Claude to do a full docs review, which can trigger the `docs-structure-reviewer` agent. This can be asked for using natural language (`Do a full structural review of docs` or `Use the docs-structure-reviewer to review the docs`). This is automatically run by Claude at the end of each feature.
 
-**Docs review** is also one of the five sign-off categories in the feature model, so a feature's sign-off strategy can require it — per sub-task (`Docs review (agent): ...` or `Docs review (user): ...` checkboxes) or as a feature-level sign-off, for which the automatic `/feature-end` run is the default.
+**Docs review** is also one of the five sign-off categories in the feature model, so a feature's sign-off strategy can require it — per sub-task (`Docs review (agent): ...` or `Docs review (user): ...` checkboxes), or as an end-of-feature gate, materialised at design time as a box in the "Final sign-off criteria" sub-task and marked "(performed at `/feature-end`)", since the automatic `/feature-end` run is what performs and ticks it.
 
 The docs structure reviewer checks discoverability, architectural completeness, procedural rigour, and consistency, and produces a prioritised list of findings without modifying any files (unless you tell Claude to run it and implement its findings).
 

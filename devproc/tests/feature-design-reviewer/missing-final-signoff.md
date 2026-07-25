@@ -98,7 +98,9 @@ serialisation (delimiters, quoting, the header row).
 
 The formatting rules are a contract with finance's import step and are the most
 likely thing to regress; keeping them separate lets them be tested directly on
-values, without going through a whole export.
+values, without going through a whole export. It also keeps the CSV writer
+generic, so the out-of-scope `.xlsx` exporter can reuse the same formatting if
+it is ever built — though nothing is built for that now.
 
 ### The filename is set by the client's local date
 
@@ -112,17 +114,23 @@ the only way to satisfy the requirement without guessing at a timezone.
 ## Sub-tasks
 
 1. **Export endpoint with streamed row selection** — the endpoint returns the correct rows for a given filter set, streamed, with flat memory use
-   - [ ] Testing: tests added for the endpoint
-2. **Cell formatting layer** — ISO dates, unformatted numbers, and column order/headings matching the screen
+   - [ ] Testing: automated tests for filter application (including a filter set spanning more than one page), passing; a 200,000-row export completes with flat server memory
+2. **Cell formatting and CSV serialisation** — ISO dates, unformatted numbers, column order/headings matching the screen, and correctly quoted output
+   - [ ] Testing: automated tests for ISO date formatting, unformatted numbers, and column order against the on-screen column set, passing
+   - [ ] Testing: automated tests for serialisation of values containing commas, quotes and newlines, and for the header row, passing
 3. **Reports page export control** — the control appears on the reports page and downloads the file with the correct name
-   - [ ] Testing: the control works
-   - [ ] User review: none
+   - [ ] Testing: automated test that the control issues the request with the current filters and the client's local date, passing; one manual export of the largest available test tenant, opened in a spreadsheet with values confirmed correct
+   - [ ] User review: the user opens an exported file from a filtered report and confirms it is what finance needs
 4. **Help page section and implementation notes** — user-facing documentation of the export, and the memory-constraint record
-   - [ ] Documentation: docs updated
-5. **Final sign-off criteria** — end-of-feature gates for this feature, per `## Sign-off strategy`
-   - [ ] Code review (agent): /review-branch over all changed files
-   - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
+   - [ ] Documentation: help page section describing the export and its column meanings; `NOTES.md` entry recording how the large-export memory constraint was met
 
 **▶ NEXT:** Sub-task 1
+
+> Feature-level sign-off: one agent `/review-branch` and one agent docs review
+> (`docs-structure-reviewer`) at `/feature-end`, per the sign-off strategy,
+> rather than code-review or docs-review boxes on each sub-task.
+
+> Sub-tasks 1 and 2 carry no user-review box: there is no user-visible surface
+> until sub-task 3, where the user review for the feature sits.
 
 > Run `/feature-checkpoint` after each sub-task completes.

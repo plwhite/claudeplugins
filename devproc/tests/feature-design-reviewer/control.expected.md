@@ -19,13 +19,18 @@ observation about this file — not an invented fault.
   decision carries its reasoning, and the one significant alternative
   (client-side generation) is recorded with why it lost.
 - **Delivery criteria** — each sub-task's boxes derive from the agreed strategy;
-  each is auditable; the feature-level `/review-branch` is recorded once beneath
-  the list rather than repeated per sub-task, as the strategy specifies.
+  each is auditable; the strategy's feature-level `/review-branch` and
+  `docs-structure-reviewer` gates are materialised as sub-task 5 ("Final
+  sign-off criteria"), one box each, rather than repeated on every sub-task —
+  with the docs-review box correctly carrying the "(performed at
+  `/feature-end`)" annotation.
 - **Blocking issues** — none: no deferred decisions, no dependency on anything
   that does not exist, and the ordering works (endpoint, then formatting, then
-  the control that uses both, then docs).
-- **Sub-task quality** — four sub-tasks, each finishable and reviewable in one
-  go, each leaving the project working.
+  the control that uses both, then docs, then the closing gates).
+- **Sub-task quality** — five sub-tasks, each finishable and reviewable in one
+  go, each leaving the project working; the fifth is the closing checklist of
+  gates rather than a work item, which is expected for a "Final sign-off
+  criteria" sub-task.
 
 ## Known soft spots
 
