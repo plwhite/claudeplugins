@@ -43,18 +43,6 @@ The container Dockerfile COPYs the plugin directory (`devproc/`) from the repo. 
 
 `ARG UID`/`ARG GID` are declared without defaults so that a bare `docker build` fails visibly rather than silently using UID 1000. The build script always passes `$(id -u)`/`$(id -g)`.
 
-## Container credentials mount path (#17)
-
-Claude Code on Linux reads OAuth login from `~/.claude/.credentials.json`. The
-original `claude-run` mounted `$HOME/.claude/.credentials` →
-`/home/claude/.claude/.credentials` — the `.json` suffix was missing on both
-sides. Because the host source path did not exist, Docker silently created an
-empty *directory* there (visible on the host as `~/.claude/.credentials/`, owned
-`nobody:nogroup`) and bind-mounted that empty dir, so no credentials ever
-reached the container and automatic login failed. Fix: mount
-`.credentials.json` on both sides. The stray empty `~/.claude/.credentials/`
-directory created by the old bug is a host-side artifact and can be removed
-manually.
 
 ## Container session keep-alive (#17)
 
@@ -286,57 +274,19 @@ diff**: Sub-task 1's scaffolding step and Sub-task 2's `features/tmp` ingestion
 route (this file) exist only under `/home/claude/claudeplugins/devproc/`, not
 under the git-tracked `/workspace/devproc/`.
 
-**Consequence for this feature:** edited skill files must live under the
-git-tracked `/workspace/devproc/`, not only the live copy. **Resolved for
-Sub-tasks 1 and 2** (2026-07-24): the manager ported
-`feature-init/SKILL.md` and `feature-spec/SKILL.md` from
-`/home/claude/claudeplugins/devproc/` into `/workspace/devproc/`; `diff -q`
-confirms the two trees are back in sync for both files and `git status` now
-tracks them. **Policy for the remaining sub-tasks:** make `devproc/` edits
-directly in `/workspace/devproc/` (the deliverable) so no porting is needed; the
-live copy may drift and that is fine. Diffing the two trees remains the check
-before `/feature-end`.
+**Consequence:** skill-prose edits must be made in the git-tracked
+`/workspace/devproc/` (the deliverable), not only the live copy; the live copy
+may drift and that is fine. Diffing the two trees is the check before
+`/feature-end`.
 
-## Wording `docs/workflow.md` (Sub-task 3) must match
+## `/feature-spec` from a bare one-line description ends at NEEDS WORK
 
-`devproc/skills/feature-spec/SKILL.md` (edited in Sub-task 2, currently only at
-`/home/claude/claudeplugins/devproc/skills/feature-spec/SKILL.md` — see above)
-now describes the `features/tmp` route as new step 2, with population/clearing
-folded into step 6 (was step 5; all step numbers from 2 onward shifted by one
-throughout the file — the GitHub-issue step stayed step 1). For `docs/workflow.md`
-"Specify a feature" (currently lines 26–54) to describe the same behaviour
-consistently, it should cover, in the same register as the existing "With a
-description" / "From a GitHub issue" bullets (lines 30–46):
-
-- **A third route, parallel to the existing two:** material staged in
-  `features/tmp/` — notes, one or more documents, a document with links,
-  screenshots. Suggest a third bullet, e.g. "From material staged in
-  `features/tmp`:", mirroring the existing bullets' format.
-- **Two ways it gets used:** the user explicitly points `/feature-spec` at
-  `features/tmp` ("use what's in features/tmp"), or `/feature-spec`
-  auto-detects it (command-line description thin, directory holds something
-  beyond the tracked `README.md`) — and in the auto-detect case it **confirms
-  with the user before ingesting**, so leftover material from an aborted run
-  cannot silently join an unrelated feature's spec. `README.md` itself is
-  never ingested.
-- **Inline vs. copy:** markdown/plain-text content (even a couple hundred
-  lines) is copied inline into `## Requirements`, matching how issue content is
-  already handled; only genuinely un-inlinable artefacts (Word docs,
-  screenshots, other binaries) are copied into `features/plans/<slug>/` and
-  linked — a narrow exception, not a default for anything that arrived as a
-  file.
-- **Clearing `tmp` after capture:** once ingested (inlined or copied under
-  `features/plans/<slug>/`), the material is deleted from `features/tmp`
-  (`README.md` stays) so the plan is the only durable copy — `features/tmp` is
-  a hand-off channel, not a store, matching the "Requirements do not belong in
-  code directories" constraint already in the project `CLAUDE.md`.
-
-Note also that for a bare one-line feature description, `/feature-spec` will
-reliably end at `NEEDS WORK`: the skill writes a "no requirements beyond the
-summary" placeholder, and the reviewer correctly rates a spec with no
-requirements as blocked. That is working as intended — the questions go to the
-user — but it means `READY FOR USER REVIEW` is not reachable from a one-liner,
-which matters for unattended mode.
+For a bare one-line feature description, `/feature-spec` will reliably end at
+`NEEDS WORK`: the skill writes a "no requirements beyond the summary"
+placeholder, and the reviewer correctly rates a spec with no requirements as
+blocked. That is working as intended — the questions go to the user — but it
+means `READY FOR USER REVIEW` is not reachable from a one-liner, which matters
+for unattended mode.
 
 ## Unattended mode rarely proceeds at spec stage (#20)
 
