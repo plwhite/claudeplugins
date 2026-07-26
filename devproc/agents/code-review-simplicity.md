@@ -23,7 +23,7 @@ description: |
   </example>
 
 tools: Glob, Grep, Read
-model: claude-sonnet-4-6
+model: sonnet
 color: yellow
 ---
 

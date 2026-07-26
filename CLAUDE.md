@@ -2,7 +2,7 @@
 
 ## Current status
 
-`final-signoff-subtask` completed 2026-07-26 — reworked the sign-off model so end-of-feature gates are materialised as an explicit "Final sign-off criteria" sub-task rather than living only in strategy prose (#47). See `features/COMPLETED.md` for detail.
+`unpin-agent-model-versions` completed 2026-07-26 — replaced pinned, dated `model:` ids on four `devproc` review agents with unpinned family aliases (`opus`/`sonnet`) so they track the current default instead of going stale (#48). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -42,10 +42,10 @@ Contents:
 - `devproc/agents/feature-design-reviewer.md` — reviews a feature design and its sub-task plan (requirement coverage, recorded rationale, auditable criteria) before a human reads it, ending with the same verdict
 - `devproc/agents/docs-structure-reviewer.md` — audits documentation structure and quality, producing actionable findings
 - `devproc/agents/internal-docs-reviewer.md` — reviews internal Claude-facing docs for redundant, stale, or judgment-call content, producing gated findings (action + class) without modifying files
-- `devproc/agents/code-review-architectural.md` — architectural review agent (`claude-opus-4-6`)
-- `devproc/agents/code-review-simplicity.md` — simplicity and dead-code review agent
-- `devproc/agents/code-review-general.md` — correctness and robustness review agent
-- `devproc/agents/code-review-nitty.md` — low-level readability and naming review agent
+- `devproc/agents/code-review-architectural.md` — architectural review agent (`opus`)
+- `devproc/agents/code-review-simplicity.md` — simplicity and dead-code review agent (`sonnet`)
+- `devproc/agents/code-review-general.md` — correctness and robustness review agent (`sonnet`)
+- `devproc/agents/code-review-nitty.md` — low-level readability and naming review agent (`sonnet`)
 
 See `devproc/README.md` for full usage documentation.
 

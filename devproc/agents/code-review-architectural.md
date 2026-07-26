@@ -36,7 +36,7 @@ description: |
   </example>
 
 tools: Glob, Grep, Read
-model: claude-opus-4-6
+model: opus
 color: red
 ---
 
