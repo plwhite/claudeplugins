@@ -194,4 +194,10 @@ These apply at all times, not just when completing features:
 
 - **`NOTES.md`** — non-obvious findings only. Do not record things derivable from reading the code.
 
-- **`CLAUDE.md`** — high-level status only. No plan detail, no implementation notes.
+- **`CLAUDE.md`** — high-level status only. No plan detail, no implementation
+  notes. Its `## Current status` section is capped: it holds **only** the
+  in-progress feature (if any) plus **at most one line** for the single most
+  recent completion. Older completion entries live in `features/COMPLETED.md`
+  only and are deleted from `CLAUDE.md` — `/feature-end` performs this trim
+  when it closes a feature. `/internal-docs-prune` is the periodic-cleanup
+  tool for any drift beyond that (here or elsewhere in the internal docs).
