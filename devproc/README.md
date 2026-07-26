@@ -22,10 +22,10 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 | Agent | `feature-design-reviewer` | Reviews a feature design and sub-task plan before a human reads it: requirement coverage, recorded rationale, auditable sub-task criteria, blocking issues; ends with a verdict |
 | Agent | `docs-structure-reviewer` | Audits documentation structure and quality, producing actionable findings without modifying files |
 | Agent | `internal-docs-reviewer` | Reviews internal Claude-facing docs for `redundant`, `stale`, or `judgment` findings, each tagged with a gating class and action, without modifying files |
-| Agent | `code-review-architectural` | Architectural review: module boundaries, coupling, design fit (`claude-opus-4-6`) |
-| Agent | `code-review-simplicity` | Simplicity review: unnecessary complexity, duplication, dead code |
-| Agent | `code-review-general` | General review: correctness, error handling, robustness, performance |
-| Agent | `code-review-nitty` | Nitty review: naming, comments, control flow clarity, micro-robustness |
+| Agent | `code-review-architectural` | Architectural review: module boundaries, coupling, design fit (`opus`) |
+| Agent | `code-review-simplicity` | Simplicity review: unnecessary complexity, duplication, dead code (`sonnet`) |
+| Agent | `code-review-general` | General review: correctness, error handling, robustness, performance (`sonnet`) |
+| Agent | `code-review-nitty` | Nitty review: naming, comments, control flow clarity, micro-robustness (`sonnet`) |
 
 ## Setup
 
@@ -209,22 +209,22 @@ Invoked by `/internal-docs-prune`. Test fixtures live in `devproc/tests/internal
 
 ### code-review-architectural
 
-Reviews module boundaries, coupling between components, consistency with the established design, and public interface quality. Uses `claude-opus-4-6`. Invoked when architectural review is requested. Produces findings classified as ARCHITECTURAL (requires confirmation), CONCERN, or SUGGESTION.
+Reviews module boundaries, coupling between components, consistency with the established design, and public interface quality. Uses `opus`. Invoked when architectural review is requested. Produces findings classified as ARCHITECTURAL (requires confirmation), CONCERN, or SUGGESTION.
 
 ---
 
 ### code-review-simplicity
 
-Identifies unnecessary complexity: dead code, duplication, over-engineering, redundant abstractions, and verbose logic. Produces findings classified as MAJOR, MINOR, or SUGGESTION.
+Identifies unnecessary complexity: dead code, duplication, over-engineering, redundant abstractions, and verbose logic. Uses `sonnet`. Produces findings classified as MAJOR, MINOR, or SUGGESTION.
 
 ---
 
 ### code-review-general
 
-Checks correctness, error handling, edge cases, performance hot spots, and security at system boundaries. Produces findings classified as CRITICAL, MAJOR, MINOR, or SUGGESTION.
+Checks correctness, error handling, edge cases, performance hot spots, and security at system boundaries. Uses `sonnet`. Produces findings classified as CRITICAL, MAJOR, MINOR, or SUGGESTION.
 
 ---
 
 ### code-review-nitty
 
-Reviews low-level code quality: naming, comments (missing, wrong, or redundant), control flow clarity, and micro-robustness issues within individual functions. Produces findings classified as MAJOR, MINOR, or SUGGESTION.
+Reviews low-level code quality: naming, comments (missing, wrong, or redundant), control flow clarity, and micro-robustness issues within individual functions. Uses `sonnet`. Produces findings classified as MAJOR, MINOR, or SUGGESTION.
