@@ -6,8 +6,9 @@ argument-hint: [feature name or slug]
 
 Mark a feature as complete and bring all documentation up to date.
 
-Before proceeding, check that CLAUDE.md contains a Feature Model section.
-If it doesn't, tell the user to run /feature-init first and stop.
+Before proceeding, check that `features/FEATUREMODEL.md` exists **and** that
+`CLAUDE.md` loads it via a live import — an un-backticked `@features/FEATUREMODEL.md` line in ordinary prose, outside any fenced code block.
+If either is missing, tell the user to run /feature-init first and stop.
 
 The feature to end is: $ARGUMENTS (if blank, use whichever feature is currently in progress in `features/CURRENT.md`)
 

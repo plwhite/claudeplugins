@@ -11,8 +11,9 @@ of the feature lifecycle (`feature-spec` → `feature-design` → implement →
 `/feature-spec` (which agreed the sign-off strategy); it produces the design and
 plan, but does **not** begin implementation.
 
-Before proceeding, check that CLAUDE.md contains a Feature Model section.
-If it doesn't, tell the user to run /feature-init first and stop.
+Before proceeding, check that `features/FEATUREMODEL.md` exists **and** that
+`CLAUDE.md` loads it via a live import — an un-backticked `@features/FEATUREMODEL.md` line in ordinary prose, outside any fenced code block.
+If either is missing, tell the user to run /feature-init first and stop.
 
 The user has identified the feature as: $ARGUMENTS
 
@@ -97,7 +98,7 @@ section of the file.>
 
 Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md` as you discover it, not here. The Design section is the exception: it should capture the key decisions and rationale from the planning process.
 
-6. Give each sub-task its **sign-off criteria**, derived from the `## Sign-off strategy` agreed at `/feature-spec`. The conventions these must follow — the standard categories, the checkbox format, auditability, performer attribution on review boxes, omitting categories that do not apply rather than writing untickable placeholders, and materialising any strategy-defined end-of-feature gates as a conditional final sub-task rather than leaving them only in strategy prose — are defined in the project CLAUDE.md under `### Sign-off criteria`. Apply them. Specific to this step:
+6. Give each sub-task its **sign-off criteria**, derived from the `## Sign-off strategy` agreed at `/feature-spec`. The conventions these must follow — the standard categories, the checkbox format, auditability, performer attribution on review boxes, omitting categories that do not apply rather than writing untickable placeholders, and materialising any strategy-defined end-of-feature gates as a conditional final sub-task rather than leaving them only in strategy prose — are defined in `features/FEATUREMODEL.md` under `### Sign-off criteria`. Apply them. Specific to this step:
 
    - Under each sub-task, add a checkbox for every sign-off that applies to it — the applicable standard categories plus any feature-specific sign-offs the strategy defined. List only what genuinely applies: a small internal sub-task may need only one box, a risky one may need all of them.
    - If an omission is one a reader might question, justify it once where it belongs: a feature-wide skip in `## Sign-off strategy`, or a note beneath the sub-task list for a case that recurs across several sub-tasks (e.g. "sub-tasks 1–2 carry no user review — no user-visible surface until sub-task 3").

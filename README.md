@@ -31,7 +31,7 @@ This repository contains descriptions and tooling for a set of best practices us
 | [docs/capabilities.md](docs/capabilities.md) | Semi-autonomous workflow management, code review, documentation review, and internal docs hygiene |
 | [docs/container.md](docs/container.md) | Container mode: running Claude with full permissions in an isolated Docker container |
 | [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |
-| [features/](features/) | Feature tracking: current, pending, deferred, and completed features, with per-feature plans in `features/plans/` and a `features/tmp/` staging area for requirements input |
+| [features/](features/) | Feature tracking: current, pending, deferred, and completed features, with per-feature plans in `features/plans/`, the installed feature-model text in `features/FEATUREMODEL.md` (refreshed from the plugin by `/feature-init`), and a `features/tmp/` staging area for requirements input |
 | [setup-files/README.md](setup-files/README.md) | Files copied into place during setup (`.claudeignore`, git-write hook): destination and purpose |
 
 ## Plugins
