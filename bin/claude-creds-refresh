@@ -6,7 +6,15 @@ PROJECT="$(cd "$PROJECT" && pwd)"
 CONTAINER="claude-$(basename "$PROJECT")"
 
 # The host copy may itself be expired, so force a refresh there first.
-claude -p hello > /dev/null
+# This may fail in some cases; if so report stdout (where Claude annoyingly sends errors)
+# and let the user deal with it.
+echo "Force Claude token refresh"
+check_output="$(mktemp)"
+if ! claude -p hello --model haiku > "$check_output"; then
+    echo "Failed"
+    cat "$check_output"
+    exit 1
+fi
 
 docker cp "$HOME/.claude/.credentials.json" "$CONTAINER:/home/claude/.claude/.credentials.json"
 docker exec -u root "$CONTAINER" chown claude:claude /home/claude/.claude/.credentials.json

@@ -121,18 +121,16 @@ if [[ -n "$MODEL" ]]; then
     extra_env+=(-e CLAUDE_MODEL="$MODEL")
 fi
 
-# Refresh the host's token before creating anything, in case it is already
-# stale — Claude Code only refreshes on use, so simply reading the file
-# wouldn't trigger it, and the container would start from a copy that's dead
-# on arrival. The forced use (`claude -p`) is a full API round-trip costing a
-# few seconds, so skip it while the token still has at least 5 minutes to
-# live; if the expiry can't be read (missing jq, unexpected format), assume
-# stale and refresh.
-expires_ms="$(jq -r '.claudeAiOauth.expiresAt // 0' "$HOME/.claude/.credentials.json" 2>/dev/null || echo 0)"
-[[ "$expires_ms" =~ ^[0-9]+$ ]] || expires_ms=0
-if (( expires_ms / 1000 < $(date +%s) + 300 )); then
-    echo "Refreshing token"
-    claude -p hello > /dev/null
+# Check that we are logged in, that we have tokens left, and that generally everything
+# should work. This refreshes the token, though may fail because it needs the user to relogin.
+# Annoyingly, this takes a couple of seconds, but it's too confusing not to
+# do it. Claude reports failure to stdout, so capture it and cat it only if an error.
+echo "Checking Claude login is valid, and forcing refresh"
+check_output="$(mktemp)"
+if ! claude -p hello --model haiku > "$check_output"; then
+    echo "Failed"
+    cat "$check_output"
+    exit 1
 fi
 
 docker create \
