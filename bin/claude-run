@@ -131,6 +131,7 @@ fi
 expires_ms="$(jq -r '.claudeAiOauth.expiresAt // 0' "$HOME/.claude/.credentials.json" 2>/dev/null || echo 0)"
 [[ "$expires_ms" =~ ^[0-9]+$ ]] || expires_ms=0
 if (( expires_ms / 1000 < $(date +%s) + 300 )); then
+    echo "Refreshing token"
     claude -p hello > /dev/null
 fi
 
