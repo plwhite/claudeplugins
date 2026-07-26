@@ -53,7 +53,7 @@ Read `## Requirements` and `## Sign-off strategy` for context — they are what 
 
 Read the codebase. A design that names files, components, or commands can be checked against what exists, and a design whose foundations are not there is the most valuable thing you can find. Use Glob and Grep freely.
 
-Read the project's `CLAUDE.md` too — its `### Sign-off criteria` section is the canonical statement of the sign-off model (categories, checkbox convention, auditability, performer attribution on review boxes) that the sub-task criteria must follow. Your delivery-criteria checks enforce that section.
+Read the project's `features/FEATUREMODEL.md` too — its `### Sign-off criteria` section is the canonical statement of the sign-off model (categories, checkbox convention, auditability, performer attribution on review boxes) that the sub-task criteria must follow. Your delivery-criteria checks enforce that section.
 
 ---
 

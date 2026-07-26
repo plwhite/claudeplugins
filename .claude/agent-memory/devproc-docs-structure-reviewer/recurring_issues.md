@@ -6,6 +6,40 @@ type: project
 
 (Prior history retained — see git log for older entries.)
 
+## Thirty-second review, second pass (2026-07-26) — extract-feature-model three-fix confirmation; CONVERGING (3→1)
+
+Re-review of the three 30th-review findings. All THREE resolved:
+1. MAJOR (re-run contradiction) RESOLVED. devproc/README.md L32 Setup now "Safe to re-run — it refreshes `features/FEATUREMODEL.md` from the shipped canonical copy ... and leaves your feature-list files and plans in place"; L56 feature-init reference now "refreshes `features/FEATUREMODEL.md` from the canonical copy and preserves your feature-list files and plans". Both now AGREE with SKILL.md step 1b (L29-37 "the one file the skill refreshes on every run, unlike the feature-list files and plans ... which ... are always preserved"), root CLAUDE.md maintainer note L53, and COMPLETED.md L10. No leftover "preserves the model file" claim anywhere.
+2. MINOR (standalone self-identification) RESOLVED/ADEQUATE. Both byte-identical copies (features/FEATUREMODEL.md + devproc/skills/feature-init/FEATUREMODEL.md) now open with an HTML comment: "...imported into CLAUDE.md's `## Feature model` section (which is why it has no top-level heading...). It is an installed copy: `/feature-init` refreshes it from the canonical FEATUREMODEL.md shipped with the devproc plugin ... edit that shipped copy, not this one — local edits here are overwritten." Correct for BOTH this repo and downstream: uses the conceptual "shipped with the devproc plugin" (no repo-only path); the actual twin path `devproc/skills/feature-init/FEATUREMODEL.md` lives ONLY in root CLAUDE.md maintainer note L53, deliberately kept out of the copied file per that note. Byte-identity means the shipped/canonical copy also carries the "It is an installed copy" wording — technically self-misdescriptive when read in the master, but that is the correct trade-off under byte-for-byte copy (must be written from the installed-copy reader's perspective) and the CLAUDE.md maintainer note covers the maintainer case. Acceptable by design, not a defect.
+3. SUGGESTION (README features/ row) RESOLVED. Root README.md L34 features/ row now names "the canonical feature model in `features/FEATUREMODEL.md`".
+
+ONE NEW finding — MINOR (terminology: "canonical" applied to the installed copy, exposed by the interaction of fixes #2 and #3):
+- Both root README.md L34 ("the canonical feature model in `features/FEATUREMODEL.md`") and devproc/README.md L38 tracking-table ("`features/FEATUREMODEL.md` | Canonical feature-model text ...") label the INSTALLED copy as "canonical". This now conflicts with fix #2's freshly-added framing — the file's own header comment ("It is an installed copy ... edit that shipped copy, not this one") and root CLAUDE.md L53 maintainer note — which establish that `features/FEATUREMODEL.md` is an installed copy and the canonical MASTER is the plugin's `devproc/skills/feature-init/FEATUREMODEL.md`. A reader going README → opens the file hits the contradiction. Note devproc/README L11 (Contents) and L32 (Setup) correctly reserve "canonical" for the shipped copy, so the mislabel is isolated to the two tracking-table/landing-page rows. Fix: reword both to describe features/FEATUREMODEL.md as "the project's installed copy of the feature-model text, refreshed from the plugin's canonical copy by `/feature-init`" (or drop the word "canonical"). MINOR, converging.
+
+No CRITICAL/MAJOR. No orphans/broken links. Carryover: stale unprefixed `.claude/agent-memory/docs-structure-reviewer/` tree still on disk (agent cannot delete).
+
+
+## Thirty-second review (2026-07-26) — extract-feature-model (#43) close-out; this IS the /feature-end docs-review gate
+
+Scope: moved ~120-line feature-model boilerplate out of CLAUDE.md into standalone `features/FEATUREMODEL.md`, loaded via un-backticked `@features/FEATUREMODEL.md` import; feature-init rewritten to ship a canonical `devproc/skills/feature-init/FEATUREMODEL.md` and REFRESH the project copy from it every run. Docs touched: CLAUDE.md (status + feature-init bullet + plugin-layout note + maintainer blockquote L53 + `## Feature model` now 1-line pointer), devproc/README.md (Contents table + Setup + tracking table + feature-init reference), workflow.md L62/64, capabilities.md (no direct FEATUREMODEL ref), feature-init SKILL fully rewritten, all 4 feature-skill precondition checks + both reviewer agents + dev-process-manager repointed.
+
+Verified STRONG:
+- Reference migration COMPLETE + consistent: every live doc now points at `features/FEATUREMODEL.md` / its `### Sign-off criteria`; zero stale "CLAUDE.md ### Sign-off criteria" refs in live docs (only in NOTES.md history + agent-memory + test fixtures, all out of scope).
+- Two FEATUREMODEL.md copies byte-identical (NOTES L699-700 records the diff==empty check; visual confirm matches).
+- CLAUDE.md `## Feature model` (L87-89) coherent, nothing dangles; maintainer blockquote L53 correctly explains dual-copy + "edit canonical, re-run feature-init to refresh".
+- Close-out clean: CURRENT.md empty, COMPLETED.md L8 well-formed dated entry 2026-07-26, CLAUDE.md status = single recent-completion line. No inversion drift this cycle.
+
+PRIMARY FINDING — MAJOR (doc-vs-doc contradiction about re-run behaviour):
+- devproc/README.md L32 (Setup) says feature-init is "Safe to re-run — it creates whatever is missing and leaves existing feature files (including `features/FEATUREMODEL.md`) in place." This CONTRADICTS SKILL.md step 1b + CLAUDE.md L53 maintainer note + COMPLETED.md entry, all of which say FEATUREMODEL.md is the ONE file feature-init REFRESHES/overwrites on every run (project data files are preserved; the model is not). A reader trusting L32 would think edits to the installed copy survive — defeating the whole refresh mechanism. Fix: reword L32 so FEATUREMODEL.md is named as the refreshed exception, not lumped with preserved files. (devproc/README.md L56 feature-init reference is silently the same — reinforces wrong impression; add a refresh clause.)
+
+MINOR (standalone self-identification gap — the "no top-level heading" design assessment):
+- The no-visible-heading choice is ACCEPTABLE for the import path (under CLAUDE.md `## Feature model` the H2→H3 hierarchy is correct). But read standalone (file IS named directly in devproc/README tracking table), features/FEATUREMODEL.md opens on body text with first heading H3 and NO in-file signal that (a) this is the feature model, (b) it is imported into CLAUDE.md, (c) it is generated/overwritten by /feature-init so hand-edits to the installed copy are silently lost. Recommend an HTML comment (`<!-- ... -->`) at top of BOTH copies (preserves no-rendered-heading intent + byte-identity + import). Judgment call, not a defect in the design itself.
+
+SUGGESTION (recurring README-omits-detail): README.md L34 features/ row surfaces plans/ + tmp/ but not features/FEATUREMODEL.md — the now-canonical single source of the feature model is invisible from the landing page (discoverable via devproc/README + CLAUDE.md). Low priority.
+
+No CRITICAL. No orphans. No broken links. Carryover: stale unprefixed .claude/agent-memory/docs-structure-reviewer/ tree still on disk (flagged since 20th review, agent can't delete).
+
+
 ## Thirty-first review (2026-07-26) — unpin-agent-model-versions (#48) close-out; this IS the /feature-end docs-review gate
 
 Scope: replaced pinned dated `model:` ids on the four `devproc/agents/code-review-*.md` agents with unpinned family aliases (`opus`/`sonnet`), and synced `CLAUDE.md`, `devproc/README.md`, `docs/capabilities.md` to match, including new `(sonnet)`/"Uses `sonnet`." tier annotations on the three sonnet agents for symmetry with the architectural agent's pre-existing annotation. `CLAUDE.md` `## Current status` trimmed to its one-line cap; feature moved CURRENT→COMPLETED.

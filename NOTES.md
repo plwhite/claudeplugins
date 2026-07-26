@@ -589,3 +589,133 @@ following from what the gating classes *mean*:
   can legitimately be a `move`. Invalid class/action pairings
   (`redundant`+non-`delete`, `judgment`+`delete`) are rejected as defects in the
   skill's Step 3, so Steps 4/5 can assume a valid action.
+
+## A sync-marker must not live inside a file that gets copied downstream (`extract-feature-model`, #43)
+
+The `/review-branch` gate caught a subtle one: the natural place to record the
+"keep the two `FEATUREMODEL.md` copies byte-identical" obligation is a comment at
+the top of the file — but `feature-init` copies `FEATUREMODEL.md` **verbatim**
+into every consumer project, so any such note ships too, where it references a
+twin path (`devproc/skills/feature-init/FEATUREMODEL.md`) that does not exist in
+the consumer's repo and tells their maintainer to sync a file that isn't there.
+A sync obligation between two files in *this* repo is a *this-repo* concern and
+must be documented in this repo's own non-shipped docs (`CLAUDE.md` maintainer
+note + this file), never inside the shipped artifact. General rule: anything
+written inside a file that a skill copies out is addressed to the consumer, not
+to this repo's maintainers.
+
+The obligation is also *light*, because `/feature-init` is the sync mechanism,
+not hand-maintenance: the canonical `devproc/skills/feature-init/FEATUREMODEL.md`
+is the master, and `feature-init` step 1b **refreshes** the project's
+`features/FEATUREMODEL.md` from it on every run (overwriting — the model is
+canonical boilerplate, not project data). So this repo is a plain consumer with
+no special-casing; the two copies diverge only if the master is hand-edited
+without re-running `/feature-init`. (An earlier draft had step 1b *preserve* an
+existing copy, which would have made this repo need special handling and let the
+copies drift — corrected after user review to always refresh.)
+
+(Also settled at the same review: keep `FEATUREMODEL.md` with **no** top-level
+heading — `CLAUDE.md`'s `## Feature model` section supplies it, so the import
+doesn't produce two consecutive `## Feature model` headings once expanded. The
+cost is that the file read standalone opens on an `###` sub-heading, an
+acceptable cosmetic since the every-session path is the imported one.)
+
+## Sub-task 1 (`extract-feature-model`, #43) verification method
+
+The precise check performed for the Testing sign-off, since "loads under
+`/context`" can't be run non-interactively from this session: `sed -n
+'84,203p' CLAUDE.md` (the exact original `## Feature model` section, verified
+by content) `diff`ed byte-for-byte against the new `features/FEATUREMODEL.md`
+— identical. Then confirmed by `grep` that `CLAUDE.md` no longer contains
+`### Sign-off criteria` / `### Resuming after a session restart` / `###
+Documents to support the model`, that the single remaining `## Feature model`
+line 84 is followed only by the one-line `@features/FEATUREMODEL.md` import
+prose, that the import token carries zero backticks, and that the count of
+` ``` ` fence markers before that line is even (so the line sits outside any
+fence, not just absent of literal backticks). Confirmed the referenced path
+exists at `features/FEATUREMODEL.md` relative to the repo root where
+`CLAUDE.md` lives.
+
+**Live load subsequently confirmed by the manager (2026-07-26), so nothing is
+left for the user here.** The definitive check the teammate's own session could
+not run was run from the manager session with a headless subprocess: a fresh
+`claude -p` launched in the repo root, **with `Read`/`Bash`/`Grep`/`Glob`/`Task`/`WebFetch`
+disabled**, was asked to quote the first sentence under `### Sign-off criteria`.
+It returned the sentence verbatim ("This section is the **canonical statement of
+the sign-off model**.") — text that now exists *only* in `features/FEATUREMODEL.md`.
+With every file-reading tool disabled, the sole way that text could be in context
+is the `@import` expanding it at launch. This is a stronger check than `/context`
+(it proves the content is actually present, not merely listed). Method worth
+reusing for any future "does an `@import` load?" question: disable all read tools,
+then ask the model to quote content unique to the imported file.
+
+## Sub-task 3 (`extract-feature-model`, #43) traced walkthrough of the rewritten `feature-init`
+
+`feature-init` has `disable-model-invocation: true` (see the note above), so —
+as with Sub-task 7's dry-run of `feature-design` step 6 — the Testing sign-off
+was validated by tracing the rewritten `devproc/skills/feature-init/SKILL.md`
+step 1 by hand against two scenarios, not by a live invocation.
+
+**Scenario A — fresh project** (no `features/` directory, `CLAUDE.md` has no
+`## Feature model` section). Step 1.1: `features/FEATUREMODEL.md` does not
+exist, so `features/` is created and the skill's own `FEATUREMODEL.md` (the
+file sitting alongside `SKILL.md`) is copied to `features/FEATUREMODEL.md`.
+Step 1.2: `CLAUDE.md` has no `## Feature model` section, so one is added
+containing only the one-line `@features/FEATUREMODEL.md` import. Step 1.3: no
+`### Sign-off criteria` sub-heading exists in `CLAUDE.md` to migrate, so this
+step is a no-op. Result: project ends with `features/FEATUREMODEL.md` present
+and the import in `CLAUDE.md` — correct.
+
+**Scenario B — already-embedded project** (an older `feature-init` run wrote
+the full model text as the body of `CLAUDE.md`'s `## Feature model` section,
+complete with `### Sign-off criteria` / `### Resuming after a session restart`
+/ `### Documents to support the model` sub-headings; no
+`features/FEATUREMODEL.md` exists yet). Step 1.1: same as Scenario A — copies
+the canonical file to `features/FEATUREMODEL.md`. Step 1.2: `CLAUDE.md` has a
+`## Feature model` section but it lacks the un-backticked import (it has the
+embedded text instead), so this is recognised as needing migration rather than
+"import already present." Step 1.3: the sub-headings identify this as an
+already-embedded project; the embedded section body is replaced with the
+one-line import, removing the sub-headings and their prose. Result: same end
+state as Scenario A, with no duplicated model text left in `CLAUDE.md` —
+correct migration.
+
+**Idempotency.** Re-running the walkthrough against either scenario's *output*
+state (import present, `features/FEATUREMODEL.md` exists) hits step 1.1's
+"does not already exist" guard (no-op), step 1.2's "already contains the
+import" guard (no-op), and step 1.3's explicit "import already present and the
+file exists — leave both as they are" clause. No step re-copies or re-writes
+anything — confirms the rewrite is safe to re-run, consistent with the rest of
+`feature-init`.
+
+**One case the walkthrough also confirms is handled**, from the plan's "Dead
+ends to avoid": a `## Feature model` section whose only path mention is inside
+backticks or a Markdown link (not a real `@import`) is *not* mistaken for
+"already migrated" — step 1.2 explicitly requires the import to be
+un-backticked before treating it as present, so such a project would have the
+correct import line added alongside the existing (inert) mention rather than
+being skipped.
+
+**Static check.** `diff /workspace/features/FEATUREMODEL.md
+/workspace/devproc/skills/feature-init/FEATUREMODEL.md` — no output, confirming
+this repo's own copy is byte-identical to the shipped canonical file the skill
+copies from, as the design's audit check requires.
+
+## Sub-task 2 (`extract-feature-model`, #43) scope boundary on `devproc/README.md`
+
+Three `devproc/README.md` lines describe `feature-init`'s own current behaviour
+("adds the feature model to `CLAUDE.md`", "writes the feature model section to
+`CLAUDE.md`", "Adds a `## Feature model` section to `CLAUDE.md`" — the Contents
+table entry and the `feature-init` section's opening two sentences). These were
+deliberately **not** changed in Sub-task 2, even though grep flags them: they
+are accurate descriptions of what `feature-init` still actually does today (it
+has not been rewritten yet — that is Sub-task 3). Changing them now to claim
+`feature-init` writes `features/FEATUREMODEL.md` would make the README
+describe behaviour that does not yet exist. The one README line that *was*
+changed (the parenthetical "(The canonical statement of the sign-off model
+lives in the `### Sign-off criteria` section...)") is a **location reference**
+for where other tools should look, not a description of `feature-init`'s
+mechanism, so it correctly repoints now regardless of when `feature-init`
+itself is rewritten. Sub-task 3 should update these three remaining lines as
+part of rewriting `feature-init`'s actual behaviour, since they are the
+README's documentation of that skill.

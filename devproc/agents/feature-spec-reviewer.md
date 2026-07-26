@@ -57,7 +57,7 @@ A plan file at spec stage has a particular shape, and none of the following is a
 - no `## Sub-tasks` section at all;
 - **no `## Handoff` section** — `/feature-design` adds it when it takes the feature into progress. Do not ask for one.
 
-Read the project's `CLAUDE.md` for the feature model this project uses — its `### Sign-off criteria` section is the canonical statement of the sign-off model your delivery-criteria checks enforce — and use Glob and Grep to check any claim in the spec that can be checked against the codebase — for example whether a file, command, or component the spec depends on actually exists.
+Read the project's `features/FEATUREMODEL.md` for the feature model this project uses — its `### Sign-off criteria` section is the canonical statement of the sign-off model your delivery-criteria checks enforce — and use Glob and Grep to check any claim in the spec that can be checked against the codebase — for example whether a file, command, or component the spec depends on actually exists.
 
 ---
 
@@ -72,7 +72,7 @@ Read the project's `CLAUDE.md` for the feature model this project uses — its `
 
 ### 2. Delivery criteria
 
-This is the sign-off strategy, and it is the most commonly weak part of a spec. The standard it must meet is defined in the project CLAUDE.md under `### Sign-off criteria` — that section, not this list, is canonical; enforce it. In particular:
+This is the sign-off strategy, and it is the most commonly weak part of a spec. The standard it must meet is defined in `features/FEATUREMODEL.md` under `### Sign-off criteria` — that section, not this list, is canonical; enforce it. In particular:
 
 - Does it cover every sign-off category the model expects (normally testing, documentation, code review, docs review, user review)? A category that is simply **absent** is a finding: skipping one is legitimate, but only as an explicit, justified "None — <reason>".
 - Is every entry **auditable** — is there a clear yes/no at the point a sub-task finishes? "Have some tests", "update docs as needed", and "review the code" are not auditable. "Unit tests for the parser, passing", "the user confirms coverage is sufficient", and "one agent `/review-branch` before `/feature-end`" are.

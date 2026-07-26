@@ -14,6 +14,7 @@ type: project
 - `docs/container.md` — container mode procedural guide (build/run/attach/stop, manager mode, session model)
 - `devproc/README.md` — plugin reference; links back to docs/workflow.md and docs/capabilities.md
 - `features/` — feature index directory (replaced FEATURES.md as of split-features-md, #14). NOT linked from README.md.
+- `features/FEATUREMODEL.md` (post extract-feature-model, #43, 2026-07-26) — the whole feature-model boilerplate (lifecycle + `### Sign-off criteria` + `### Resuming` + `### Documents to support the model`), moved OUT of CLAUDE.md. Loaded via an un-backticked `@features/FEATUREMODEL.md` import in CLAUDE.md `## Feature model` (now a 1-line pointer, CLAUDE.md ~90 lines). Byte-identical twin shipped at `devproc/skills/feature-init/FEATUREMODEL.md` (canonical master); `/feature-init` REFRESHES (overwrites) the project copy from it on EVERY run — it is the one file feature-init overwrites, not preserves. File deliberately has NO top-level heading (CLAUDE.md `## Feature model` supplies H2); read standalone it opens on body text, first heading is H3 `### Sign-off criteria`. All ~10 live refs + 4 feature-skill precondition checks + both reviewer agents + dev-process-manager now point at `features/FEATUREMODEL.md` — migration complete, no stale "CLAUDE.md ### Sign-off criteria" refs in live docs. NOT surfaced from README.md features/ row.
 
 ## Current feature-tracking layout (post #14, split-features-md, 2026-06-11)
 

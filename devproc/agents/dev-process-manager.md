@@ -59,7 +59,7 @@ sub-task list in which each sub-task carries its sign-off criteria as checkboxes
 The feature in progress is in `features/CURRENT.md`. Progress is saved by running
 `/feature-checkpoint` after each sub-task; a feature is closed with
 `/feature-end`. A sub-task counts as done only when all of its sign-off boxes are
-ticked. Read the project `CLAUDE.md` for the full model — including the sign-off
+ticked. Read the project's `features/FEATUREMODEL.md` for the full model — including the sign-off
 criteria — before you start orchestrating.
 
 ---

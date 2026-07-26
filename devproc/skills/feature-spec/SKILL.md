@@ -8,11 +8,12 @@ Create a new feature and capture its specification. This is the first step of
 the feature lifecycle (`feature-spec` → `feature-design` → implement →
 `feature-end`): it sets up the feature's tracking entry, records *what* the
 feature must do, and agrees the feature's **sign-off strategy** (the quality bar
-per sign-off category, as defined in the project CLAUDE.md under `### Sign-off
+per sign-off category, as defined in `features/FEATUREMODEL.md` under `### Sign-off
 criteria`), leaving *how* to `/feature-design`.
 
-Before proceeding, check that CLAUDE.md contains a Feature Model section.
-If it doesn't, tell the user to run /feature-init first and stop.
+Before proceeding, check that `features/FEATUREMODEL.md` exists **and** that
+`CLAUDE.md` loads it via a live import — an un-backticked `@features/FEATUREMODEL.md` line in ordinary prose, outside any fenced code block.
+If either is missing, tell the user to run /feature-init first and stop.
 
 The user has described the feature as: $ARGUMENTS
 
@@ -80,7 +81,7 @@ Keep this entry concise — no implementation detail, no sub-tasks. The full spe
      - Once material is captured this way — inlined or copied into `features/plans/<slug>/` — **delete it from `features/tmp`**, leaving `README.md` in place, so the plan is the only durable copy.
    - **If there is nothing beyond the one-or-two-sentence PENDING.md entry:** write `*No requirements beyond the summary in `features/PENDING.md`; design to be determined by `/feature-design`.*`
 
-7. Populate the `## Sign-off strategy` section — the quality bar the feature will be held to, which `/feature-design` later turns into per-sub-task sign-off criteria. The sign-off model — the standard categories, the auditability rule, and the rule that every review sign-off names its performer (agent or user) — is defined in the project CLAUDE.md under `### Sign-off criteria`. Apply that model rather than restating or reinventing it. For this feature:
+7. Populate the `## Sign-off strategy` section — the quality bar the feature will be held to, which `/feature-design` later turns into per-sub-task sign-off criteria. The sign-off model — the standard categories, the auditability rule, and the rule that every review sign-off names its performer (agent or user) — is defined in `features/FEATUREMODEL.md` under `### Sign-off criteria`. Apply that model rather than restating or reinventing it. For this feature:
 
    - Propose a bar for **every standard category**, suited to the feature and its risk: higher-risk or user-facing work warrants stronger testing and review than a small internal change (e.g. Testing: "full automated coverage of new logic" vs "none (prose-only change)"; Code review: "a single agent `/review-branch` before `/feature-end`" vs "user reviews the diff of each sub-task").
    - Choosing *not* to do a category is legitimate, but state it explicitly as "None — <reason>" so the choice is visible and the user can comment on it.
