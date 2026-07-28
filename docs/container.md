@@ -9,6 +9,7 @@ The container:
 - Bakes in the `devproc` plugin so the full feature workflow is available.
 - Uses a "YOLO" `~/.claude/` config: `--dangerously-skip-permissions`, bypass-permissions mode, onboarding skipped.
 - Copies in your Claude login credentials (from `~/.claude/.credentials.json`) automatically when the container starts.
+- Passes `GH_TOKEN` through so Claude can read GitHub issues — see [GitHub access](#github-access).
 - Does not pass git remote credentials — only local git operations (`git status`, `git diff`, `git log`) are available inside the container.
 
 ## Prerequisites
@@ -41,6 +42,25 @@ bash /some/path/claudeplugins/bin/claude-run /path/to/project
 ```
 
 This starts a detached container named `claude-<project-dirname>`, mounts the project at `/workspace`, and passes your git identity. Claude starts immediately in the tmux session.
+
+### GitHub access
+
+Skills such as `/feature-spec` read GitHub issues with `gh`, which is installed in the image. The host's `gh` login is *not* copied in, so authentication comes from the **`GH_TOKEN` environment variable**, which `claude-run` passes into the container. It is expected to be set.
+
+`claude-run` finds it in one of two places:
+
+1. **`GH_TOKEN` already exported in your shell** — used as-is, and takes precedence.
+2. **`~/.config/gh/env`** — if `GH_TOKEN` is not already set and this file exists, `claude-run` sources it and takes the token from there. This is the convenient option, since it needs no shell setup:
+
+   ```bash
+   mkdir -p ~/.config/gh
+   printf 'GH_TOKEN=github_pat_yourtoken...\n' > ~/.config/gh/env
+   chmod 600 ~/.config/gh/env
+   ```
+
+Use a read-only, issues-only PAT — the same token described under [Install and authenticate GitHub CLI in setup.md](setup.md#install-and-authenticate-github-cli).
+
+If neither source provides a token, `claude-run` prints a warning and starts the container anyway: a session that never touches GitHub is unaffected. Claude will tell you it needs the token if it hits a task that requires one, rather than trying to work around its absence.
 
 ### Run as the Dev Process Manager
 

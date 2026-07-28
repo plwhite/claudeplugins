@@ -27,10 +27,9 @@ Steps:
    - If no match is found, tell the user the feature is not in `features/PENDING.md` and ask them to run `/feature-spec` first. Do not proceed.
    - If ambiguous, ask the user to clarify.
 
-   Then gather the specification to inform the design:
+   Then gather the specification to inform the design.
    a. Read the feature's plan file `features/plans/<slug>.md`. `/feature-spec` normally captures the full source-issue content in its `## Requirements` section — prefer this over re-fetching the issue.
-   b. If the plan file is missing or has no usable `## Requirements`, and the feature entry references a GitHub issue (e.g. contains `#6` or `Closes #6`), fetch it: run `git remote -v` to parse owner/repo from the fetch URL (HTTPS `https://github.com/owner/repo.git` or SSH `git@github.com:owner/repo.git`), then `gh issue view N --repo owner/repo --comments`.
-   c. If a fetch is needed but the `git`/`gh` commands fail (not installed, auth error, repo not found, etc.), do not proceed. Tell the user what was attempted, what failed, and ask them how to continue — e.g. "This feature references issue #6 but I was unable to fetch it (`gh` returned: …). Please either fix the `gh` setup or paste the issue content here."
+   b. If the plan file is missing or has no usable `## Requirements`, **stop and ask the user what to do** - this should not happen and implies something has gone wrong.
 
 2. Move the feature entry from `features/PENDING.md` to `features/CURRENT.md`. Update the entry's detail link if needed so it points at `features/plans/<slug>.md` (the link is relative to `features/CURRENT.md`, so written `[features/plans/<slug>.md](plans/<slug>.md)`).
 

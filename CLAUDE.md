@@ -78,7 +78,7 @@ Contents:
 - `docker/files/home/entrypoint.sh` — container entrypoint; starts the detached tmux session running `run-claude.sh`
 - `docker/files/home/run-claude.sh` — keep-alive loop that auto-relaunches Claude (via `claude --continue`) on exit so the tmux session survives `exit`/Ctrl-D/Ctrl-C
 - `bin/claude-build` — builds the `claudedev` image with host UID/GID baked in
-- `bin/claude-run` — starts a detached container for a project directory; `--manager`/`--agent NAME` selects a top-level agent and `--model NAME` (default: derived from the agent's `model:` field) its session model, passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`
+- `bin/claude-run` — starts a detached container for a project directory; `--manager`/`--agent NAME` selects a top-level agent and `--model NAME` (default: derived from the agent's `model:` field) its session model, passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`; also passes `GH_TOKEN` into the container (from the environment, or sourced from `~/.config/gh/env` when unset) so `gh` can read issues there
 - `bin/claude-attach` — attaches to the tmux session in a running container
 - `bin/claude-stop` — stops and removes the container
 
