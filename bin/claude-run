@@ -110,6 +110,18 @@ CONTAINER="claude-$(basename "$PROJECT")"
 GIT_NAME="$(git -C "$PROJECT" config user.name 2>/dev/null || git config user.name)"
 GIT_EMAIL="$(git -C "$PROJECT" config user.email 2>/dev/null || git config user.email)"
 
+# GH_TOKEN lets Claude read GitHub issues inside the container (`gh` is
+# installed in the image, but the host's `gh` credentials are not copied in).
+# The token is taken from the environment; if it is not already set there,
+# source ~/.config/gh/env, which is the conventional place to keep it. An
+# already-exported GH_TOKEN wins, so a one-off `GH_TOKEN=... claude-run` can
+# override the file without editing it.
+GH_ENV_FILE="$HOME/.config/gh/env"
+if [[ -z "${GH_TOKEN:-}" && -f "$GH_ENV_FILE" ]]; then
+    # shellcheck source=/dev/null
+    source "$GH_ENV_FILE"
+fi
+
 # Pass the chosen agent and model through to run-claude.sh, which adds `--agent`
 # and `--model` to the claude command line on both the initial launch and every
 # --continue relaunch.
@@ -119,6 +131,15 @@ if [[ -n "$AGENT" ]]; then
 fi
 if [[ -n "$MODEL" ]]; then
     extra_env+=(-e CLAUDE_MODEL="$MODEL")
+fi
+
+# Pass the token through if we have one. Warn rather than fail when we do not:
+# a session that never touches GitHub works fine without it, and the skills
+# tell Claude to ask for help if it finds the token missing.
+if [[ -n "${GH_TOKEN:-}" ]]; then
+    extra_env+=(-e GH_TOKEN="$GH_TOKEN")
+else
+    echo "GH_TOKEN is not set and $GH_ENV_FILE does not define it - no gh access"
 fi
 
 # Check that we are logged in, that we have tokens left, and that generally everything

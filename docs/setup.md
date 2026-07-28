@@ -156,6 +156,16 @@ The GitHub CLI allows Claude Code to read issues, which is very useful if you wi
   gh issue list
   ~~~
 
+- Save the same token as `GH_TOKEN` in `~/.config/gh/env`. The `gh auth login` above authenticates the CLI **on this machine only**; [container mode](container.md) does not copy that login in, and instead passes `GH_TOKEN` through to the container. `claude-run` sources this file when `GH_TOKEN` is not already set in your environment, so putting the token here is enough to make GitHub issues readable inside the container.
+
+  ```bash
+  mkdir -p ~/.config/gh
+  printf 'GH_TOKEN=github_pat_yourtoken...\n' > ~/.config/gh/env
+  chmod 600 ~/.config/gh/env
+  ```
+
+  If you would rather export `GH_TOKEN` from your shell profile, that works too and takes precedence over the file. Either way, `GH_TOKEN` is expected to be available when you start a container — see [GitHub access](container.md#github-access).
+
 ### Enable the devproc plugin
 
 The `devproc` plugin is the heart of this repository, with skills and agents to support the development workflow. The repo was cloned earlier under [Clone this repository](#clone-this-repository); now register it as a local plugin marketplace and enable the plugin.
