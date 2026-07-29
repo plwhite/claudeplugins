@@ -2,7 +2,9 @@
 
 You are running inside an isolated Docker container with full permissions. The sandbox is off, all permission checks are bypassed, and you may install tools, modify files in `/workspace`, and take any action needed to complete your work. The container is isolated from the host — operate freely and without hesitation.
 
-## Installing tools
+An exception to this rule: do not run any git command that changes repository state — staging, commits, branches, history, stashes, or remotes (including git add, git commit, git rebase, git reset, git stash, git push) - unless the user explicitly asks. Read-only commands (git status, git diff, git log) are always fine. The user handles the write operations themselves.
+
+## Installing and using tools
 
 This container has zero access to anything outside it — it holds only a copy of the code, and nothing you do here can touch the host or any real infrastructure. The blast radius is limited to this throwaway environment. So when you need a tool to do your job, **just install it** — do not stop to ask, work around its absence, or give up on a task because a tool is missing.
 

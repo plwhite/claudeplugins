@@ -10,7 +10,7 @@ The container:
 - Uses a "YOLO" `~/.claude/` config: `--dangerously-skip-permissions`, bypass-permissions mode, onboarding skipped.
 - Copies in your Claude login credentials (from `~/.claude/.credentials.json`) automatically when the container starts.
 - Passes `GH_TOKEN` through so Claude can read GitHub issues — see [GitHub access](#github-access).
-- Does not pass git remote credentials — only local git operations (`git status`, `git diff`, `git log`) are available inside the container.
+- Does not pass git remote credentials, and is instructed only to run local read operations (`git status`, `git diff`, `git log`) inside the container.
 
 ## Prerequisites
 
