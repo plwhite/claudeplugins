@@ -37,28 +37,25 @@ user's local date at the time of export.
 
 ## Spec
 
-The reports page gains a CSV export, so support staff can hand report figures
-to finance without transcribing them by hand.
+Numbers in the exported file are unformatted (no thousands separators, no
+currency symbol) and dates are ISO 8601 (`YYYY-MM-DD`) rather than the
+localised display format — matching the shape finance's import step already
+expects from every other feed in the reporting pipeline.
 
-A single "Export CSV" control on the reports page exports every row matching
-the user's current filters — not just the current page — as a downloaded CSV
-file.
+The exported columns match the on-screen columns, in the same order, with the
+same headings, following the column-parity convention the other export types
+in the system already use. The file itself is named `report-<YYYY-MM-DD>.csv`,
+using the user's local date at the time of export, the same naming pattern
+those other exports follow.
 
-The export must:
-
-- Include exactly the on-screen columns, in the same order, with the same
-  headings.
-- Format dates as ISO 8601 (`YYYY-MM-DD`), not the localised display format,
-  and format numbers unformatted (no thousands separators, no currency
-  symbol) — finance's import step expects both.
-- Name the file `report-<YYYY-MM-DD>.csv`, using the user's local date at the
-  time of export.
-- Never hold the whole export in memory in the browser. The largest tenant has
-  around 200,000 rows, so the export must handle that scale without loading
-  every row into the browser at once.
-
-Out of scope: Excel (`.xlsx`) export, scheduled or emailed exports, and
-exporting anything other than the reports page.
+Because the largest tenant runs to around 200,000 rows, nothing in this flow
+may hold the full result set in memory in the browser at any point — the same
+memory discipline already applied to the dashboard's bulk operations. Out of
+scope: Excel (`.xlsx`) export, scheduled or emailed exports, and exporting
+anything other than the reports page. This is delivered as a single "Export
+CSV" control on the reports page, exporting every row matching the user's
+current filters rather than only the current page, for support staff who
+currently have to copy report figures to finance by hand.
 
 ## Sign-off strategy
 

@@ -70,6 +70,59 @@ marks a sub-task complete while a box is still outstanding — except the one
 `/feature-end`-performed box noted above, whose unticked state before `/feature-end`
 runs is the model's expected state, not a sign of incompleteness.
 
+### Readability
+
+This section is the **canonical statement of what a readable spec or design
+looks like**. The `devproc` skills and review agents apply the standard
+written here rather than carrying their own copies — when the standard
+changes, it changes here.
+
+The standard is two outcomes:
+
+- A **spec** must be followable by a reader with no background on the feature
+  — someone who knows the project, but has read neither the source issue nor
+  the `/feature-spec` conversation that produced the spec.
+- A **design** must be followable by a reader who knows only the requirements
+  and spec — someone who did not sit through the design conversation.
+
+Both outcomes assume a reader who is competent and familiar with the project.
+The artefact does not explain the project to them; it explains the feature.
+
+Six structural tests exist to make those outcomes checkable, not to replace
+them:
+
+- **Point first.** The artefact states what it is for before it states how.
+  A reader who stops after the opening section can say what the feature is
+  for and why it exists. For a `## Design` specifically, this means an
+  explicit overview of how the design works as a whole, placed before any
+  detailed section — a reader must be able to see the shape of what is
+  proposed before meeting the decisions that make it up.
+- **Nothing assumed.** Any term, file, component or convention a reader
+  outside the authoring conversation would not know is defined or linked at
+  first use.
+- **Unambiguous.** Two competent readers come away with the same
+  understanding. A sentence open to more than one reading is rewritten rather
+  than left for context to settle, and a term that carries weight is defined
+  rather than assumed to be obvious.
+- **Detail subordinated.** Supporting material sits under headings that mark
+  it as supporting, so the reader can see the shape of the argument before
+  deciding how deep to go.
+- **Rationale without detour.** Where a decision had a plausible alternative,
+  the artefact records what was chosen and why the alternative lost — placed
+  so it does not interrupt the main line. Either a brief "we do A, not B,
+  because…" at the point of decision, or a separate rejected-options section
+  the main flow can point at. A reader must be able to recover the reasoning
+  behind a decision without having to wade through it to follow the argument.
+- **Proportionate.** The central point is not outweighed by minor detail —
+  the test that catches a "grab bag" of true statements assembled without
+  structure.
+
+Where a test and an outcome disagree, the outcome wins. The tests exist to
+make a failure concrete enough to point at and fix; they are not the bar
+itself, and passing all six while still failing the outcome is still a
+failure — so nobody games the checklist in place of writing something a
+human can read.
+
 ### Resuming after a session restart
 
 When starting a new session on a feature that is already in progress:
@@ -95,7 +148,9 @@ These apply at all times, not just when completing features:
 
     - Handoff (session state — last updated date, summary, current sub-task, first action next session, open questions, dead ends)
 
-    - Requirements (the full relevant content from the source issue, if the feature came from one — enough to resume without re-reading the issue)
+    - Requirements (the input, captured faithfully — the full relevant content from the source issue, if the feature came from one — enough to resume without re-reading the issue. Not required to meet the `### Readability` standard: reorganising the user's own words to read better is how their meaning gets lost.)
+
+    - Spec (what the feature must do, written to stand alone against `### Readability` — clarifying ambiguities in the Requirements input and filling gaps with explicitly-marked proposals; agreed at `/feature-spec`)
 
     - Sign-off strategy (the quality bar per sign-off category — see `### Sign-off criteria` — agreed at `/feature-spec`)
 
@@ -103,7 +158,7 @@ These apply at all times, not just when completing features:
 
     - Subtask list with short descriptions, per-sub-task sign-off checkboxes, and status markers (`✓`, `▶ NEXT:`)
 
-    - Review record (a log, appended by `/feature-spec`, `/feature-design`, and `/feature-end`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped. Always the last section of the file; a line is written every time, so an absent line means the stage has not run. Preserve it across edits.)
+    - Review record (a log, appended by `/feature-spec`, `/feature-design`, and `/feature-end`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped — and of any amendment `/feature-design` makes to `## Spec`, recording the user's approval and why it changed. Always the last section of the file; a line is written every time a stage runs or a spec amendment is made, so an absent line means neither has happened. Preserve it across edits.)
 
     Optionally, a sibling `features/plans/<slug>/` directory holds un-inlinable requirements artefacts (screenshots, Word docs, other binaries) that `/feature-spec` copied in and linked from `## Requirements`.
 

@@ -59,7 +59,8 @@ Audit the documentation of the current codebase with the following goals:
 2. **Hierarchical clarity**: Does every document state what it is and what it contains within its first few sentences?
 3. **Architectural completeness**: Do architecture guides explain all non-trivial components and their relationships, with diagrams where appropriate?
 4. **Procedural rigour**: Do procedural documents (usage guides, deployment guides, runbooks) follow imperative style, state prerequisites before commands, and explain *why* as well as *how*?
-5. **Stylistic consistency**: Is there a consistent, clear, minimal style across all documents? Is repetition avoided? Is extraneous detail moved out of the main flow?
+5. **Clarity**: Can a reader extract the intended meaning without ambiguity, and without wading through detail to find the point?
+6. **Stylistic consistency**: Is there a consistent, minimal style across all documents? Is repetition avoided? Is extraneous detail moved out of the main flow?
 
 ---
 
@@ -105,11 +106,21 @@ Do not limit yourself to documents explicitly listed; if you discover undocument
 - Command blocks must be complete and copy-pasteable unless explicitly noted otherwise.
 - Success/failure indicators should be present for significant steps.
 
-### 5. Style and Clarity
+### 5. Clarity
+
+A document exists to convey meaning, so a reader who cannot extract that meaning is a failure of the document's purpose — not a matter of taste. Findings under this criterion are rated on the confusion they cause, exactly like findings under any other criterion.
+
+- Identify ambiguity: vague terms, undefined acronyms, or steps that could be interpreted in more than one way.
+- Identify buried points: material a reader must work through before they can tell what the document or section is for.
+- Flag overly long sentences or paragraphs in critical paths, where length obscures the meaning.
+
+### 6. Stylistic Consistency
+
+Distinct from clarity: this covers surface consistency across documents where the meaning is already clear — heading conventions, terminology, tone, formatting.
+
 - Identify repetition: the same information stated in multiple places without a clear single source of truth.
 - Identify flow interruptions: minor details, edge cases, or reference material embedded in the middle of a procedure or explanation. These should be moved to a separate section, appendix, or linked document.
-- Identify ambiguity: vague terms, undefined acronyms, or steps that could be interpreted in more than one way.
-- Flag overly long sentences or paragraphs in critical paths.
+- Identify inconsistent conventions: the same concept named or formatted differently in different documents.
 
 ---
 
@@ -136,7 +147,7 @@ Recommended action for Claude: [Precise, actionable instruction — e.g. "Add a 
 Severity levels:
 - **CRITICAL** — a reader cannot find or understand essential information
 - **MAJOR** — a reader will be confused, misled, or blocked
-- **MINOR** — clarity or consistency issue that degrades the experience
+- **MINOR** — a consistency or presentation issue that degrades the experience without obscuring the meaning
 - **SUGGESTION** — improvement that would be beneficial but is not a defect
 
 Group findings by document. Within each document, list findings in order of severity.
@@ -153,7 +164,7 @@ After presenting your findings, note clearly: "The above is feedback for Claude 
 
 - **Do not modify any files.** Your output is feedback only.
 - Do not comment on the accuracy of factual content (e.g. whether a command is correct) — only on structure, clarity, discoverability, and style.
-- Do not flag stylistic preferences as MAJOR or CRITICAL unless they cause genuine confusion or block a reader.
+- Do not flag stylistic preferences as MAJOR or CRITICAL — taste stays capped at MINOR. This is not a cap on clarity findings: anything that leaves a reader unable to extract the meaning is a failure of the document's purpose, not a preference, and is rated on the confusion it causes like any other finding.
 - Be specific: every finding must name the exact document and, where possible, the section or heading.
 - Be concise in your recommended actions: tell Claude exactly what to do, not just that something needs to be done.
 

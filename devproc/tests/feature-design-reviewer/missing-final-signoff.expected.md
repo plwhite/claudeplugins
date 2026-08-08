@@ -2,8 +2,9 @@
 
 **Flaw under test:** delivery criteria — specifically the "end-of-feature gates
 are materialised, not left in strategy prose" check. `## Requirements`, `##
-Sign-off strategy`, `## Design`, and sub-tasks 1–4 of `## Sub-tasks` are all
-clean baseline text and must not be faulted. The flaw is that the sub-task list
+Spec`, `## Sign-off strategy`, `## Design`, and sub-tasks 1–4 of `##
+Sub-tasks` are all clean baseline text and must not be faulted. The flaw is
+that the sub-task list
 stops at 4: the strategy's `/review-branch` code review and
 `docs-structure-reviewer` docs review are named only in the trailing prose note
 ("Feature-level sign-off: …"), with no "Final sign-off criteria" (or
@@ -38,9 +39,10 @@ end-of-feature gates have no corresponding sub-task:
 
 ## Must not report
 
-- Any **BLOCKING or MAJOR** finding against `## Requirements`, `## Sign-off
-  strategy`, `## Design`, or sub-tasks 1–4 of `## Sub-tasks`, which are the
-  clean baseline. MINOR findings and SUGGESTIONs there are tolerated.
+- Any **BLOCKING or MAJOR** finding against `## Requirements`, `## Spec`,
+  `## Sign-off strategy`, `## Design`, or sub-tasks 1–4 of `## Sub-tasks`,
+  which are the clean baseline. MINOR findings and SUGGESTIONs there are
+  tolerated.
 - A finding that the plan needs *per-sub-task* code-review or docs-review
   boxes on sub-tasks 1–4. The strategy correctly puts these two gates at
   feature level; the defect is that the feature-level gates are not

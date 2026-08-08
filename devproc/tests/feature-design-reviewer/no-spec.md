@@ -35,31 +35,6 @@ From a comment on the issue by the reporting lead:
 filters, not only the current page of results. The date in the filename is the
 user's local date at the time of export.
 
-## Spec
-
-The reports page gains a CSV export, so support staff can hand report figures
-to finance without transcribing them by hand.
-
-A single "Export CSV" control on the reports page exports every row matching
-the user's current filters — not just the current page — as a downloaded CSV
-file.
-
-The export must:
-
-- Include exactly the on-screen columns, in the same order, with the same
-  headings.
-- Format dates as ISO 8601 (`YYYY-MM-DD`), not the localised display format,
-  and format numbers unformatted (no thousands separators, no currency
-  symbol) — finance's import step expects both.
-- Name the file `report-<YYYY-MM-DD>.csv`, using the user's local date at the
-  time of export.
-- Never hold the whole export in memory in the browser. The largest tenant has
-  around 200,000 rows, so the export must handle that scale without loading
-  every row into the browser at once.
-
-Out of scope: Excel (`.xlsx`) export, scheduled or emailed exports, and
-exporting anything other than the reports page.
-
 ## Sign-off strategy
 
 - **Testing** — Automated tests for the row-selection and formatting logic
@@ -80,65 +55,86 @@ exporting anything other than the reports page.
 
 ### Overview
 
-The reports page gains an "Export CSV" control that produces a CSV file of
-every row matching the user's current filters. Rows are selected with the
-reports page's own query-builder, the column set comes from the same
-column-definition module the page renders from, each cell is formatted, and
-the result is serialised as CSV. Where the file is generated — on the server
-or in the browser — is taken first below.
+The reports page gains an "Export CSV" control that calls a new server
+endpoint. The endpoint selects the rows the user's filters match using the
+reports page's own query-builder, takes the column set from the same
+column-definition module the page renders from, formats each cell, serialises
+the result as CSV, and writes it to the response as rows are read from the
+database — so neither the server nor the browser ever holds the whole export
+in memory.
 
-The sections below cover each part of that pipeline in turn.
+The sections below take each part of that pipeline in turn and record why it
+was decided that way.
 
-### Where the file is generated
+### Export happens on the server, streamed
 
-Whether the file is streamed from the server or assembled in the browser from
-the existing paginated API will be settled during implementation, once we can
-see how the report query performs under load. Both approaches are viable and the
-choice does not affect the rest of the design.
+The export is a new server endpoint that streams CSV rows to the client, rather
+than being generated in the browser from data the page already holds.
 
-### Row streaming
+The reporting lead's 200,000-row figure rules out the browser route: the reports
+page paginates, so the browser holds only the current page, and fetching all
+rows to serialise them client-side would mean holding the entire result set in
+memory — exactly what the requirement forbids. Streaming from the server keeps
+memory flat on both sides, since rows are written to the response as they are
+read from the database.
 
-Server-side streaming, if chosen, is done through the `ReportStreamService`
-provided by the platform team, which handles cursor management and back-pressure
-so the export does not need its own.
+Rejected alternative: generating the file client-side from an existing paginated
+API by fetching every page. This was rejected on the memory constraint above,
+and because it would multiply request count on the largest tenants.
 
 ### Row selection reuses the existing report query
 
-The export builds its query with the same query-builder the reports page already
-uses, passing the filter set from the request. Re-implementing filter
-interpretation would create a second definition of what a filter means, which
-would drift silently from the on-screen one.
+The export endpoint builds its query with the same query-builder the reports
+page already uses, passing the filter set from the request.
+
+The requirement is that the export contains exactly the rows the filters select.
+Re-implementing filter interpretation for the export would create a second
+definition of what a filter means, which would drift from the on-screen one —
+and the drift would be silent, since both would look plausible. Reusing the
+builder makes the two definitions the same by construction.
 
 ### The column set comes from the page's column definition
 
 The export takes the columns to emit — their order and their headings — from the
 same column-definition module the reports page renders from, rather than from a
-list maintained in the exporter. A second definition of the column set would
-drift from the on-screen one silently, and the requirement is precisely that the
-two match.
+list maintained in the exporter.
+
+This is the same argument as for filters: a second definition of the column set
+would drift from the on-screen one silently, and the requirement is precisely
+that the two match. Where the user has reordered or hidden columns, the client
+sends the active column set with the request, alongside the filters and the
+local date.
 
 ### Formatting is a separate layer from serialisation
 
 Cell formatting (ISO dates, unformatted numbers) is a distinct step from CSV
-serialisation (delimiters, quoting, the header row). The formatting rules are a
-contract with finance's import step and are the most likely thing to regress;
-keeping them separate lets them be tested directly on values.
+serialisation (delimiters, quoting, the header row).
+
+The formatting rules are a contract with finance's import step and are the most
+likely thing to regress; keeping them separate lets them be tested directly on
+values, without going through a whole export. It also keeps the CSV writer
+generic, so the out-of-scope `.xlsx` exporter can reuse the same formatting if
+it is ever built — though nothing is built for that now.
 
 ### The filename is set by the client's local date
 
-The response sets the filename from a local date the client supplies, since the
-server cannot know the user's timezone and the two dates differ near midnight.
+The response sets `Content-Disposition` with the filename, and the client passes
+its local date as a request parameter for that purpose.
+
+The requirement names the user's local date, which the server cannot know: the
+server's date and the user's may differ near midnight. Passing it explicitly is
+the only way to satisfy the requirement without guessing at a timezone.
 
 ## Sub-tasks
 
-1. **Reports page export control** — the control appears on the reports page, calls the export endpoint with the current filters and the client's local date, and downloads the returned file
-   - [ ] Testing: automated test that the control issues the request with the current filters and the client's local date, and that the returned file downloads with the correct name, passing; one manual export of the largest available test tenant, opened in a spreadsheet with values confirmed correct
-   - [ ] User review: the user opens an exported file from a filtered report and confirms it is what finance needs
+1. **Export endpoint with streamed row selection** — the endpoint returns the correct rows for a given filter set, streamed, with flat memory use
+   - [ ] Testing: automated tests for filter application (including a filter set spanning more than one page), passing; a 200,000-row export completes with flat server memory
 2. **Cell formatting and CSV serialisation** — ISO dates, unformatted numbers, column order/headings matching the screen, and correctly quoted output
    - [ ] Testing: automated tests for ISO date formatting, unformatted numbers, and column order against the on-screen column set, passing
    - [ ] Testing: automated tests for serialisation of values containing commas, quotes and newlines, and for the header row, passing
-3. **Export endpoint with streamed row selection** — the endpoint returns the correct rows for a given filter set, streamed, with flat memory use
-   - [ ] Testing: automated tests for filter application (including a filter set spanning more than one page), passing; a 200,000-row export completes with flat server memory
+3. **Reports page export control** — the control appears on the reports page and downloads the file with the correct name
+   - [ ] Testing: automated test that the control issues the request with the current filters and the client's local date, passing; one manual export of the largest available test tenant, opened in a spreadsheet with values confirmed correct
+   - [ ] User review: the user opens an exported file from a filtered report and confirms it is what finance needs
 4. **Help page section and implementation notes** — user-facing documentation of the export, and the memory-constraint record
    - [ ] Documentation: help page section describing the export and its column meanings; `NOTES.md` entry recording how the large-export memory constraint was met
 5. **Final sign-off criteria** — end-of-feature gates for this feature, per `## Sign-off strategy`
@@ -146,5 +142,8 @@ server cannot know the user's timezone and the two dates differ near midnight.
    - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
 
 **▶ NEXT:** Sub-task 1
+
+> Sub-tasks 1 and 2 carry no user-review box: there is no user-visible surface
+> until sub-task 3, where the user review for the feature sits.
 
 > Run `/feature-checkpoint` after each sub-task completes.

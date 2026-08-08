@@ -34,15 +34,45 @@ From a comment on the issue by the reporting lead:
 
 The date in the filename is the user's local date at the time of export.
 
-Currency conversion uses the rates table delivered by the `multi-currency`
-feature.
+Currency conversion depends on a rates table. The `multi-currency` feature is
+expected to provide one.
+
+## Spec
+
+The reports page gains a CSV export, so support staff can hand report figures
+to finance without transcribing them by hand.
+
+A single "Export CSV" control on the reports page exports every row matching
+the user's current filters, as a downloaded CSV file.
+
+The export must:
+
+- Include exactly the on-screen columns, in the same order, with the same
+  headings.
+- Work while the user is offline, since support staff often work from customer
+  sites with no connectivity.
+- Include, on every row, the customer's current account status, fetched live
+  from the billing service at export time.
+- Report currency values in the customer's billing currency.
+- Name the file `report-<YYYY-MM-DD>.csv`, using the user's local date at the
+  time of export.
+- Never hold the whole export in memory in the browser. The largest tenant has
+  around 200,000 rows, so the export must handle that scale without loading
+  every row into the browser at once.
+
+Currency conversion depends on a rates table. The `multi-currency` feature is
+expected to provide one.
+
+Out of scope: Excel (`.xlsx`) export, scheduled or emailed exports, and
+exporting anything other than the reports page.
 
 ## Sign-off strategy
 
 - **Testing** — Automated tests for the row-selection and formatting logic
-  (filter application, column order, currency conversion), all passing. Plus one
-  manual export of the largest available test tenant, confirming the file opens
-  in a spreadsheet with correct values.
+  (filter application, column order, currency conversion), all passing, and an
+  automated check that a 200,000-row export completes with flat memory use.
+  Plus one manual export of the largest available test tenant, confirming the
+  file opens in a spreadsheet with correct values.
 - **Documentation** — User-facing help page section describing the export and
   its column meanings, plus a `NOTES.md` entry recording how the large-export
   memory constraint was met.

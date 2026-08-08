@@ -37,28 +37,12 @@ user's local date at the time of export.
 
 ## Spec
 
-The reports page gains a CSV export, so support staff can hand report figures
-to finance without transcribing them by hand.
+The reports page gains an export so finance can get report data out without
+someone transcribing it by hand.
 
-A single "Export CSV" control on the reports page exports every row matching
-the user's current filters — not just the current page — as a downloaded CSV
-file.
-
-The export must:
-
-- Include exactly the on-screen columns, in the same order, with the same
-  headings.
-- Format dates as ISO 8601 (`YYYY-MM-DD`), not the localised display format,
-  and format numbers unformatted (no thousands separators, no currency
-  symbol) — finance's import step expects both.
-- Name the file `report-<YYYY-MM-DD>.csv`, using the user's local date at the
-  time of export.
-- Never hold the whole export in memory in the browser. The largest tenant has
-  around 200,000 rows, so the export must handle that scale without loading
-  every row into the browser at once.
-
-Out of scope: Excel (`.xlsx`) export, scheduled or emailed exports, and
-exporting anything other than the reports page.
+The export needs to work well for how finance uses spreadsheets, and it should
+handle large reports sensibly. See `## Requirements` above for the formatting
+detail.
 
 ## Sign-off strategy
 

@@ -8,4 +8,4 @@ heading with a name and slug (e.g. `[initial-development]`) so its plan file in
 matching the slug in `features/plans/`. In some cases there may be no feature in
 progress, or in very rare cases more than one at once.*
 
-*No feature currently in progress.*
+*No features currently in progress.*

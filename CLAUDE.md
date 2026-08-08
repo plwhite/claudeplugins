@@ -2,7 +2,9 @@
 
 ## Current status
 
-`extract-feature-model` completed 2026-07-26 — moved the `## Feature model` boilerplate out of `CLAUDE.md` into `features/FEATUREMODEL.md`, loaded every session via a Claude Code `@import`; `feature-init` now ships that canonical file and refreshes each project's copy from it (#43). See `features/COMPLETED.md` for detail.
+No feature in progress.
+
+`clear-specs-and-designs` completed 2026-08-12 — split the plan file's requirements into `## Requirements` (input) and `## Spec` (what the feature must do), required designs to open with an overview, and added a canonical `### Readability` standard enforced by a MAJOR `[rewrite]` clarity criterion in both reviewer agents (#57). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -30,8 +32,8 @@ Skills and agents for feature lifecycle management, workflow orchestration, code
 Contents:
 - `devproc/.claude-plugin/plugin.json`
 - `devproc/skills/feature-init/SKILL.md` — one-time setup: copies the canonical `FEATUREMODEL.md` shipped with the skill to `features/FEATUREMODEL.md`, adds its `@import` to `CLAUDE.md`, creates the `features/` directory including a git-ignored `features/tmp` scratch directory, and migrates an older `FEATURES.md`/`plans/` layout
-- `devproc/skills/feature-spec/SKILL.md` — create a new feature in `features/PENDING.md` and write its specification into the plan file, from a GitHub issue, a one-line description, or requirements material staged in `features/tmp`
-- `devproc/skills/feature-design/SKILL.md` — move a feature to `features/CURRENT.md` and write its design and sub-task plan
+- `devproc/skills/feature-spec/SKILL.md` — create a new feature in `features/PENDING.md`, capture the input as `## Requirements` and write `## Spec` (what the feature must do) into the plan file, from a GitHub issue, a one-line description, or requirements material staged in `features/tmp`
+- `devproc/skills/feature-design/SKILL.md` — move a feature to `features/CURRENT.md` and write its design (overview first) and sub-task plan; may amend `## Spec` with the user's approval
 - `devproc/skills/feature-checkpoint/SKILL.md` — sync all documentation to current state
 - `devproc/skills/feature-end/SKILL.md` — mark a feature complete and move it to `features/COMPLETED.md`
 - `devproc/skills/review-full/SKILL.md` — full-codebase code review; auto-applies code-level findings, escalates architectural changes
@@ -39,8 +41,8 @@ Contents:
 - `devproc/skills/review-branch/SKILL.md` — code review scoped to files changed in the current branch (uses git diff for scope and context)
 - `devproc/skills/internal-docs-prune/SKILL.md` — prune internal Claude-facing docs (root and nested `CLAUDE.md` files, `NOTES.md`, `.claude/rules/*.md`): spawn `internal-docs-reviewer`, auto-apply redundant/stale findings without content loss, escalate or defer judgment findings
 - `devproc/agents/dev-process-manager.md` — top-level Opus orchestrator (`claude --agent dev-process-manager`); drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user
-- `devproc/agents/feature-spec-reviewer.md` — reviews a feature spec (requirements and sign-off strategy) before a human reads it, ending with a `READY FOR USER REVIEW` / `NEEDS WORK` verdict
-- `devproc/agents/feature-design-reviewer.md` — reviews a feature design and its sub-task plan (requirement coverage, recorded rationale, auditable criteria) before a human reads it, ending with the same verdict
+- `devproc/agents/feature-spec-reviewer.md` — reviews a feature spec (`## Spec` and sign-off strategy, including clarity against the `### Readability` standard) before a human reads it, ending with a `READY FOR USER REVIEW` / `NEEDS WORK` verdict
+- `devproc/agents/feature-design-reviewer.md` — reviews a feature design (`## Design`) and its sub-task plan (`## Spec` coverage, design clarity, recorded rationale, auditable criteria) before a human reads it, ending with the same verdict
 - `devproc/agents/docs-structure-reviewer.md` — audits documentation structure and quality, producing actionable findings
 - `devproc/agents/internal-docs-reviewer.md` — reviews internal Claude-facing docs for redundant, stale, or judgment-call content, producing gated findings (action + class) without modifying files
 - `devproc/agents/code-review-architectural.md` — architectural review agent (`opus`)
@@ -80,6 +82,7 @@ Contents:
 - `bin/claude-build` — builds the `claudedev` image with host UID/GID baked in
 - `bin/claude-run` — starts a detached container for a project directory; `--manager`/`--agent NAME` selects a top-level agent and `--model NAME` (default: derived from the agent's `model:` field) its session model, passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`; also passes `GH_TOKEN` into the container (from the environment, or sourced from `~/.config/gh/env` when unset) so `gh` can read issues there
 - `bin/claude-attach` — attaches to the tmux session in a running container
+- `bin/claude-creds-refresh` — refreshes OAuth credentials in a running container mid-session (they are copied in at start, not bind-mounted, so a long session can outlive them)
 - `bin/claude-stop` — stops and removes the container
 
 See [docs/container.md](docs/container.md) for full usage documentation.
