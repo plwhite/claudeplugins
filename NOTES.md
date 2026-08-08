@@ -259,6 +259,137 @@ re-reading the instructions.
    `[decision]`, re-reviewing unchanged questions cannot change the verdict.
    Both skills now say not to spend the second invocation in that case.
 
+## A severity ceiling in a review agent's tail can silently swallow a new criterion (#57)
+
+Both `feature-spec-reviewer` and `feature-design-reviewer` end with the
+constraint "Do not flag stylistic preference as MAJOR or BLOCKING". Adding a
+Clarity criterion rated MAJOR does not conflict with it: an artefact exists to
+convey meaning, so a reader who cannot extract that meaning has hit a functional
+failure, not a matter of taste. The two rules govern different categories.
+
+The hazard is that an agent may not see it that way. If it files clarity under
+"style" — an easy slip, since both concern how the prose reads — it resolves an
+apparent conflict by rating clarity findings MINOR, the new criterion silently
+stops gating anything, and the only visible symptom is a clarity fixture failing
+for no apparent reason. Both agents therefore now state the category distinction
+explicitly rather than leaving it to be inferred: stylistic preference is wording
+one would phrase differently where the meaning is *already clear*; a failure
+against `### Readability` is a different kind of thing and is MAJOR.
+
+`docs-structure-reviewer` had the same conflation in a worse form, and predates
+this feature: its severity ladder defined MINOR as a "clarity or consistency
+issue", and its constraints capped stylistic preference below MAJOR "unless they
+cause genuine confusion" — making confusion an exception carved out of taste.
+Split into separate Clarity and Stylistic Consistency criteria, with MINOR
+now reserved for issues that do not obscure meaning.
+
+Generalises two ways. First, the severity ceiling in a closing `## Constraints`
+list is easy to miss when writing a new `## Review Criteria` entry, because the
+two are ~100 lines apart — check the tail whenever a criterion is added with a
+severity floor. Second, when a new criterion is adjacent to an existing capped
+one, say what separates them; an agent left to infer the boundary will
+sometimes infer it wrongly, and always in the direction of the older rule.
+
+A related trap in the same feature, worth the same care: the fixture suites'
+pass rule is "no BLOCKING or MAJOR findings against a section the case does not
+target". Any new MAJOR-capable criterion is therefore evaluated against *every*
+section of *every* fixture, so the shared `control.md` baselines must themselves
+satisfy the new criterion or **all** cases in the suite fail, not just the new
+one.
+
+## Agent result delivery can fail silently mid-session (#57, Sub-task 7)
+
+Sub-agents spawned via the `Agent` tool stopped returning their output partway
+through a session. The first two spawns delivered full results; every spawn
+after that returned only an `idle_notification` with no content, including a
+re-run of the **same agent type** that had just succeeded. Sending the idle
+agent a direct message asking for its findings also produced only another idle
+notification.
+
+The trap is that this looks like a defect in whatever you spawned. The
+diagnosis went "the design reviewer is broken" for several rounds, because the
+spec reviewer had worked and the design reviewer never had. That was wrong: the
+distinguishing variable was **when** the agent was spawned, not which agent it
+was — visible only after tabulating every spawn in the session against its
+outcome. When an agent goes quiet, tabulate all spawns before blaming the
+newest one.
+
+Two practical consequences. **Do not tick a sign-off box on a review you never
+saw** — an idle notification is not a pass, and a test whose result never
+arrived is unrun, not passed. **And do not keep re-spawning**: four attempts
+plus a deliberately minimal diagnostic fixture (a short, clean plan file with
+codebase reading suppressed, to separate "workload too heavy" from "delivery
+broken") all failed identically. The minimal fixture is the cheap experiment
+worth running early, because it splits those two explanations in one spawn.
+
+A degraded agent cannot be shut down either. `shutdown_request` to the one
+agent that had delivered a result was processed and it terminated cleanly;
+the same request to five degraded agents produced only more idle
+notifications. So the degradation is not "fails to report its findings" but
+"cannot act on anything" — do not spend turns trying to reach or tidy them up,
+and expect to leave them stranded until the session ends.
+
+Not established: what triggers the degradation, or whether it is spawn-count,
+elapsed-time, or context related. A fresh session is the known-good reset.
+
+**Superseded 2026-08-09 — there is a reliable workaround.** A fresh session is
+no longer the only reset, and the degradation is not even reliably absent from
+one: the *first* spawn of a brand-new session returned an idle notification with
+no content, so "spawn early while delivery still works" is not a safe strategy.
+Spawning synchronously (`run_in_background: false`) makes no difference — this
+build spawns asynchronously either way, so it is the same delivery path.
+
+The workaround is to bypass the in-session `Agent` tool entirely and invoke the
+agent through the CLI, which returns its output on stdout:
+
+```
+claude -p --agent feature-design-reviewer '<the review prompt>'
+```
+
+Run from the repository root, so the agent resolves `features/FEATUREMODEL.md`
+and can read the codebase as usual. This delivered a complete review — findings
+and verdict — on the same fixture whose in-session spawns had gone silent. It is
+now the preferred route for the fixture suites specifically, because a
+regression run is a dozen-plus invocations and a silent failure partway through
+is expensive to detect: stdout either has a verdict line or it does not.
+
+Two things this does **not** change. The results are still agent output and are
+still checked against the `.expected.md` files in the normal way. And the rule
+above stands unaltered — a run whose verdict you never saw is unrun, not passed.
+
+## Check what a backwards-compatibility carve-out actually protects (#57)
+
+`/feature-design` step 1b was written to gate on `## Requirements` but
+deliberately *not* on `## Spec`, reasoning that a plan file specced before
+`## Spec` existed must stay designable. The reasoning was sound and the
+conclusion still wrong, because the protected set turned out to be empty:
+`/feature-design` only ever designs a feature listed in `features/PENDING.md`,
+and both `PENDING.md` and `DEFERRED.md` (the only route back into pending) were
+empty. Every legacy plan file was completed or in progress — none could reach
+the skill. The carve-out bought nothing and cost the check that catches the
+lifecycle skills being run out of order.
+
+The generalisable move is cheap: before writing a compatibility carve-out, ask
+what reaches the code path it guards, and check. Here that was two `cat`s. The
+failure mode it permitted was also the worst kind — silent: with no `## Spec`
+and no gate, `/feature-design` would have designed against `## Requirements`
+alone, inventing the statement of what the feature must do that the user was
+supposed to agree, and nothing in the output would have said so.
+
+Two follow-on points found while fixing it. **A stale carve-out leaves
+fingerprints elsewhere** — the same tolerance had propagated into the step-5
+template ("if the file does not exist, create it with all sections", and a
+`## Requirements` placeholder saying the section "may be omitted", both
+contradicting the step-1b stop) and into `docs/workflow.md`, which told users
+Claude fetches the GitHub issue "only if they are missing". Grep for the
+behaviour, not just the rule. **And a reviewer needs its own guard**: the
+skill's stop protects the main path, but `feature-design-reviewer` can be
+invoked standalone, where "does this design implement the spec?" against an
+absent spec is not a weaker review but an incoherent one. It now refuses with a
+single BLOCKING finding rather than falling back to `## Requirements` — a review
+against a standard the agent inferred for itself is worse than no review,
+because it looks like one.
+
 ## `/home/claude/claudeplugins` is a live plugin copy, separate from this repo
 
 `/home/claude/claudeplugins` is registered as the `local-plugins` marketplace
@@ -279,14 +410,51 @@ under the git-tracked `/workspace/devproc/`.
 may drift and that is fine. Diffing the two trees is the check before
 `/feature-end`.
 
-## `/feature-spec` from a bare one-line description ends at NEEDS WORK
+## A bare one-line description no longer forces NEEDS WORK (superseded, #57)
 
-For a bare one-line feature description, `/feature-spec` will reliably end at
-`NEEDS WORK`: the skill writes a "no requirements beyond the summary"
-placeholder, and the reviewer correctly rates a spec with no requirements as
-blocked. That is working as intended — the questions go to the user — but it
-means `READY FOR USER REVIEW` is not reachable from a one-liner, which matters
-for unattended mode.
+*The claim below describes behaviour that no longer ships; it is kept because
+the reasoning that removed it is the useful part. Skip to "Superseded" for what
+is true now.*
+
+For a bare one-line feature description, `/feature-spec` **used to** reliably end at
+`NEEDS WORK`: the skill wrote a "no requirements beyond the summary"
+placeholder, and the reviewer rated a spec with no requirements as blocked.
+That was read at the time as working as intended — the questions go to the user
+— but it meant `READY FOR USER REVIEW` was not reachable from a one-liner,
+which matters for unattended mode.
+
+**Superseded by `clear-specs-and-designs` (#57) — and the behaviour above was a
+defect, not a safety property.** The reasoning was circular: `/feature-spec`
+wrote a "no requirements beyond the summary" placeholder into `## Requirements`
+whenever the description was short, and the reviewer then blocked the spec for
+having no requirements. The skill discarded what the user typed, and the
+reviewer objected that nothing was typed.
+
+**A one-line description is requirements.** "Add logging to the foo function"
+states what is wanted; the feature exists because the user said so. The
+placeholder is gone — `## Requirements` now records a short description verbatim
+as the input it is — and a small, well-understood feature can legitimately reach
+`READY FOR USER REVIEW` and run all the way through unattended. The gate exists
+to stop work no human sanctioned, not to impose a minimum length on the
+sanction.
+
+Two wrong turns were taken before this landed, both worth remembering:
+
+1. Reading the old NEEDS WORK guarantee as protective, and proposing to preserve
+   it by treating every unconfirmed proposal in `## Spec` as a BLOCKING
+   question. Since a thin-input spec is *entirely* proposals, that would have
+   made small features permanently unable to pass — a defect dressed as caution.
+   Proposals are judged like anything else: one resting on a judgement the user
+   must make blocks, one filling an obvious gap does not.
+2. More generally: when an existing behaviour looks like a safeguard, check
+   whether anything actually *chose* it. This one was a side effect of a
+   placeholder, and no one had ever decided that small features should be
+   unable to pass review.
+
+In practice the real constraint on an unattended thin-input run is the
+**sign-off strategy**, which cannot be inferred from a one-liner — a user who
+wants such a feature to run start to finish needs to supply it with the
+description.
 
 ## Unattended mode rarely proceeds at spec stage (#20)
 
@@ -719,3 +887,204 @@ mechanism, so it correctly repoints now regardless of when `feature-init`
 itself is rewritten. Sub-task 3 should update these three remaining lines as
 part of rewriting `feature-init`'s actual behaviour, since they are the
 README's documentation of that skill.
+
+## Only some fixture flaws needed relocating when `## Spec` was added (Sub-task 7, #57)
+
+When `## Spec` was added to both fixture suites and both reviewer agents
+stopped treating `## Requirements` as "what the feature must do", only two of
+the five `feature-spec-reviewer` cases (`premature-design`, renamed
+`incomplete-spec`) actually needed their planted flaw *moved* into `## Spec`.
+The other two content-bearing cases needed no such move, for two different
+reasons, and it is worth recording why so a later reader does not "fix" them
+unnecessarily:
+
+- **`non-auditable-criteria`'s flaw was never in `## Requirements`** — it lives
+  in `## Sign-off strategy`, which is still reviewed exactly as before. Adding
+  the new `## Spec` (clean, matching `control.md`) was the only change needed.
+- **`unresolved-blocker`'s flaw moved "for free."** Its contradiction and
+  unstated dependency are facts about the underlying request, not about how
+  `## Requirements` happens to be worded. Once `## Spec` is written to
+  *faithfully* cover everything `## Requirements` says — which the reviewer's
+  new "does everything in Requirements show up in Spec" check now demands
+  anyway — the contradiction necessarily appears in `## Spec` too, and the
+  still-active "Blocking issues" check catches it there. No deliberate
+  rewording was needed beyond writing a properly-derived `## Spec`.
+
+Only `incomplete-spec` (ex-`incomplete-requirements`) and `premature-design`
+needed deliberate rewording, because their flaws are properties of *how a
+section is written* (deferring instead of restating; stating *how* instead of
+*what*) that only manifest if that specific section is reviewed for that
+specific thing — and `## Requirements` is no longer reviewed for either.
+
+One retained check is easy to lose track of: `feature-spec-reviewer` still
+checks `## Requirements` for one narrow thing — whether source-issue content
+was genuinely *captured* there rather than deferred to (e.g. "see issue #47
+for detail"). None of the five spec-suite fixtures currently exercises that
+specific check in isolation (the old `incomplete-requirements` case exercised
+it before this sub-task, folded into a bundle of other flaws; the new
+`incomplete-spec` deliberately keeps `## Requirements` clean so as to isolate
+the `## Spec`-side flaw it now tests). That check therefore currently has no
+dedicated fixture — a gap, not a defect, and not something this sub-task's
+scope (relocate existing flaws, add the design suite's `no-spec` case) asked
+to fix.
+
+`incomplete-requirements.md`/`.expected.md` were renamed to
+`incomplete-spec.md`/`.expected.md` (via `mv`, not `git mv` — this repo's rule
+against git commands that change repository state applies to renames too; an
+accidental `git mv` here was caught and unstaged with `git reset HEAD` before
+any further edits).
+
+## Obscuring a spec for the clarity fixture also plants an unsourced-claims flaw (Sub-task 8, #57)
+
+`unclear-spec.md` breaks `### Readability` by burying the point, front-loading
+formatting detail, and referring to "every other feed in the reporting
+pipeline", "the other export types in the system" and "the dashboard's bulk
+operations" as though the reader knows them. Those three phrases are the only
+part of the mutation that is **added** rather than reorganised — they appear
+nowhere in `control.md`. That makes them undefined cross-references (the
+clarity fault under test) *and*, read literally, assertions about the codebase
+that `## Requirements` never establishes and that carry no proposal marking —
+which is a live "Complete and clear" fault in its own right.
+
+So the case cannot isolate clarity as cleanly as its siblings do: a competent
+reviewer has two legitimate angles on the same wording. A run on 2026-08-10
+took the second angle and reported it at **BLOCKING `[decision]`**, above the
+MINOR/SUGGESTION band the expectation originally allowed. The expectation was
+**widened** rather than the agent or the fixture changed (user decision,
+2026-08-10): the finding is correct, and a spec asserting unsourced facts about
+the codebase *should* stop and ask. The accepted consequence is that this
+fixture can halt an unattended `/feature-spec` run, since BLOCKING plus
+`[decision]` is exactly the halting combination.
+
+The general lesson for anyone writing a future clarity fixture: obscuring a
+spec by inventing context is the easiest way to violate "Nothing assumed", but
+invented context is indistinguishable from an unsourced claim. To isolate
+clarity alone, bury and under-define material that `## Requirements` already
+establishes instead of introducing new referents.
+
+## A planted flaw must keep its wording as well as its salience (Sub-task 8, #57)
+
+`unresolved-blocker`'s dependency finding has now been lost twice, for two
+different reasons, and the pair is the useful part.
+
+**2026-08-09 — placement.** When the flaw was relocated from `## Requirements`
+into `## Spec`, the `multi-currency` dependency was demoted from a standalone
+paragraph to a trailing subordinate clause inside the currency bullet. The
+agent read past it. Fixed by restoring it to its own paragraph.
+
+**2026-08-10 — wording.** With placement fixed, the agent *still* reported it
+at MINOR `[rewrite]` — as a readability "nothing assumed" nit recommending a
+link be added — rather than the required BLOCKING `[decision]`. The sentence
+read "the rates table **delivered by** the `multi-currency` feature", which
+asserts the dependency as already shipped. A dependency stated as met is not a
+blocker, so there was nothing to escalate; the agent's MINOR was arguably the
+correct reading of the text as written. Fixed by rewording to "Currency
+conversion depends on a rates table. The `multi-currency` feature is expected
+to provide one," in `## Requirements` and `## Spec` together — they carry the
+paragraph byte-identically, and a `## Spec` alone calling the feature pending
+would diverge from its own captured input.
+
+The lesson: when auditing a fixture, check that the planted flaw is **findable**
+— present, salient, *and* worded so the fault is still available to be found.
+Confident phrasing defuses a planted blocker as effectively as burying it, and
+both failures look identical from the outside (a missing required finding).
+
+The agent is not generally blind to unconfirmed dependencies, which is what
+made the wording the prime suspect: on the design suite's
+`unresolved-design-question`, where the text leaves the dependency open, it
+flagged `ReportStreamService` at MAJOR, searched for it, and then explicitly
+declined to treat absence from this repository as evidence — asking for
+confirmation instead of asserting it missing, which is exactly the required
+behaviour.
+
+## Skills can be invoked in a fresh process via `claude -p '/skill-name args'` (Sub-task 9, #57)
+
+Testing skill *behaviour* from the session that is driving the test is weak
+evidence: the driver already knows what the skill is supposed to do, and can
+steer it there without meaning to. Slash commands work in print mode, so
+`claude -p '/feature-design nospec-probe'` runs the skill in a cold process
+that has none of that context, and returns its output on stdout. This is how
+the `/feature-design` step-1b stop was verified, and it is the route to prefer
+for any future test of what a skill *does* rather than what it says.
+
+It is the same mechanism already recorded above for running agents
+(`claude -p --agent <name>`), which remains necessary because in-session
+`Agent` results can fail silently — so skill and agent testing both go through
+the CLI, and neither is affected by that bug.
+
+## `/feature-design` step 9's amendment trigger is a judgement call (Sub-task 9, #57)
+
+Step 9 says `/feature-design` may amend `## Spec` when design shows it is
+"wrong, incomplete, or impossible as written", and step 9d makes a proposed
+amendment stop an unattended run — the same treatment as a `[decision]`
+finding. The end-to-end run hit a case sitting right on that line, and it is
+worth knowing which way it fell.
+
+The throwaway spec proposed hiding a tmux status bar "per client", resting on
+a premise that turned out to be false (`status` is a session option; there is
+no per-client equivalent). But the spec's three *observable* requirements were
+all still achievable by another mechanism. The run judged this a misdescribed
+mechanism rather than a wrong spec, recorded the correction and its
+verification in `## Design`, and continued without stopping.
+
+That is defensible, and `feature-design-reviewer` independently endorsed it —
+but note the shape of it: whether a falsified premise is "the spec is wrong"
+or "the mechanism was misdescribed" is a judgement, and an unattended run has
+an obvious incentive to resolve it toward not stopping. If step 9's stop is
+meant to be load-bearing, this boundary is where it will leak, and the
+mitigation that actually worked here was the design recording the
+contradiction loudly enough that a human could catch it afterwards.
+
+## `/feature-init` copies from the installed plugin, not the repo (Sub-task 11, #57)
+
+The maintainer note in `CLAUDE.md` says: to change the feature model, edit the
+canonical `devproc/skills/feature-init/FEATUREMODEL.md` and re-run
+`/feature-init`. That is correct but incomplete, and the gap is a trap.
+
+`/feature-init` is told its own base directory when invoked, and copies
+`FEATUREMODEL.md` from *there*. In this container that is
+`/home/claude/claudeplugins/devproc/skills/feature-init/` — the **installed
+plugin**, not `/workspace/devproc/`. So "edit the canonical file and re-run
+`/feature-init`" only works if the installed plugin has already been refreshed
+from the repo. Edit the repo copy and re-run the skill directly, and it
+overwrites `features/FEATUREMODEL.md` with the *old* text, silently reverting
+the change — and leaving the repo's canonical file and the installed model
+disagreeing, which is the exact drift the single-source-of-truth pattern
+exists to prevent.
+
+This was caught on 2026-08-11 only because the divergence was checked with
+`diff` before the copy rather than after. The failure is quiet: `/feature-init`
+reports success, and the resulting `features/FEATUREMODEL.md` is internally
+consistent — just stale. Nothing downstream notices.
+
+The existing note "Agents loaded through the `Agent` tool come from
+`/home/claude/claudeplugins/devproc/`" covers agent *definitions*. This is the
+same root cause with a wider blast radius: it applies to any **data file a
+skill ships and copies**, where the effect is not "you tested old prose" but
+"you reverted a committed change". The working order is: edit the repo, refresh
+the plugin tree from the repo, verify byte-identical, *then* run the skill.
+
+## An in-session agent being slow is not the same as it being degraded (Sub-task 11, #57)
+
+Four review agents were spawned in one session. The first two returned full
+results; the third and fourth went quiet. That matches the documented
+degradation signature ("the first two spawns delivered full results; every
+spawn after that returned only an `idle_notification`") closely enough that it
+was called as a reproduction — and `ListAgents` reporting no reachable agents
+seemed to confirm it.
+
+It was wrong. The third agent delivered a complete review several minutes
+later; only the fourth genuinely failed. The tell that should have prevented
+the misdiagnosis: an idle notification arriving for an agent that has already
+delivered is normal completion, whereas the degradation signature is an idle
+notification *instead of* a result. Those look identical if you are matching on
+"agent went idle" rather than on "agent went idle having produced nothing".
+
+Two practical consequences. **Do not declare the degradation on a
+still-running agent** — the cost of waiting is a few minutes, the cost of a
+false call is duplicated work and a wrong entry in this file. And **a duplicate
+CLI fallback is cheap insurance but needs cleaning up**: the re-run of the slow
+agent was killed once its in-session twin reported, which is the right move,
+but only because the duplication was noticed. The fourth agent's CLI fallback
+is what actually produced the architectural review, so the fallback strategy
+was still correct — it was the diagnosis that was premature, not the response.

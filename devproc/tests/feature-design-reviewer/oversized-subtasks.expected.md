@@ -2,7 +2,9 @@
 
 **Flaw under test:** sub-task quality. Sub-task 1 is the entire feature in one
 box with a description that restates its name, and sub-tasks 2–4 are unrelated
-trivia. The `## Design` section is the clean baseline and must not be faulted.
+trivia. The `## Design` section is the clean baseline and must not be faulted;
+`## Requirements`, `## Spec`, and `## Sign-off strategy` are context and are
+not reviewed.
 
 ## Required findings
 

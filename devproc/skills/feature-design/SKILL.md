@@ -29,7 +29,7 @@ Steps:
 
    Then gather the specification to inform the design.
    a. Read the feature's plan file `features/plans/<slug>.md`. `/feature-spec` normally captures the full source-issue content in its `## Requirements` section — prefer this over re-fetching the issue.
-   b. If the plan file is missing or has no usable `## Requirements`, **stop and ask the user what to do** - this should not happen and implies something has gone wrong.
+   b. If the plan file is missing, or has no usable `## Requirements`, or has no `## Spec`, **stop and tell the user to run `/feature-spec` first.** Do not proceed, and do not write the missing section yourself. Any of these means `/feature-spec` has not completed for this feature — most likely the skills are being run out of order — and designing without a spec means inventing the statement of what the feature must do that the user was supposed to agree.
 
 2. Move the feature entry from `features/PENDING.md` to `features/CURRENT.md`. Update the entry's detail link if needed so it points at `features/plans/<slug>.md` (the link is relative to `features/CURRENT.md`, so written `[features/plans/<slug>.md](plans/<slug>.md)`).
 
@@ -43,7 +43,7 @@ Steps:
    - If the feature involves external services, APIs, or unfamiliar areas of the codebase, do reconnaissance before drafting sub-tasks.
    - If the specification is unclear, ask the user before writing the design.
 
-5. Flesh out the plan file `features/plans/<slug>.md`. It normally already exists (created by `/feature-spec`) with a `## Requirements` section, a `## Sign-off strategy` section, a `## Design` placeholder, and a `## Review record` section. **Preserve the `## Requirements`, `## Sign-off strategy` and `## Review record` sections** — the review record is the feature's review history and must survive this rewrite intact — then prepend a `## Handoff` section, replace the Design placeholder with the real design, and add a `## Sub-tasks` section. Insert `## Sub-tasks` after `## Design`, leaving `## Review record` as the last section of the file. If the file does not exist, create it with all sections. Target structure:
+5. Flesh out the plan file `features/plans/<slug>.md`. It normally already exists (created by `/feature-spec`) with a `## Requirements` section, a `## Spec` section, a `## Sign-off strategy` section, a `## Design` placeholder, and a `## Review record` section. **Preserve the `## Requirements`, `## Spec`, `## Sign-off strategy` and `## Review record` sections** — the review record is the feature's review history and must survive this rewrite intact, and `## Spec` is the statement of what the feature must do that the design below has to satisfy — then prepend a `## Handoff` section, replace the Design placeholder with the real design, and add a `## Sub-tasks` section. Insert `## Sub-tasks` after `## Design`, leaving `## Review record` as the last section of the file. The file, and its `## Requirements` and `## Spec` sections, must be present by this point — step 1b stops if any of them is not. Target structure:
 
 ```markdown
 # <Feature title> — Feature Plan
@@ -59,8 +59,14 @@ Steps:
 
 ## Requirements
 
-<Preserved from /feature-spec. If absent and there are no requirements beyond
-the features/PENDING.md summary, this section may be omitted.>
+<Preserved from /feature-spec — the captured input the spec was written from.>
+
+## Spec
+
+<Preserved from /feature-spec — what the feature must do, written to stand
+alone against `### Readability` in `features/FEATUREMODEL.md`. This is what
+the design below must satisfy; see step 9 if writing the design shows it needs
+to change.>
 
 ## Sign-off strategy
 
@@ -69,8 +75,11 @@ per-sub-task criteria below are derived from.>
 
 ## Design
 
-<The output of the planning process goes here. For a simple feature this may be
-a short paragraph. For a complex feature it may be several pages covering
+<Opens with an overview of how the design works as a whole — enough that a
+reader who knows only `## Requirements` and `## Spec` can follow what is being
+proposed — before any detailed section; see `### Readability` in
+`features/FEATUREMODEL.md`. For a simple feature the overview may be the whole
+section. For a complex feature, detailed sections follow covering
 architectural decisions, data layouts, component interactions, and open
 questions resolved during planning. This section is the written record of
 what was decided and why — enough detail that the user can review it inline
@@ -95,7 +104,7 @@ N. **Final sign-off criteria** — <only when `## Sign-off strategy` defines end
 section of the file.>
 ```
 
-Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md` as you discover it, not here. The Design section is the exception: it should capture the key decisions and rationale from the planning process.
+Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md` as you discover it, not here. The Design section is the exception: it should capture the key decisions and rationale from the planning process. It must open with an overview of how the design works as a whole, before any detailed section, followable by a reader who knows only `## Requirements` and `## Spec` — see `### Readability` in `features/FEATUREMODEL.md` for what that requires.
 
 6. Give each sub-task its **sign-off criteria**, derived from the `## Sign-off strategy` agreed at `/feature-spec`. The conventions these must follow — the standard categories, the checkbox format, auditability, performer attribution on review boxes, omitting categories that do not apply rather than writing untickable placeholders, and materialising any strategy-defined end-of-feature gates as a conditional final sub-task rather than leaving them only in strategy prose — are defined in `features/FEATUREMODEL.md` under `### Sign-off criteria`. Apply them. Specific to this step:
 
@@ -124,6 +133,8 @@ Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md`
    ```
 
 > Step 7 below is near-identical in `feature-spec` and `feature-design`. If you change the review invocation, the finding-handling rules, the two-invocation cap, the unattended-mode gate, or the `## Review record` format, update both — a silent divergence in the unattended gate is the worst case, since it governs when human sign-off is bypassed. If you add or remove a finding marker, update both agents' `## Output Format` too: the markers are the contract between them.
+>
+> **One deliberate exception:** 7f's spec-amendment bullet is `/feature-design`-only and has no counterpart in `feature-spec`, because only this skill can amend `## Spec`. It is a pointer to step 9, not a rule of its own, so the gate's substance stays parallel. Do not "restore parity" by deleting it or by copying it into `feature-spec`.
 
 7. **Have the design reviewed before the user sees it.** The point is that the user spends their attention on judgement calls, not on catching gaps an agent can catch.
 
@@ -147,6 +158,7 @@ Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md`
       - **Proceed without pausing only if** the final verdict is `READY FOR USER REVIEW` **and** no finding was marked `[decision]`. A finding counts here if the *agent* marked it `[decision]`, even where you settled it by lookup under 7c: establishing a fact records what was true, it does not overturn the reviewer's judgement that the artefact needed an answer. Where every blocking `[decision]` was settled that way, say so plainly when you stop: what you established, that there is nothing for the user to decide, and that you stopped because the reviewer's doubt about the artefact stands.
       - **Otherwise stop and ask**, exactly as step 8 describes. `NEEDS WORK`, or any `[decision]` finding, overrides the instruction to keep going. An autonomy boundary is permission to skip a *routine confirmation*; it is not permission to answer a question that is the user's to answer.
       - **A skipped review cancels unattended mode**: with no review there is no verdict to stand in for the user's judgement, so stop and ask. The two instructions do not compound into "proceed with nothing checked".
+      - **A proposed spec amendment stops the run independently of the verdict.** This is the one stop condition no verdict can express: if step 9 has raised an amendment to `## Spec` that the user has not approved, you may not proceed here, however clean the review came back. The reviewer judges the design against the spec as written, so a clean verdict says nothing about a change to the spec itself. See step 9d.
       - **Proceeding here means implementation may begin** without the user having seen the design. Use the unattended form of the `## Review record` line in step 8, *also* note it in the `## Handoff` section's session summary so a resuming session knows the design is unreviewed by a human without having to look for the record, and say in your report that you proceeded unattended and on whose instruction.
 
    If the reviewer contradicts something the user has already settled, say so rather than quietly re-opening it: the user's decision stands, and the finding is worth a sentence, not a rewrite.
@@ -173,3 +185,17 @@ Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md`
    (Those are the three forms, not three lines to write — use the one that describes this run. The first form carries whichever verdict the review returned; a `VERDICT: READY FOR USER REVIEW` run is recorded the same way, without the trailing count of open questions.)
 
    Implementation is a separate step with no slash command of its own — *do not start implementing without user confirmation*, unless step 7f's unattended gate was satisfied and the agreed autonomy boundary covers implementation as well as design. Passing the gate is permission to proceed *without waiting*; it is not permission to exceed the boundary the user set.
+
+9. **If design work shows the spec itself is wrong, incomplete, or impossible as written, you may amend `## Spec` — but never silently.** This can come up at any point while researching or writing the design (steps 3–6): design legitimately turns up problems the spec did not anticipate — the canonical case is "this cannot be done exactly as specced, but a cheap 99% alternative is X" — and `/feature-design` is not frozen out of acting on that. This step is deliberately separate from steps 7 and 8 above: those two are near-identical to `feature-spec`'s equivalent steps by design, and a spec amendment is a `/feature-design`-only event that has no counterpart there.
+
+   a. Edit `## Spec` to the corrected text.
+
+   b. **Put the amendment to the user for approval**, framed as either "this is uncontroversial, please confirm" or "I think the spec should change, is this acceptable" — whichever the change warrants. If the amendment surfaces while you are still researching or writing the design, raise it as soon as you make it rather than holding it back; if it lands at the same time as the design summary in step 8, fold it into that report instead of asking twice.
+
+   c. **Log the amendment in `## Review record`** once approved — its own line, separate from the three verdict forms in step 8, recording what changed, why, and that the user approved it:
+
+      ```
+      - 2026-07-20 — Spec amended during design, with the user's approval: <what changed and why>.
+      ```
+
+   d. **In unattended mode, a proposed amendment stops the run**, on the same principle as a `[decision]` finding under step 7f — it is a question that is the user's to answer, not a routine confirmation an autonomy boundary can cover. Stop and ask, exactly as step 8 describes, and do not proceed on the amended spec until the user has approved it.

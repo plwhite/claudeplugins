@@ -35,11 +35,37 @@ From a comment on the issue by the reporting lead:
 filters, not only the current page of results. The date in the filename is the
 user's local date at the time of export.
 
+## Spec
+
+The reports page gains a CSV export, so support staff can hand report figures
+to finance without transcribing them by hand.
+
+A single "Export CSV" control on the reports page exports every row matching
+the user's current filters — not just the current page — as a downloaded CSV
+file.
+
+The export must:
+
+- Include exactly the on-screen columns, in the same order, with the same
+  headings.
+- Format dates as ISO 8601 (`YYYY-MM-DD`), not the localised display format,
+  and format numbers unformatted (no thousands separators, no currency
+  symbol) — finance's import step expects both.
+- Name the file `report-<YYYY-MM-DD>.csv`, using the user's local date at the
+  time of export.
+- Never hold the whole export in memory in the browser. The largest tenant has
+  around 200,000 rows, so the export must handle that scale without loading
+  every row into the browser at once.
+
+Out of scope: Excel (`.xlsx`) export, scheduled or emailed exports, and
+exporting anything other than the reports page.
+
 ## Sign-off strategy
 
 - **Testing** — Automated tests for the row-selection and formatting logic
   (filter application, ISO date formatting, unformatted numbers, column order),
-  all passing. Plus one manual export of the largest available test tenant,
+  all passing, and an automated check that a 200,000-row export completes with
+  flat memory use. Plus one manual export of the largest available test tenant,
   confirming the file opens in a spreadsheet with correct values.
 - **Documentation** — User-facing help page section describing the export and
   its column meanings, plus a `NOTES.md` entry recording how the large-export
@@ -51,6 +77,15 @@ user's local date at the time of export.
   finance needs, before the export sub-task is marked complete.
 
 ## Design
+
+### Overview
+
+The reports page gains an "Export CSV" control that calls a new server
+endpoint. The endpoint selects the rows the user's filters match, takes the
+column set from the page's column-definition module, formats each cell,
+serialises the result as CSV, and streams it to the client.
+
+The sections below cover each part of that pipeline in turn.
 
 ### Server-side export
 

@@ -4,7 +4,7 @@ This guide describes how to work through a software project using `devproc`. The
 
 Each feature moves through a lifecycle, with a slash command for each stage:
 
-1. **Specify** (`/feature-spec`) — create the feature, record *what* it must do, and agree its sign-off strategy.
+1. **Specify** (`/feature-spec`) — create the feature, capture what you said as input, write *what* it must do, and agree its sign-off strategy.
 2. **Design** (`/feature-design`) — decide *how* to build it, break it into sub-tasks, and set each sub-task's sign-off criteria.
 3. **Implement** — work through the sub-tasks (no slash command; `/feature-checkpoint` keeps state in sync as you go). A sub-task is complete only when all its sign-off boxes are ticked.
 4. **End** (`/feature-end`) — verify completion, close the feature out, and review the docs.
@@ -25,7 +25,7 @@ This guide describes driving the workflow yourself, one step at a time. You can 
 
 ## Specify a feature
 
-When you have a piece of work to track — from a GitHub issue, a design doc, or your own notes — specify it as a feature. This records *what* the feature must do, without yet deciding how. Specify a feature when you are about to start work on it. You can also specify features that have no backing GitHub issue — common in smaller projects with lighter tracking.
+When you have a piece of work to track — from a GitHub issue, a design doc, or your own notes — specify it as a feature. This captures what you gave it as input, then turns that into a clear statement of *what* the feature must do, without yet deciding how. Specify a feature when you are about to start work on it. You can also specify features that have no backing GitHub issue — common in smaller projects with lighter tracking.
 
 - With a description:
 
@@ -57,7 +57,16 @@ When you have a piece of work to track — from a GitHub issue, a design doc, or
 
   Markdown or plain-text material — even a couple hundred lines of it — is copied inline into `## Requirements`, exactly as issue content is. Only genuinely un-inlinable artefacts (Word documents, screenshots, other binaries) are instead copied into `features/plans/<slug>/` and linked from `## Requirements`. Either way, once the material is captured it is deleted from `features/tmp` (`README.md` stays): the plan becomes the only durable copy, since `features/tmp` is a hand-off channel into the spec, not a place to track requirements.
 
-This adds an entry to `features/PENDING.md` with a slug (e.g. `[improve-error-messages]`) and creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section holds the captured specification so you never need to re-open the issue.
+This adds an entry to `features/PENDING.md` with a slug (e.g. `[improve-error-messages]`) and creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section holds what was captured so you never need to re-open the issue.
+
+### Requirements and Spec are different jobs
+
+The plan file splits *input* from *what the feature must do* into two sections, because a single section cannot serve both well:
+
+- **`## Requirements`** is the input, captured faithfully — the issue or description or `features/tmp` material described above, kept as close to what you actually said as possible. It is deliberately **not** rewritten for readability: reorganising your own words to read better is exactly how their meaning gets lost.
+- **`## Spec`** is what the feature must do, written by Claude from that input to be clear on its own — followable by someone with no background on the feature, per the readability standard `features/FEATUREMODEL.md` defines. It resolves ambiguities in `## Requirements` and fills any gaps with proposals, each one marked so you can see what you are being asked to accept rather than mistaking it for something you already said.
+
+A short description is still requirements. If you give `/feature-spec` one line — "add logging to the foo function" — `## Requirements` records that line verbatim, and `## Spec` is built out from it, almost entirely as marked proposals. A small feature is not blocked or penalised for having little input; it is judged on whether those proposals need your judgement, the same as any other spec.
 
 As part of specifying, Claude proposes a **sign-off strategy** — the quality bar for each of the five sign-off categories (testing, documentation, code review, docs review, user review) across the whole feature. Docs review is deliberately its own category, separate from writing the documentation: like code review it is a check of what was done, and it is the sign-off most routinely missed. The canonical statement of the model — categories, checkbox convention, auditability — lives in the `### Sign-off criteria` section of `features/FEATUREMODEL.md`, which your project gains from `/feature-init`. For example: 100% test coverage versus basic tests versus none; full production docs versus internal notes only. It is recorded in the plan file's `## Sign-off strategy` section. Skipping a category is fine, but it is a deliberate choice made here where you can comment on it — not something that quietly slips. This is the moment to set the standard the feature will be held to.
 
@@ -84,7 +93,9 @@ When you are ready to work on a feature, design it: Claude decides *how* it will
   /feature-design "issue 12"
   ```
 
-Claude reads the captured specification in the plan file (fetching the GitHub issue only if it is missing), researches the relevant code, and fleshes out the design and sub-task breakdown in `features/plans/<slug>.md`.
+Claude reads `## Requirements` and `## Spec` in the plan file, researches the relevant code, and fleshes out the design and sub-task breakdown in `features/plans/<slug>.md`. If either section is missing, `/feature-design` stops and tells you to run `/feature-spec`. `## Design` must open with an overview of how the design works as a whole, before any detailed section — followable by someone who has read only `## Requirements` and `## Spec`, not someone who sat through the design conversation. This is the same readability standard `## Spec` is held to, defined once in `features/FEATUREMODEL.md`.
+
+Design work sometimes turns up a problem with the spec itself that `/feature-spec` did not anticipate — a requirement that turns out to be impossible as written, or one where a cheap alternative beats the literal ask. `/feature-design` can amend `## Spec` to fix this, but never without telling you: every amendment is put to you for approval before the design proceeds on it, and once approved it is logged in the plan file's `## Review record` alongside the amendment's reason. If you are running unattended, a proposed amendment stops the run and waits for your answer, the same as any other open question.
 
 Each sub-task is given its own **sign-off criteria** — checkboxes for the categories that apply to it (the relevant subset of testing / documentation / code review / docs review / user review), derived from the sign-off strategy agreed at spec time. These appear under the sub-task in the plan file, e.g.:
 
@@ -110,11 +121,11 @@ Before the design reaches you, the `feature-design-reviewer` agent reads it — 
 
 Both `/feature-spec` and `/feature-design` hand their output to a review agent before showing it to you — `feature-spec-reviewer` and `feature-design-reviewer` respectively. The point is that your attention goes on judgement calls rather than on catching vagueness, so that reviewing a spec or design is quicker and needs less back-and-forth.
 
-Each agent checks that the artefact is complete and clear, that its delivery criteria are explicit and auditable, and that anything blocking the next stage is surfaced. It ends with a one-line verdict: `READY FOR USER REVIEW` or `NEEDS WORK`.
+Each agent checks that the artefact is complete and clear — including against the readability standard `features/FEATUREMODEL.md` defines, the same one `## Spec` and `## Design` are written to — that its delivery criteria are explicit and auditable, and that anything blocking the next stage is surfaced. It ends with a one-line verdict: `READY FOR USER REVIEW` or `NEEDS WORK`.
 
 What happens to a finding depends on how it is marked, not on how severe it is:
 
-- **`[rewrite]`** — Claude fixes it before you see the artefact. Vague wording, a criterion with no clear yes/no, a requirement no sub-task covers.
+- **`[rewrite]`** — Claude fixes it before you see the artefact. Vague wording, a criterion with no clear yes/no, a requirement no sub-task covers, an artefact that buries its point or assumes context a reader would not have.
 - **`[decision]`** — it comes to you as a question. Claude will not resolve it by choosing: a plausible guess is worse than an open question, because nobody knows it was made.
 
 You are told what the review changed, any questions it raised, and the verdict.
@@ -124,6 +135,8 @@ You are told what the review changed, any questions it raised, and the verdict.
 - **Reviewed (default).** The agent reviews, Claude fixes what it can, and the artefact is presented to you with the questions and the verdict. You still sign off.
 - **Skipped.** Add an explicit instruction — `--no-review`, or "skip review" — and no agent runs. The report says so plainly.
 - **Unattended.** Tell Claude to run without checking in ("don't stop for me", "run it unattended"), and the verdict stands in for your sign-off. It proceeds **only** on `READY FOR USER REVIEW` with no `[decision]` finding; a `NEEDS WORK` verdict or a single question stops it and asks you regardless. Asking to skip the review *cancels* unattended mode rather than combining with it — with nothing checked, there is no verdict to stand in for your judgement.
+
+    - *A second stop, at the design stage only, which no verdict can express:* if design work shows the **spec itself** needs changing, `/feature-design` stops for your approval of the amendment however clean the review came back. The reviewer judges the design against the spec as written, so it never opines on changing the spec — a clean verdict is therefore not permission to proceed past an unapproved amendment.
 
 In practice unattended runs stop more often at the spec stage than at the design stage, because a spec written from a description usually leaves at least one thing worth asking.
 

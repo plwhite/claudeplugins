@@ -2,8 +2,8 @@
 
 **Flaw under test:** delivery criteria. The sub-task sign-off boxes are vague,
 missing, or weaker than the agreed strategy. The `## Design` section is the
-clean baseline and must not be faulted; `## Requirements` and `## Sign-off
-strategy` are context and are not reviewed.
+clean baseline and must not be faulted; `## Requirements`, `## Spec`, and
+`## Sign-off strategy` are context and are not reviewed.
 
 ## Required findings
 

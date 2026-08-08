@@ -6,10 +6,11 @@ argument-hint: <feature description>
 
 Create a new feature and capture its specification. This is the first step of
 the feature lifecycle (`feature-spec` → `feature-design` → implement →
-`feature-end`): it sets up the feature's tracking entry, records *what* the
-feature must do, and agrees the feature's **sign-off strategy** (the quality bar
-per sign-off category, as defined in `features/FEATUREMODEL.md` under `### Sign-off
-criteria`), leaving *how* to `/feature-design`.
+`feature-end`): it sets up the feature's tracking entry, captures the input as
+`## Requirements` and writes `## Spec` — what the feature must do — and agrees
+the feature's **sign-off strategy** (the quality bar per sign-off category, as
+defined in `features/FEATUREMODEL.md` under `### Sign-off criteria`), leaving
+*how* to `/feature-design`.
 
 Before proceeding, check that `features/FEATUREMODEL.md` exists **and** that
 `CLAUDE.md` loads it via a live import — an un-backticked `@features/FEATUREMODEL.md` line in ordinary prose, outside any fenced code block.
@@ -24,7 +25,7 @@ Steps:
    a. Run `git remote -v` and parse the owner/repo from the fetch URL (handles both HTTPS `https://github.com/owner/repo.git` and SSH `git@github.com:owner/repo.git`).
    b. For a numeric reference: run `gh issue view N --repo owner/repo --comments` to fetch the title, body, and comments. Just run it — `gh` authenticates from `GH_TOKEN`, which the environment is expected to provide. If this fails **stop and ask the user for assistance**.
    c. For a natural-language description: run `gh issue list --repo owner/repo --search "keywords" --limit 10 --json number,title,body` and select the best match, then fetch its comments with `gh issue view N --repo owner/repo --comments`.
-   d. Use the issue title as the feature title. Write one or two sentences summarising what the issue covers for the `features/PENDING.md` entry — do not put the full issue body there. Include the issue number as a reference (e.g. `See #6.`). The full content goes into the spec (step 6).
+   d. Use the issue title as the feature title. Write one or two sentences summarising what the issue covers for the `features/PENDING.md` entry — do not put the full issue body there. Include the issue number as a reference (e.g. `See #6.`). The full content goes into `## Requirements` (step 6).
 
 2. **Check `features/tmp` for requirements material.** Alongside a GitHub issue and a one-line `$ARGUMENTS` description, a user can hand over a whole body of requirements material — notes, one or more documents (including link or index pages), screenshots — by dropping it in `features/tmp/` — either pointing `/feature-spec` at it explicitly or letting it notice on its own. This is the third input route.
    a. **Explicitly pointed at it.** If the user's request references `features/tmp` ("use what's in features/tmp", "I've left the spec there"), treat everything in the directory except `README.md` as requirements material for this feature. If the user referenced `features/tmp` but it does not exist, or holds nothing beyond `README.md`, stop and tell the user — do not silently proceed with no material.
@@ -47,14 +48,18 @@ Steps:
 
 Keep this entry concise — no implementation detail, no sub-tasks. The full specification goes in the plan file.
 
-6. Always create the plan file `features/plans/<slug>.md` with a `## Requirements` section holding the specification, a `## Sign-off strategy` section (see step 7), and a `## Design` placeholder that `/feature-design` will flesh out:
+6. Always create the plan file `features/plans/<slug>.md` with a `## Requirements` section holding the input, a `## Spec` section holding what the feature must do, a `## Sign-off strategy` section (see step 7), and a `## Design` placeholder that `/feature-design` will flesh out:
 
 ```markdown
 # <Feature title> — Feature Plan
 
 ## Requirements
 
-<specification content — see below>
+<the input, captured faithfully — see below>
+
+## Spec
+
+<what the feature must do, written to stand alone against `### Readability` — see below>
 
 ## Sign-off strategy
 
@@ -71,14 +76,19 @@ Keep this entry concise — no implementation detail, no sub-tasks. The full spe
 
    (No `## Handoff` section yet — `/feature-design` adds it when it takes the feature into progress.)
 
-   Populate the `## Requirements` section — the specification of *what* the feature must do — as follows:
+   Populate the `## Requirements` section — the input, captured faithfully — as follows:
    - **If the feature came from a GitHub issue:** copy the **entire** issue description verbatim (nothing in it should be assumed irrelevant), then add any comment that bears on design or requirements (e.g. "we should use tool X", "we must ensure Y holds"). Omit comments that are mere reactions or scheduling chatter ("great idea", "let's wait until next month"). Attribute the issue (e.g. "From issue #14 (verbatim):"). The objective is that a later session can pick up the feature from this file alone, without re-reading the issue.
    - **If the user supplied detailed requirements directly:** record them here verbatim or lightly tidied.
    - **If step 2 found requirements material in `features/tmp`:** capture it as follows, according to its type:
      - Markdown or plain-text content — including a document of a couple hundred lines — is copied **inline** into `## Requirements`, lightly tidied but faithful, exactly as issue content is above. Inlining is the default; do not copy a file into the plan directory just because it arrived as a file.
      - Only genuinely un-inlinable artefacts — Word documents, screenshots, other binaries, anything that cannot become plain text without losing information — are instead copied into a new `features/plans/<slug>/` subdirectory and **linked** from `## Requirements` (e.g. `See [wireframe.png](<slug>/wireframe.png).`). This is a narrow, deliberate exception for material that cannot be inlined, not a convenience for large text.
      - Once material is captured this way — inlined or copied into `features/plans/<slug>/` — **delete it from `features/tmp`**, leaving `README.md` in place, so the plan is the only durable copy.
-   - **If there is nothing beyond the one-or-two-sentence PENDING.md entry:** write `*No requirements beyond the summary in `features/PENDING.md`; design to be determined by `/feature-design`.*`
+   - **If the user gave only a short description:** record that description here, verbatim, as the input it is. A one-line description is still requirements — the user stated what they wanted, and the feature exists because they said so. Do not write a placeholder saying there are no requirements: that discards the only input there is, and then leaves the spec looking empty to everyone downstream. Note that the description is all that was supplied, so a later reader knows nothing further was said, and let `## Spec` do the work of turning it into a full statement.
+
+   Populate the `## Spec` section — what the feature must do, written to stand alone: clear to a reader with no background on the feature, per the `### Readability` standard defined in `features/FEATUREMODEL.md`. Apply that standard rather than restating it.
+   - **Divides labour with `## Requirements`.** `## Requirements` stays the input, captured faithfully above, and is **not** required to meet `### Readability` — reorganising the user's own words to read better is how their meaning gets lost. `## Spec` carries the readability obligation instead.
+   - **Clarifies and fills gaps.** It resolves ambiguities in `## Requirements` and fills gaps with explicit proposals, marking each proposal as such (e.g. prefixed "Proposed:") so the user can see exactly what they are being asked to accept, rather than mistaking a proposal for a settled requirement. Where `## Requirements` is complete and unambiguous, `## Spec` overlaps heavily with it — but is still written, and typically goes a little deeper.
+   - **Is always written, never a placeholder.** Where `## Requirements` is thin — including the short-description case just above — `## Spec` is still written in full, working out from what the user said and marking as proposals whatever it fills in. A small, well-understood feature can produce a complete spec this way, and there is nothing wrong with that: brevity of input is not a defect to be flagged, only a reason more of the spec is proposal than record.
 
 7. Populate the `## Sign-off strategy` section — the quality bar the feature will be held to, which `/feature-design` later turns into per-sub-task sign-off criteria. The sign-off model — the standard categories, the auditability rule, and the rule that every review sign-off names its performer (agent or user) — is defined in `features/FEATUREMODEL.md` under `### Sign-off criteria`. Apply that model rather than restating or reinventing it. For this feature:
 
@@ -114,7 +124,7 @@ Keep this entry concise — no implementation detail, no sub-tasks. The full spe
 
    If the reviewer contradicts something the user has already settled, say so rather than quietly re-opening it: the user's decision stands, and the finding is worth a sentence, not a rewrite.
 
-   Note that a feature specified from a bare one-line description will not reach `READY FOR USER REVIEW`: with no requirements beyond the summary, the reviewer is right to rate it blocked. Unattended mode will therefore stop and ask, which is the intended behaviour — do not water down the spec to manufacture a passing verdict.
+   A feature specified from a short description is not blocked for that reason alone. A one-line description is requirements, `## Spec` works out from it, and a small well-understood feature can legitimately reach `READY FOR USER REVIEW` and proceed unattended — the gate exists to stop work no human sanctioned, not to impose a minimum length on the sanction. What blocks such a spec is the same thing that blocks any other: a proposal resting on a judgement the user must make is a `[decision]` finding, and one of those is enough to stop. Do not manufacture a passing verdict by watering the spec down, and equally do not manufacture questions to justify caution about a feature that is simply small.
 
 9. Confirm the new feature and its spec to the user, and **present the proposed sign-off strategy for them to agree or adjust** — this is the user's chance to raise or relax the quality bar before design. Update the `## Sign-off strategy` section to match what they settle on.
 

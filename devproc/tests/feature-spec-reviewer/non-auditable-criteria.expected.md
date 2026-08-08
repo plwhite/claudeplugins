@@ -2,7 +2,8 @@
 
 **Flaw under test:** delivery criteria. The `## Sign-off strategy` entries are
 not auditable, and three categories are silently absent. The `## Requirements`
-section is the clean one from `control.md` and must not be faulted.
+and `## Spec` sections are the clean ones from `control.md` and must not be
+faulted.
 
 ## Required findings
 
@@ -24,8 +25,9 @@ change is user-facing and the data goes to finance.
 
 ## Must not report
 
-- Any **BLOCKING or MAJOR** finding against `## Requirements`, which is the
-  clean control text. MINOR findings and SUGGESTIONs there are tolerated.
+- Any **BLOCKING or MAJOR** finding against `## Requirements` or `## Spec`,
+  which are the clean control text. MINOR findings and SUGGESTIONs there are
+  tolerated.
 - Any finding faulting the absence of a design.
 
 **Expected verdict:** `NEEDS WORK`

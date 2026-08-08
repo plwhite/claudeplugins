@@ -54,8 +54,9 @@ TaskCreate/TaskUpdate/TaskList, SendMessage, TaskStop, TeamDelete) and the
 This project tracks work as **features**: each has an entry in one of the
 status-split list files under `features/` (`CURRENT.md`, `PENDING.md`,
 `DEFERRED.md`, `COMPLETED.md`) and a plan in `features/plans/<slug>.md` with a
-Handoff section, a Sign-off strategy section, a Design section, and a numbered
-sub-task list in which each sub-task carries its sign-off criteria as checkboxes.
+Handoff section, a Requirements section, a Spec section, a Sign-off strategy
+section, a Design section, and a numbered sub-task list in which each sub-task
+carries its sign-off criteria as checkboxes.
 The feature in progress is in `features/CURRENT.md`. Progress is saved by running
 `/feature-checkpoint` after each sub-task; a feature is closed with
 `/feature-end`. A sub-task counts as done only when all of its sign-off boxes are
@@ -84,7 +85,11 @@ worked on:
   **unattended**, and the reviewer's verdict stands in for the user's sign-off. That
   applies only on a `READY FOR USER REVIEW` verdict with no finding marked
   `[decision]`; anything else stops and asks, which is the same rule as your own
-  "always pause for genuine user decisions" below. Every run records what happened
+  "always pause for genuine user decisions" below. At the design stage there is a
+  second stop the verdict cannot express: if `/feature-design` proposes an
+  amendment to `## Spec`, that stops the run for the user's approval however clean
+  the review came back — the reviewer judges the design against the spec as
+  written, so it never opines on changing the spec itself. Every run records what happened
   in the plan file's `## Review record`, so you can see at a glance which artefacts
   a human has actually read.
 - If a feature is already in progress, read `features/CURRENT.md` to find it and

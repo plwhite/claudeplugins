@@ -45,6 +45,6 @@ reviewers rank them differently.
   such — they are the clean baseline wording. Reporting that a criterion cannot
   be *met* because of the ordering flaw is fine; faulting how it is *worded* is
   not.
-- Any finding faulting `## Requirements` or `## Sign-off strategy`.
+- Any finding faulting `## Requirements`, `## Spec`, or `## Sign-off strategy`.
 
 **Expected verdict:** `NEEDS WORK`

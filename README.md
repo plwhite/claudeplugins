@@ -38,6 +38,6 @@ This repository contains descriptions and tooling for a set of best practices us
 
 | Plugin | Description |
 |--------|-------------|
-| [devproc](devproc/README.md) | Feature lifecycle, workflow orchestration, and code review: create, plan, implement, review, and close features |
+| [devproc](devproc/README.md) | Feature lifecycle, workflow orchestration, code review, documentation review, and internal docs hygiene: spec, design, implement, review, and close features |
 
 Plugins are registered in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json). See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines. Each entry names the plugin and points to its source directory. A new plugin needs both an entry here and its own directory with a `.claude-plugin/plugin.json` manifest.
