@@ -79,11 +79,18 @@ section, rather than `## Spec`, is the clean/dirty line for that case.
 
 ## Running the tests
 
-For each case, run the agent over the fixture. **Invoke it through the CLI from
-the repository root**, not through the in-session `Agent` tool:
+To run the whole suite, use the regression harness:
+`../harness/run.sh feature-spec-reviewer` (see
+[`../harness/README.md`](../harness/README.md)). It issues the invocations
+documented below and writes each case's output to `harness/out/`. That path is
+relative to this directory; the script itself can be run from anywhere.
+
+To run a single case by hand, or to work interactively, invoke the agent
+directly. **Use the CLI from the repository root**, not the in-session `Agent`
+tool:
 
 ```
-claude -p --agent feature-spec-reviewer 'Review devproc/tests/feature-spec-reviewer/<case>.md'
+claude -p --agent feature-spec-reviewer 'Review tests/devproc/feature-spec-reviewer/<case>.md'
 ```
 
 The CLI route matters for a regression run specifically. In-session `Agent`
@@ -108,7 +115,8 @@ the agent generalise from earlier cases, which is not what is being tested.
 
 ## When the agent changes
 
-Re-run every case. These fixtures exist so that a later rewording of the agent
+Re-run every case — `../harness/run.sh feature-spec-reviewer` does this in one
+command. These fixtures exist so that a later rewording of the agent
 can be checked against the behaviour it was originally built to have — if a
 change makes a case fail, either the change is wrong or the expectation needs to
 be deliberately revised, and revising it is a decision to record rather than a

@@ -36,12 +36,16 @@ The flaw is recorded **only** in `<case>.expected.md`. Nothing inside
 
 ## Running the tests
 
+The `../harness/` script does **not** cover this suite — its cases are fixture
+directories reviewed as a stand-in repository root, not single `.md` files, and
+need the different invocation shape below. Run these cases by hand.
+
 For each case, point the agent at the fixture directory as the repository
 root to review:
 
 ```
 Run the internal-docs-reviewer agent over
-devproc/tests/internal-docs-reviewer/<case>/
+tests/devproc/internal-docs-reviewer/<case>/
 as if it were the repository root — Glob it for CLAUDE.md, NOTES.md,
 nested CLAUDE.md files, and .claude/rules/*.md within that directory only.
 ```

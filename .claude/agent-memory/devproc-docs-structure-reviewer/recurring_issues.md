@@ -6,6 +6,45 @@ type: project
 
 (Prior history retained — see git log for older entries.)
 
+## Thirty-sixth review (2026-08-12) — move-tests-out-of-plugin (#50) fix-verification pass; CONVERGED (9→0 carried)
+
+All nine 35th-review findings verified RESOLVED, each consistently with surrounding conventions:
+1. MAJOR distribution-boundary refs: `devproc/README.md` L187/197/213 now all read "…live in `tests/devproc/<agent>/` **in the plugin's source repository; they are not shipped with the installed plugin**". Uniform phrasing across all three.
+2. MAJOR missing index: `tests/README.md` created (see project_structure.md for its shape). Root README row + CLAUDE.md both point at it.
+3. MAJOR one-directional harness↔suite linkage: both plan-file suite READMEs now OPEN `## Running the tests` with the harness command + a link to `../harness/README.md`; spec suite's `## When the agent changes` names the one-liner too; design suite defers to the spec README by its standing "read that README first" rule (legitimate, not a gap); internal-docs-reviewer README states the exclusion + why.
+4–9. README tests row (harness + 3 suites named), COMPLETED.md/plan H1 renamed to "Move tests out of the plugin directory", harness `## Prerequisites`, history→trailing `## Background` (+git-ignored note), CLAUDE.md namespacing rationale + maintenance rule, CONTRIBUTING.md bullet — all applied.
+
+ACCEPTED the user's refusal of the one dismissed suggestion (annotating the `internal-docs-prune` COMPLETED.md entry with "since moved to tests/devproc/"). Reasoning is sound and I should NOT re-raise it: `features/COMPLETED.md` self-declares as a historical record ("described to reflect what was actually developed") and its sentences are past-tense build reports, so `devproc/tests/` there is a true statement about what was built. **This is the distinguishing test to apply in future**: NOTES.md-class drift (31st review) is a defect because NOTES.md presents itself as *current* findings; COMPLETED.md-class references are not, because the file frames itself as history. Record the frame of the containing document, not just the tense of the sentence.
+
+New findings this pass (all MINOR/SUGGESTION, no CRITICAL/MAJOR):
+- MINOR: `tests/README.md` `## Start here` says "the two plan-file suites" before the Contents table introduces that there are three suites / what "plan-file" means — forward reference in the first actionable section.
+- MINOR: four different working-directory assumptions for `run.sh` across four docs; only harness/README.md says the script is cwd-independent.
+- MINOR: `devproc/README.md` L213 "see its `README.md`" — ambiguous antecedent (nearest noun is "The regression harness", intended referent is the suite).
+- MINOR: `CONTRIBUTING.md` bullet implies every reviewer agent under `devproc/agents/` has a fixture suite; only 3 of 7 do (`docs-structure-reviewer` and the four `code-review-*` have none).
+- SUGGESTION: harness README Prerequisites hardcodes "15 cases (7 spec + 8 design)" in a doc whose selling point is that the case list is never hardcoded; mitigated by "currently" + "run `-n` first".
+- SUGGESTION: plan Handoff is terminal overall but its **Session summary** field still reads "Sub-task 3 complete" with the terminal statement on a separate line below — the recurring stale-Handoff class is now mostly fixed but not in that one field.
+
+## Thirty-fifth review (2026-08-12) — move-tests-out-of-plugin (#50) close-out; this IS the /feature-end docs-review gate
+
+Scope: `devproc/tests/` → `tests/devproc/` (58 files, 3 fixture suites) out of the plugin distribution unit; new `tests/devproc/harness/` (run.sh + README + .gitignore) replacing three ad-hoc git-ignored `features/tmp/regression/` scripts; new root `CLAUDE.md` `## tests directory` section + root `README.md` `tests/` table row; 3 `devproc/README.md` agent-reference lines + 2 NOTES.md refs + 3 suite-README self-refs repointed.
+
+Verified STRONG: path sweep is complete — repo-wide `devproc/tests` returns only historical plan files, agent memory, one deliberately-historical NOTES.md entry (L1092-1104, correctly framed as "superseded, do not run"), and `features/COMPLETED.md` entries. NOTES.md L539/L578 correctly repointed. Close-out state correct (CURRENT.md empty, COMPLETED.md dated entry, CLAUDE.md single completion line).
+
+NEW RECURRING CLASS — **"distribution-boundary reference"**: `devproc/README.md` L187/197/213 say "Test fixtures live in `tests/devproc/<agent>/`". `devproc/` IS the shipped tree, so a consumer's installed plugin now carries a README naming a sibling path that exists only in the source repo. Before the move the path at least existed inside what they installed. Watch for this whenever something moves *out of* `devproc/` but is still named by a doc *inside* it. Rated MAJOR.
+
+Other findings (full list in the review output):
+- MAJOR: no `tests/README.md` or `tests/devproc/README.md` — README.md links bare `[tests/](tests/)`, so the landing path bottoms out in a directory listing with no index. `features/` sets the "bare dir link" precedent but its filenames are self-describing; `tests/` has four peer subdirs where one (`harness/`) is not a suite.
+- MAJOR: harness↔suite linkage is **one-directional**. `harness/README.md` links all three suite READMEs and defers pass rules to them; NONE of the three suite READMEs mentions the harness. Both "## Running the tests" and "## When the agent changes" sections tell a reader to hand-run every case. The word "harness" appears nowhere in `README.md`, `devproc/README.md`, or any suite README.
+- MINOR: README.md `tests/` row omits the harness AND every sub-path (its neighbour `features/` row names `plans/`, `FEATUREMODEL.md`, `tmp/`); CLAUDE.md's section names the harness. Landing page and agent map disagree on what `tests/` contains.
+- MINOR: `features/COMPLETED.md` L8 heading = issue title verbatim, "### Tests are under devproc/tests" — now a false-sounding present-tense location claim, and the exact string a maintainer greps for. Precedent is mixed (some headings are problem statements, some imperative).
+- MINOR: harness/README.md has no prerequisites section (needs `claude` on PATH + auth; run.sh checks PATH at L170 but the doc never says so) and no cost/duration statement before the copy-paste block that fires 15 agent invocations at up to 900s.
+- MINOR: harness/README.md paragraph 2 = history of the three replaced scripts, placed above `## Usage` (flow interruption; belongs in a trailing `## Background`). Also cites `features/tmp/regression/` without noting it is git-ignored and absent from a clean checkout.
+- MINOR (recurring, ~5th): plan Handoff stale post-close — `features/plans/move-tests-out-of-plugin.md` L7-8 still "Sub-task 4 not yet started / First action: Begin Sub-task 4" while Sub-task 4's user-review box is `[x]`.
+- SUGGESTION: CLAUDE.md `## tests directory` lists `tests/devproc/*` children under "Location: `tests/`" (skips the intermediate level, unlike its `setup-files`/`Container mode` neighbours) and never says why the `devproc/` layer exists (room for other plugins — rationale only in the plan).
+- SUGGESTION: CONTRIBUTING.md "Update documentation when behavior changes" has no counterpart telling a contributor who edits an agent to run its suite.
+
+No CRITICAL. Carryover: stale unprefixed `.claude/agent-memory/docs-structure-reviewer/` tree still on disk.
+
 ## Thirty-fourth review (2026-08-12) — targeted re-audit confirming the three 33rd-review MINOR fixes
 
 Scope: standalone verification pass (no feature in progress — CURRENT.md/PENDING.md both empty), confirming three MINOR findings from the 33rd review were fixed correctly and checking for further drift.

@@ -4,7 +4,7 @@
 
 No feature in progress.
 
-`clear-specs-and-designs` completed 2026-08-12 — split the plan file's requirements into `## Requirements` (input) and `## Spec` (what the feature must do), required designs to open with an overview, and added a canonical `### Readability` standard enforced by a MAJOR `[rewrite]` clarity criterion in both reviewer agents (#57). See `features/COMPLETED.md` for detail.
+`move-tests-out-of-plugin` completed 2026-08-12 — moved the reviewer-agent test fixtures from `devproc/tests/` to `tests/devproc/`, out of the shipped plugin directory, swept the live references, and promoted the regression harness into `tests/devproc/harness/` as a single script that derives its case list from the fixtures on disk (#50). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -66,6 +66,22 @@ Contents:
 - `setup-files/README.md` — destination, purpose, and back-link to setup.md per file
 
 When adding a new file here, also add an entry to `setup-files/README.md` and a "copy from `/some/path/claudeplugins/setup-files/...`" instruction in `docs/setup.md`.
+
+## tests directory
+
+Location: `tests/`
+
+Test fixtures for the `devproc` plugin's reviewer agents, deliberately kept outside the shipped `devproc/` directory so the plugin a consumer installs carries no test material. Maintainer-only; a consumer of the plugin has no use for it. Tests are namespaced by what they test — `tests/devproc/` holds the `devproc` plugin's, leaving room for other areas.
+
+Contents:
+- `tests/devproc/feature-spec-reviewer/` — fixtures for `feature-spec-reviewer`
+- `tests/devproc/feature-design-reviewer/` — fixtures for `feature-design-reviewer`
+- `tests/devproc/internal-docs-reviewer/` — fixtures for `internal-docs-reviewer`
+- `tests/devproc/harness/` — `run.sh`, a regression harness that runs the `feature-spec-reviewer` and `feature-design-reviewer` suites (not `internal-docs-reviewer`, which needs a different invocation shape) and writes output to its git-ignored `out/`
+
+Each suite pairs deliberately flawed inputs with recorded `.expected.md` outputs, and carries its own `README.md` explaining how to run it. `tests/README.md` indexes the area.
+
+When adding a suite here, give it a `README.md`, add a bullet above, add a row to `tests/README.md`, and check whether `tests/devproc/harness/run.sh` can cover it.
 
 ## Container mode
 

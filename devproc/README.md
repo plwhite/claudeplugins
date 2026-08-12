@@ -184,7 +184,7 @@ Reviews a feature specification — the `## Spec` and `## Sign-off strategy` sec
 
 Findings are classified BLOCKING / MAJOR / MINOR / SUGGESTION, and each is marked `[rewrite]` (the calling skill can fix it by rewording) or `[decision]` (it needs an answer from the user). Output ends with an explicit `VERDICT: READY FOR USER REVIEW` or `VERDICT: NEEDS WORK` — ready only when there are no BLOCKING and no MAJOR findings. It never modifies files.
 
-Invoked automatically at the end of `/feature-spec`, before the spec is presented. Test fixtures for the agent live in `devproc/tests/feature-spec-reviewer/`.
+Invoked automatically at the end of `/feature-spec`, before the spec is presented. Test fixtures for the agent live in `tests/devproc/feature-spec-reviewer/` in the plugin's source repository; they are not shipped with the installed plugin. Run the suite with `tests/devproc/harness/run.sh feature-spec-reviewer`.
 
 ---
 
@@ -194,7 +194,7 @@ Reviews a feature design and its sub-task plan — the `## Design` and `## Sub-t
 
 Findings and verdict use the same scheme as `feature-spec-reviewer`: BLOCKING / MAJOR / MINOR / SUGGESTION, each marked `[rewrite]` or `[decision]`, ending in `VERDICT: READY FOR USER REVIEW` or `VERDICT: NEEDS WORK`. It never modifies files, and does not propose a replacement design of its own.
 
-Invoked automatically at the end of `/feature-design`, before the design is presented. Test fixtures live in `devproc/tests/feature-design-reviewer/`.
+Invoked automatically at the end of `/feature-design`, before the design is presented. Test fixtures live in `tests/devproc/feature-design-reviewer/` in the plugin's source repository; they are not shipped with the installed plugin. Run the suite with `tests/devproc/harness/run.sh feature-design-reviewer`.
 
 ---
 
@@ -210,7 +210,7 @@ Reviews a repository's internal, Claude-facing documentation — root and nested
 
 Every finding carries an exact anchor, a gating class (`redundant` / `stale` / `judgment`), and an action (`delete` / `move` → destination / `condense`) — the contract `/internal-docs-prune` parses to decide what to apply automatically and what to escalate. `redundant` findings are always `delete` (the content already exists at its canonical source). It never modifies files itself, and it is stateless: it re-reports every borderline `judgment` call on each run, leaving the skill to suppress those already decided.
 
-Invoked by `/internal-docs-prune`. Test fixtures live in `devproc/tests/internal-docs-reviewer/`.
+Invoked by `/internal-docs-prune`. Test fixtures live in `tests/devproc/internal-docs-reviewer/` in the plugin's source repository; they are not shipped with the installed plugin. The regression harness does not cover this suite — see `tests/devproc/internal-docs-reviewer/README.md` for how to run these cases by hand.
 
 ---
 

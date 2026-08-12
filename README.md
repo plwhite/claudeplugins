@@ -33,6 +33,7 @@ This repository contains descriptions and tooling for a set of best practices us
 | [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |
 | [features/](features/) | Feature tracking: current, pending, deferred, and completed features, with per-feature plans in `features/plans/`, the installed feature-model text in `features/FEATUREMODEL.md` (refreshed from the plugin by `/feature-init`), and a `features/tmp/` staging area for requirements input |
 | [setup-files/README.md](setup-files/README.md) | Files copied into place during setup (`.claudeignore`, git-write hook): destination and purpose |
+| [tests/README.md](tests/README.md) | Maintainer test fixtures for the `devproc` plugin's reviewer agents, kept outside the shipped plugin directory: three suites under `tests/devproc/`, each with its own `README.md`, plus a regression harness in `tests/devproc/harness/` |
 
 ## Plugins
 
