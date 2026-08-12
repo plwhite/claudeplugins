@@ -11,6 +11,7 @@ If you’d like to propose a change, it helps to:
 - Keep PRs small and focused.
 - Explain the motivation and any trade-offs.
 - Update documentation when behavior changes.
+- If you change `feature-spec-reviewer`, `feature-design-reviewer`, or `internal-docs-reviewer` under `devproc/agents/`, re-run its fixture suite — see [tests/README.md](tests/README.md). The other agents have no fixture suite.
 
 ## Issues
 

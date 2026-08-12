@@ -536,7 +536,7 @@ reviews a *set* of files together — some checks (a `CLAUDE.md` status entry
 duplicating `features/COMPLETED.md`, a `NOTES.md` claim contradicted by a
 config file, a `.claude/rules/*.md` claim contradicted by the hook it
 describes) only make sense with more than one file present. So each case
-under `devproc/tests/internal-docs-reviewer/` is a small fixture *directory*
+under `tests/devproc/internal-docs-reviewer/` is a small fixture *directory*
 (`<case>/`, using real relative paths like `CLAUDE.md`, `features/COMPLETED.md`,
 `.claude/rules/...`) paired with a top-level `<case>.expected.md`, and the
 agent is pointed at the directory as if it were the repository root.
@@ -575,7 +575,7 @@ reviewer's *known* findings, taken verbatim from its fixtures'
 `.expected.md` files, as the input to the skill's application steps (Step 4
 `redundant`/`stale` auto-apply, Step 5 `judgment` escalation, the Step 4
 `move` write→verify→remove ordering), executed by hand against **copies of
-the fixtures under `/tmp`**, never against `devproc/tests/` or real repo
+the fixtures under `/tmp`**, never against `tests/devproc/` or real repo
 docs.
 
 What each scenario proved:
@@ -1088,3 +1088,17 @@ agent was killed once its in-session twin reported, which is the right move,
 but only because the duplication was noticed. The fourth agent's CLI fallback
 is what actually produced the architectural review, so the fallback strategy
 was still correct — it was the diagnosis that was premature, not the response.
+
+## `features/tmp/regression/` harness scripts are superseded, not just stale (`move-tests-out-of-plugin`)
+
+`features/tmp/regression/run.sh`, `runall.sh`, and `rerun.sh` — a leftover,
+git-ignored regression harness from `clear-specs-and-designs` (#57) — each
+hardcode `devproc/tests/${suite}/${case}.md` in the prompt string passed to
+`claude -p --agent`, a path that no longer exists once `move-tests-out-of-plugin`
+relocated the fixtures to `tests/devproc/`. That feature's requirement 6
+promoted the harness into `tests/devproc/harness/run.sh` — one script, deriving
+its case list from the fixtures on disk rather than the three old scripts'
+hand-maintained (and already-drifted) lists. The `features/tmp/regression/`
+scripts themselves were deliberately left as they are, dead path and all, since
+only the harness concept was promoted, not the files; do not update or run
+them — use `tests/devproc/harness/run.sh` instead.

@@ -61,11 +61,17 @@ against an untargeted section" rule is too weak for this case — the bar is tha
 
 ## Running the tests
 
-**Invoke the agent through the CLI from the repository root**, not through the
-in-session `Agent` tool:
+To run the whole suite, use the regression harness:
+`../harness/run.sh feature-design-reviewer` (see
+[`../harness/README.md`](../harness/README.md)). It issues the invocations
+documented below and writes each case's output to `harness/out/`. That path is
+relative to this directory; the script itself can be run from anywhere.
+
+To run a single case by hand, **invoke the agent through the CLI from the
+repository root**, not through the in-session `Agent` tool:
 
 ```
-claude -p --agent feature-design-reviewer 'Review devproc/tests/feature-design-reviewer/<case>.md'
+claude -p --agent feature-design-reviewer 'Review tests/devproc/feature-design-reviewer/<case>.md'
 ```
 
 One fresh agent invocation per case, then compare against `<case>.expected.md`.
