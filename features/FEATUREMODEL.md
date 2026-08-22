@@ -20,7 +20,7 @@ The **workspace** is the directory Claude is run in, and the one holding `CLAUDE
 - **Tracked workspace** — the workspace is itself the root of a git repository. This is the common case.
 - **Untracked workspace** — the workspace is not under git control; the code being worked on sits in one or more git repositories beneath it.
 
-These two are exhaustive: the workspace is either the repository root, or it is not a repository at all. Either way, `CLAUDE.md`, `NOTES.md` and `features/` live at the top of the workspace, never inside a nested repository — so in an untracked workspace they are not part of any repository, and anything git-specific (ignore rules, branches, diffs) applies to the repositories beneath, not to the tracking files.
+These two are exhaustive: the workspace is either the repository root, or it is not a repository at all but contains one. Either way, `CLAUDE.md`, `NOTES.md` and `features/` live at the top of the workspace, never inside a nested repository — so in an untracked workspace they are not part of any repository, and anything git-specific (ignore rules, branches, diffs) applies to the repositories beneath, not to the tracking files.
 
 ### Sign-off criteria
 

@@ -96,7 +96,7 @@ need the executable bit set in the Dockerfile.
 
 `setup-files/` (added during `claudeignore-docs`) holds files users copy into their environments rather than recreate from heredocs. The directory name was chosen for direct pairing with `docs/setup.md`. Alternatives considered and rejected: `templates/` (implies edit-before-use, which most files here do not need), `resources/` (too generic), `dotfiles/` (the script isn't a dotfile).
 
-Adding a file to `setup-files/` requires three coordinated edits: the file itself, an entry in `setup-files/README.md`, and a corresponding "copy from `/some/path/claudeplugins/setup-files/...`" instruction in `docs/setup.md`. The setup.md "Clone this repository" sub-section is the prerequisite for all such copy steps; reorder with care if it ever moves.
+The setup.md "Clone this repository" sub-section is the prerequisite for every `setup-files/` copy step; reorder with care if it ever moves.
 
 ## dev-process-manager agent (#19)
 
@@ -120,14 +120,9 @@ to the latest model in each family at runtime, so the agent never goes stale.
 Teammate shutdown is via `SendMessage` with `{type: "shutdown_request"}`;
 `TeamDelete` only succeeds once all members have shut down.
 
-The container exposes the agent via `claude-run --manager` (or `--agent NAME`).
-The selected agent flows host → `CLAUDE_AGENT` env var (`docker run -e`) →
-`run-claude.sh`, which appends `--agent "$CLAUDE_AGENT"` to the claude command
-line. Because `run-claude.sh` relaunches with `--continue` on exit, the agent
-flag is added to the relaunch args too, so a resumed session keeps running as the
-same agent. **To verify in testing:** whether `--agent` alongside `--continue` is
-accepted cleanly or whether the resumed conversation already retains its agent
-(making the flag redundant but harmless).
+The container exposes the agent via `claude-run --manager` (or `--agent NAME`),
+passed through `CLAUDE_AGENT` to `run-claude.sh`, which adds `--agent` to the
+`--continue` relaunch args too so a resumed session keeps the same agent.
 
 ## Agent memory paths must be anchored to `$CLAUDE_PROJECT_DIR` (#23)
 
@@ -222,61 +217,24 @@ wording is now "faulting the untargeted section **on its own terms**".
 ## Writing review fixtures: expect the agent to find your own bugs (#20)
 
 Across three rounds, every design-reviewer fixture failure was a defect in the
-fixture, not in the agent. Worth knowing before writing the next set, because
-the instinct is to tune the agent until the tests pass, and that would have been
-wrong every time:
-
-- The baseline design took care to avoid a second definition of the *filters*,
-  then left the *column set* undefined — the same failure one layer up.
-- The sign-off strategy's manual large-tenant export was owned by no sub-task,
-  so every box could be ticked without it happening.
-- A sub-task carried `- [ ] User review: none — no user-visible surface yet`: a
-  box that can never legitimately be ticked, so the sub-task could never
-  complete. Waived categories must be *omitted* and explained once at feature
-  level, not written as an unchecked box.
-- The design named CSV serialisation as a distinct layer that no sub-task
-  tested.
-
-Two expectation errors were mine as well: demanding a specific severity where
-reasonable reviewers differ (ordering problems land at BLOCKING or MAJOR
-depending on whether a workaround exists), and assuming the reviewer could
-settle a dependency question by searching this repository — the fixtures
-describe a product that is not this repo, so absence proves nothing. The agent
-now says "unconfirmed" rather than "absent" for components it cannot verify.
-
-One genuine agent bug did surface, from a contradiction between the fixture and
-the prompt: the verdict rule allowed `READY FOR USER REVIEW` with an outstanding
-MAJOR `[rewrite]` finding. Both agents now require no BLOCKING **and** no MAJOR,
-and state that the verdict describes the artefact as it stands rather than as it
-could easily become.
+fixture, not in the agent — worth knowing before writing the next set, because
+the instinct is to tune the agent until the tests pass and that would have been
+wrong every time. Two recurring expectation errors: demanding a specific
+severity where reasonable reviewers legitimately differ (an ordering problem
+lands at BLOCKING or MAJOR depending on whether a workaround exists), and
+assuming the reviewer could settle a dependency question by searching this
+repository — the fixtures describe a product that is not this repo, so absence
+proves nothing and the agent says "unconfirmed" rather than "absent".
 
 ## Testing a skill end to end, and what it caught (#20)
 
-The review step in `/feature-spec` and `/feature-design` was tested by running
-each skill for real against a throwaway project under the scratchpad (a
-`CLAUDE.md` with a Feature model section, `features/` with the status files, and
-for the design tests a pre-seeded pending feature and spec-stage plan). Four
-runs: each skill in reviewed and skipped mode. This is worth repeating for any
-future change to skill prose — none of the four problems below was visible from
-re-reading the instructions.
-
-1. **Review-control tokens polluted `$ARGUMENTS`.** `/feature-design
-   archive-widgets skip review` has the skill match the *whole* string against
-   pending feature names; in `/feature-spec` the token could reach the feature
-   title or slug. Both skills now say to strip the token before interpreting the
-   argument.
-2. **`[decision]` is a reviewer concept**, so with the review skipped the final
-   step said nothing about open questions the author found themselves. Both
-   skills now require surfacing those regardless of whether the review ran.
-3. **The agent contradicted the skill.** `feature-spec-reviewer` twice asked for
-   a `## Handoff` section, which `/feature-spec` explicitly must not create —
-   `/feature-design` adds it on taking the feature into progress. The agent now
-   knows the spec-stage shape. The general lesson: an agent reviewing an
-   artefact produced by a skill needs to know that skill's rules, or it will
-   confidently demand conformance to a different stage's shape.
-4. **The second review pass can be pure waste.** If every outstanding finding is
-   `[decision]`, re-reviewing unchanged questions cannot change the verdict.
-   Both skills now say not to spend the second invocation in that case.
+`/feature-spec` and `/feature-design` were each run for real against a throwaway
+project (in reviewed and skipped mode) — worth repeating for any future change
+to skill prose, because none of the four problems it found was visible from
+re-reading the instructions. The transferable one: an agent reviewing an
+artefact produced by a skill needs to know that skill's rules, or it will
+confidently demand conformance to a different stage's shape (the spec reviewer
+twice asked for a `## Handoff` section that `/feature-spec` must not create).
 
 ## A severity ceiling in a review agent's tail can silently swallow a new criterion (#57)
 
@@ -318,63 +276,32 @@ one.
 
 ## Agent result delivery can fail silently mid-session (#57, Sub-task 7)
 
-Sub-agents spawned via the `Agent` tool stopped returning their output partway
-through a session. The first two spawns delivered full results; every spawn
-after that returned only an `idle_notification` with no content, including a
-re-run of the **same agent type** that had just succeeded. Sending the idle
-agent a direct message asking for its findings also produced only another idle
-notification.
-
-The trap is that this looks like a defect in whatever you spawned. The
-diagnosis went "the design reviewer is broken" for several rounds, because the
-spec reviewer had worked and the design reviewer never had. That was wrong: the
-distinguishing variable was **when** the agent was spawned, not which agent it
-was — visible only after tabulating every spawn in the session against its
-outcome. When an agent goes quiet, tabulate all spawns before blaming the
+Sub-agents spawned via the in-session `Agent` tool can stop returning output
+partway through a session: the spawn returns only an `idle_notification` with
+no content, including for an agent type that had just succeeded. The signature
+is an idle notification *instead of* a result — not merely an agent going idle.
+A degraded agent cannot be reached or shut down either, so do not re-spawn or
+try to tidy it up; expect to leave it stranded until the session ends. When an
+agent goes quiet the distinguishing variable is **when** it was spawned, not
+which agent it was, so tabulate every spawn in the session before blaming the
 newest one.
 
-Two practical consequences. **Do not tick a sign-off box on a review you never
-saw** — an idle notification is not a pass, and a test whose result never
-arrived is unrun, not passed. **And do not keep re-spawning**: four attempts
-plus a deliberately minimal diagnostic fixture (a short, clean plan file with
-codebase reading suppressed, to separate "workload too heavy" from "delivery
-broken") all failed identically. The minimal fixture is the cheap experiment
-worth running early, because it splits those two explanations in one spawn.
-
-A degraded agent cannot be shut down either. `shutdown_request` to the one
-agent that had delivered a result was processed and it terminated cleanly;
-the same request to five degraded agents produced only more idle
-notifications. So the degradation is not "fails to report its findings" but
-"cannot act on anything" — do not spend turns trying to reach or tidy them up,
-and expect to leave them stranded until the session ends.
-
-Not established: what triggers the degradation, or whether it is spawn-count,
-elapsed-time, or context related. A fresh session is the known-good reset.
-
-**Superseded 2026-08-09 — there is a reliable workaround.** A fresh session is
-no longer the only reset, and the degradation is not even reliably absent from
-one: the *first* spawn of a brand-new session returned an idle notification with
-no content, so "spawn early while delivery still works" is not a safe strategy.
-Spawning synchronously (`run_in_background: false`) makes no difference — this
-build spawns asynchronously either way, so it is the same delivery path.
-
-The workaround is to bypass the in-session `Agent` tool entirely and invoke the
-agent through the CLI, which returns its output on stdout:
+A fresh session is **not** a reliable reset — the first spawn of a brand-new
+session has failed this way — and `run_in_background: false` makes no
+difference. The workaround is to bypass the `Agent` tool and invoke the agent
+through the CLI, which returns its output on stdout:
 
 ```
 claude -p --agent feature-design-reviewer '<the review prompt>'
 ```
 
-Run from the repository root, so the agent resolves `features/FEATUREMODEL.md`
-and can read the codebase as usual. This delivered a complete review — findings
-and verdict — on the same fixture whose in-session spawns had gone silent. It is
-now the preferred route for the fixture suites specifically, because a
-regression run is a dozen-plus invocations and a silent failure partway through
-is expensive to detect: stdout either has a verdict line or it does not.
-
-Two things this does **not** change. The results are still agent output and are
-still checked against the `.expected.md` files in the normal way. And the rule
-above stands unaltered — a run whose verdict you never saw is unrun, not passed.
+Run from the repository root so the agent resolves `features/FEATUREMODEL.md`
+and can read the codebase as usual. This is the preferred route for the fixture
+suites, where a silent failure partway through a dozen-plus invocations is
+expensive to detect: stdout either has a verdict line or it does not. Results
+are still checked against the `.expected.md` files in the normal way, and
+**do not tick a sign-off box on a review you never saw** — an idle
+notification is not a pass, and a run whose verdict never arrived is unrun.
 
 ## Check what a backwards-compatibility carve-out actually protects (#57)
 
@@ -429,51 +356,25 @@ under the git-tracked `/workspace/devproc/`.
 may drift and that is fine. Diffing the two trees is the check before
 `/feature-end`.
 
-## A bare one-line description no longer forces NEEDS WORK (superseded, #57)
+## A one-line description is requirements (#57)
 
-*The claim below describes behaviour that no longer ships; it is kept because
-the reasoning that removed it is the useful part. Skip to "Superseded" for what
-is true now.*
-
-For a bare one-line feature description, `/feature-spec` **used to** reliably end at
-`NEEDS WORK`: the skill wrote a "no requirements beyond the summary"
-placeholder, and the reviewer rated a spec with no requirements as blocked.
-That was read at the time as working as intended — the questions go to the user
-— but it meant `READY FOR USER REVIEW` was not reachable from a one-liner,
-which matters for unattended mode.
-
-**Superseded by `clear-specs-and-designs` (#57) — and the behaviour above was a
-defect, not a safety property.** The reasoning was circular: `/feature-spec`
-wrote a "no requirements beyond the summary" placeholder into `## Requirements`
+`/feature-spec` once wrote a "no requirements beyond the summary" placeholder
 whenever the description was short, and the reviewer then blocked the spec for
-having no requirements. The skill discarded what the user typed, and the
-reviewer objected that nothing was typed.
+having no requirements — circular, and it made `READY FOR USER REVIEW`
+unreachable from a one-liner. The placeholder is gone: `## Requirements` records
+a short description verbatim, and a small, well-understood feature can run all
+the way through unattended. The gate exists to stop work no human sanctioned,
+not to impose a minimum length on the sanction.
 
-**A one-line description is requirements.** "Add logging to the foo function"
-states what is wanted; the feature exists because the user said so. The
-placeholder is gone — `## Requirements` now records a short description verbatim
-as the input it is — and a small, well-understood feature can legitimately reach
-`READY FOR USER REVIEW` and run all the way through unattended. The gate exists
-to stop work no human sanctioned, not to impose a minimum length on the
-sanction.
-
-Two wrong turns were taken before this landed, both worth remembering:
-
-1. Reading the old NEEDS WORK guarantee as protective, and proposing to preserve
-   it by treating every unconfirmed proposal in `## Spec` as a BLOCKING
-   question. Since a thin-input spec is *entirely* proposals, that would have
-   made small features permanently unable to pass — a defect dressed as caution.
-   Proposals are judged like anything else: one resting on a judgement the user
-   must make blocks, one filling an obvious gap does not.
-2. More generally: when an existing behaviour looks like a safeguard, check
-   whether anything actually *chose* it. This one was a side effect of a
-   placeholder, and no one had ever decided that small features should be
-   unable to pass review.
+Two lessons. Proposals are judged like anything else — one resting on a
+judgement the user must make blocks, one filling an obvious gap does not;
+treating every unconfirmed proposal as BLOCKING would make thin-input features
+permanently unable to pass. And when an existing behaviour looks like a
+safeguard, check whether anything actually *chose* it.
 
 In practice the real constraint on an unattended thin-input run is the
 **sign-off strategy**, which cannot be inferred from a one-liner — a user who
-wants such a feature to run start to finish needs to supply it with the
-description.
+wants such a feature to run start to finish must supply it with the description.
 
 ## Unattended mode rarely proceeds at spec stage (#20)
 
@@ -516,36 +417,13 @@ seconds of startup. The warm-up's throwaway conversation is never resumed: the
 first real launch is plain `claude` (fresh), and later `--continue` relaunches
 resume the interactive session, which is more recent.
 
-## Sub-task 4 consistency check method
-
-To verify the `feature-init` CLAUDE.md template's "Documents to support the
-model" list and this repo's `/workspace/CLAUDE.md` copy agree "ignoring
-line-wrapping" (the check NOTES.md and the plan both call for), a byte diff is
-the wrong tool — the two files wrap the same prose at different column widths
-by design (the template is indented under a numbered step; `CLAUDE.md` is
-top-level). The check that actually answers the question: split each section
-into paragraphs on blank lines, collapse all whitespace within each paragraph
-to single spaces, then compare the resulting paragraph lists for exact
-equality. Confirmed equal for both files after adding the new `features/tmp/`
-bullet to both.
-
 ## Dogfooding: run the reviewers at spec/design time, not feature-end (#20)
 
-The `spec-design-review-agents` sign-off strategy included running
-`feature-spec-reviewer` over this feature's own plan. Done at `/feature-end`, it
-returned NEEDS WORK and named things we had already hit the hard way — the spec
-never scoped "proceed without human review" versus "a lighter human process" as
-distinct outcomes (the gap that later split sub-task 3 into 3 and 4), the
-testing pass condition was unsatisfiable as written (the fixture-rework round),
-and there was no test criterion for the skill changes.
-
-The lesson is only that the spec was loose and the review would have caught it up
-front. There was nothing to *fix* retrospectively — rewriting a shipped spec to
-pass a review dated after the work would falsify the record — so the findings are
-recorded here rather than applied. Going forward this is not a special step:
-running the reviewers is simply what `/feature-spec` and `/feature-design` now
-do, and the value is in running them at spec/design time, not as an end-of-feature
-audit.
+Running `feature-spec-reviewer` over a feature's own plan at `/feature-end`
+returned NEEDS WORK on looseness already hit the hard way during the work — the
+review would have caught it up front. Nothing was fixed retrospectively:
+rewriting a shipped spec to pass a review dated after the work falsifies the
+record, so such findings are recorded rather than applied.
 
 ## `internal-docs-reviewer` fixtures are directories, not single files (Sub-task 1, #46)
 
@@ -559,12 +437,6 @@ under `tests/devproc/internal-docs-reviewer/` is a small fixture *directory*
 (`<case>/`, using real relative paths like `CLAUDE.md`, `features/COMPLETED.md`,
 `.claude/rules/...`) paired with a top-level `<case>.expected.md`, and the
 agent is pointed at the directory as if it were the repository root.
-
-(Historical: at Sub-task 1 the agent carried `memory: project`. **Superseded
-2026-07-25** — the agent was made *stateless* (see the caller-owns-memory note
-below), so it has no memory directory and fixture runs neither read nor write
-any memory; the settled-decision record now lives with the
-`/internal-docs-prune` skill.)
 
 ## Writing a genuine `judgment` fixture is harder than it looks (Sub-task 1, #46)
 
@@ -586,81 +458,16 @@ criterion names, don't just assert ambiguity and hope.
 
 ## Validating `/internal-docs-prune`'s application logic without a live agent (Sub-task 2, #46)
 
-`internal-docs-reviewer` is a newly written agent (Sub-task 1), so — per the
-"Testing a new agent in the session that creates it" note above — it is not
-invocable as an agent type in this session either. The skill's Testing box
-("a worked run confirms...") was therefore validated a level down: using the
-reviewer's *known* findings, taken verbatim from its fixtures'
-`.expected.md` files, as the input to the skill's application steps (Step 4
-`redundant`/`stale` auto-apply, Step 5 `judgment` escalation, the Step 4
-`move` write→verify→remove ordering), executed by hand against **copies of
-the fixtures under `/tmp`**, never against `tests/devproc/` or real repo
-docs.
-
-What each scenario proved:
-- **Unattended, `redundant`+`stale` auto-apply, `judgment` deferred:** applied
-  the `redundant` fixture's delete finding and the `stale` fixture's delete
-  finding; both landed cleanly. The `judgment` fixture's NOTES.md was left
-  completely untouched — confirming unattended mode takes no action on
-  `judgment`, only lists it.
-- **Interactive, `judgment` default:** applied the `judgment` fixture's
-  finding via `condense` (the fixed default), confirming `delete` is never
-  used for a `judgment` finding by default.
-- **Move without loss:** the `redundant` fixture itself isn't a clean move
-  test — its destination (`features/COMPLETED.md`) already has the content,
-  since that's *why* it's redundant. Built a derived copy with the
-  destination entry stripped out first, then applied the skill's exact
-  ordering (write destination → re-read to verify → only then remove from
-  source). Confirmed both that the content lands at the destination and
-  disappears from the source, and — separately — that if the post-write
-  verification were to fail, the source is left untouched and the anchor
-  text is provably still there (a deliberate second run with the write step
-  skipped).
-- **Idempotency:** the auto-applied `redundant` fixture's `CLAUDE.md`, after
-  pruning, was byte-identical to the `idempotent/` fixture's `CLAUDE.md` (the
-  fixture representing "output of a previous prune pass") — i.e. auto-apply
-  reaches exactly the steady state a second pass is expected to find nothing
-  further to do with.
-
-This exercises the skill's *application* logic (the actual deliverable this
-sub-task adds) faithfully, but not the end-to-end path of spawning the real
-agent and parsing its live prose output — that remains untested until a
-session restart makes `internal-docs-reviewer` invocable, same caveat as
-Sub-task 1's fixture validation.
-
-## Sub-task 3 three-way consistency check (#46)
-
-The status-section cap is now stated in three places and must agree. Wording
-compared, paraphrase-for-paraphrase:
-
-- `feature-init/SKILL.md` template (`### Documents to support the model` →
-  `CLAUDE.md` bullet): "holds **only** the in-progress feature (if any) plus
-  **at most one line** for the single most recent completion. Older
-  completion entries live in `features/COMPLETED.md` only and are deleted
-  from `CLAUDE.md` — `/feature-end` performs this trim when it closes a
-  feature."
-- `feature-end/SKILL.md` step 3 (new bullet, added alongside the existing
-  `COMPLETED.md` entry step): "retain only the in-progress feature (if any is
-  starting next) plus **at most one line** for this single most-recent
-  completion; delete any older completion entries or status lines. Nothing
-  is lost — that content is already preserved in `features/COMPLETED.md`."
-- `internal-docs-reviewer.md` (frontmatter `description` example, and
-  criterion 2's `CLAUDE.md` duplication check): assumes the same target —
-  "the feature in progress, plus at most one line for the most recent
-  completion; older completions live in `features/COMPLETED.md` only" — and
-  treats a status entry as `redundant` precisely when it duplicates
-  `features/COMPLETED.md`.
-
-All three name the same cap (in-progress feature, if any, + at most one
-most-recent-completion line; everything older deleted from `CLAUDE.md` and
-preserved only in `COMPLETED.md`). No contradiction found — the reviewer's
-existing wording did not need editing, matching the manager's instruction not
-to touch the agent in this sub-task.
-
-Deliberately left alone per scope: the project's own root `/workspace/CLAUDE.md`
-`## Current status` section is *not* trimmed to this cap as part of this
-sub-task — that's `/internal-docs-prune`'s job (or a future `/feature-end`
-run), not a prevention-rule edit.
+A newly written agent is not invocable in the session that creates it, so the
+skill's application steps were exercised a level down: the reviewer's *known*
+findings, taken verbatim from its fixtures' `.expected.md` files, driven by
+hand against **copies of the fixtures under `/tmp`** — never against
+`tests/devproc/` or real repo docs. Two points worth reusing: the `redundant`
+fixture is not a clean `move` test, because its destination already holds the
+content (that is *why* it is redundant) — strip the destination entry into a
+derived copy first; and idempotency is checkable by diffing the pruned output
+against the `idempotent/` fixture. This does not cover spawning the real agent
+and parsing its live prose output.
 
 ## internal-docs-prune documentation placement (sub-task 4)
 
@@ -683,65 +490,14 @@ from workflow.md — checked both resolve under GitHub's heading-to-anchor
 convention (lowercase, spaces to hyphens) since Markdown doesn't fail loudly
 on a broken in-repo anchor.
 
-The `feature-init` CLAUDE.md template already stated the status-cap and
-referenced `/internal-docs-prune` (added in sub-task 3) — verified it against
-the shipped skill/agent behaviour and left it untouched, per the manager's
-brief not to rewrite what already covers the requirement.
+## `/feature-design` step 6: which end-of-feature gates get an annotation (#47)
 
-## Sub-task 7 dry-run: `/feature-design` step 6 produces the right shape both ways (#47)
-
-Reasoning walkthrough (no live skill invocation — traced the updated
-`devproc/skills/feature-design/SKILL.md` step 6 instructions by hand against
-two representative strategies), as the dry-run evidence for Sub-task 7's
-Testing box.
-
-**Scenario A — gates exist.** A feature ("add rate limiting to the public
-API") whose `## Sign-off strategy` has: Testing and Documentation scoped to
-specific sub-tasks; Code review = "one agent `/review-branch` before
-`/feature-end`"; Docs review = "one agent `docs-structure-reviewer` over the
-updated docs at `/feature-end`"; User review tied to one specific sub-task
-(not end-of-feature). Step 6's new bullets: only Code review and Docs review
-are genuine end-of-feature gates (once-only, not owned by any ordinary
-sub-task) — Testing/Documentation/User review are all already per-sub-task, so
-they are not gates. Result: a last sub-task is added —
-
-```
-N. **Final sign-off criteria** — end-of-feature gates for this feature, per `## Sign-off strategy`
-   - [ ] Code review (agent): /review-branch over all changed files
-   - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
-```
-
-Confirms two things worth recording: (1) the annotation attaches to *only* the
-docs-review box, not the code-review box — `/review-branch` is performed by a
-separate skill invocation before `/feature-end` runs, so it is not
-`/feature-end`-performed and must not carry the annotation; getting this wrong
-either way (annotating both, or neither) would be a real bug. (2) This exactly
-reproduces the shape used throughout Sub-task 5's fixtures and this feature's
-own Sub-task 7, which is expected — they were built from this same reading of
-step 6.
-
-**Scenario B — no gates.** A feature ("rename a config field for clarity")
-whose strategy is: Testing on the one sub-task; Documentation = "None — no
-user-facing or architectural doc touches this field"; Code review = "user
-reads the diff" (tied to the one sub-task, not an agent end-of-feature gate);
-Docs review = "None — no docs affected"; User review folded into the same
-sub-task's code-review box. Step 6: no category here is a genuine end-of-feature
-gate (nothing is "once, at close, by an agent, owned by no sub-task"), so no
-"Final sign-off criteria" sub-task is added — the plan ends at its ordinary
-sub-task(s), matching the spec-stage settled decision that the sub-task is
-conditional, not mandatory.
-
-One design point the dry-run confirms works as intended: the step 5
-target-structure template itself shows the final sub-task as `N. **Final
-sign-off criteria** — <only when ... omitted entirely otherwise — see step
-6>` — the caveat is inline in the template line, not only in step 6's prose.
-That stops the literal-minded misreading "the template always has one, so
-always add it," which a template-only skim could otherwise produce.
-
-Also confirms `feature-design-reviewer`'s Sub-task 4 criteria are consistent
-with both outcomes: it would flag a missing final sub-task in Scenario A if
-omitted, and would flag an unwarranted one in Scenario B if incorrectly added
-— neither false-positives on the correct output of either scenario.
+A category is an end-of-feature gate only if it is once-only, performed at
+close, and owned by no ordinary sub-task; where none qualifies, no "Final
+sign-off criteria" sub-task is added at all. The "(performed at
+`/feature-end`)" annotation attaches only to a box `/feature-end` itself
+performs — the close-out docs review, yes; a `/review-branch` run as a separate
+invocation beforehand, no. Annotating both boxes, or neither, is a real bug.
 
 ## Memory belongs to the skill, not the agent (#46, code-review resolution)
 
@@ -807,105 +563,15 @@ doesn't produce two consecutive `## Feature model` headings once expanded. The
 cost is that the file read standalone opens on an `###` sub-heading, an
 acceptable cosmetic since the every-session path is the imported one.)
 
-## Sub-task 1 (`extract-feature-model`, #43) verification method
+## Verifying that an `@import` actually loads
 
-The precise check performed for the Testing sign-off, since "loads under
-`/context`" can't be run non-interactively from this session: `sed -n
-'84,203p' CLAUDE.md` (the exact original `## Feature model` section, verified
-by content) `diff`ed byte-for-byte against the new `features/FEATUREMODEL.md`
-— identical. Then confirmed by `grep` that `CLAUDE.md` no longer contains
-`### Sign-off criteria` / `### Resuming after a session restart` / `###
-Documents to support the model`, that the single remaining `## Feature model`
-line 84 is followed only by the one-line `@features/FEATUREMODEL.md` import
-prose, that the import token carries zero backticks, and that the count of
-` ``` ` fence markers before that line is even (so the line sits outside any
-fence, not just absent of literal backticks). Confirmed the referenced path
-exists at `features/FEATUREMODEL.md` relative to the repo root where
-`CLAUDE.md` lives.
-
-**Live load subsequently confirmed by the manager (2026-07-26), so nothing is
-left for the user here.** The definitive check the teammate's own session could
-not run was run from the manager session with a headless subprocess: a fresh
-`claude -p` launched in the repo root, **with `Read`/`Bash`/`Grep`/`Glob`/`Task`/`WebFetch`
-disabled**, was asked to quote the first sentence under `### Sign-off criteria`.
-It returned the sentence verbatim ("This section is the **canonical statement of
-the sign-off model**.") — text that now exists *only* in `features/FEATUREMODEL.md`.
-With every file-reading tool disabled, the sole way that text could be in context
-is the `@import` expanding it at launch. This is a stronger check than `/context`
-(it proves the content is actually present, not merely listed). Method worth
-reusing for any future "does an `@import` load?" question: disable all read tools,
-then ask the model to quote content unique to the imported file.
-
-## Sub-task 3 (`extract-feature-model`, #43) traced walkthrough of the rewritten `feature-init`
-
-`feature-init` has `disable-model-invocation: true` (see the note above), so —
-as with Sub-task 7's dry-run of `feature-design` step 6 — the Testing sign-off
-was validated by tracing the rewritten `devproc/skills/feature-init/SKILL.md`
-step 1 by hand against two scenarios, not by a live invocation.
-
-**Scenario A — fresh project** (no `features/` directory, `CLAUDE.md` has no
-`## Feature model` section). Step 1.1: `features/FEATUREMODEL.md` does not
-exist, so `features/` is created and the skill's own `FEATUREMODEL.md` (the
-file sitting alongside `SKILL.md`) is copied to `features/FEATUREMODEL.md`.
-Step 1.2: `CLAUDE.md` has no `## Feature model` section, so one is added
-containing only the one-line `@features/FEATUREMODEL.md` import. Step 1.3: no
-`### Sign-off criteria` sub-heading exists in `CLAUDE.md` to migrate, so this
-step is a no-op. Result: project ends with `features/FEATUREMODEL.md` present
-and the import in `CLAUDE.md` — correct.
-
-**Scenario B — already-embedded project** (an older `feature-init` run wrote
-the full model text as the body of `CLAUDE.md`'s `## Feature model` section,
-complete with `### Sign-off criteria` / `### Resuming after a session restart`
-/ `### Documents to support the model` sub-headings; no
-`features/FEATUREMODEL.md` exists yet). Step 1.1: same as Scenario A — copies
-the canonical file to `features/FEATUREMODEL.md`. Step 1.2: `CLAUDE.md` has a
-`## Feature model` section but it lacks the un-backticked import (it has the
-embedded text instead), so this is recognised as needing migration rather than
-"import already present." Step 1.3: the sub-headings identify this as an
-already-embedded project; the embedded section body is replaced with the
-one-line import, removing the sub-headings and their prose. Result: same end
-state as Scenario A, with no duplicated model text left in `CLAUDE.md` —
-correct migration.
-
-**Idempotency.** Re-running the walkthrough against either scenario's *output*
-state (import present, `features/FEATUREMODEL.md` exists) hits step 1.1's
-"does not already exist" guard (no-op), step 1.2's "already contains the
-import" guard (no-op), and step 1.3's explicit "import already present and the
-file exists — leave both as they are" clause. No step re-copies or re-writes
-anything — confirms the rewrite is safe to re-run, consistent with the rest of
-`feature-init`.
-
-**One case the walkthrough also confirms is handled**, from the plan's "Dead
-ends to avoid": a `## Feature model` section whose only path mention is inside
-backticks or a Markdown link (not a real `@import`) is *not* mistaken for
-"already migrated" — step 1.2 explicitly requires the import to be
-un-backticked before treating it as present, so such a project would have the
-correct import line added alongside the existing (inert) mention rather than
-being skipped.
-
-**Static check.** `diff /workspace/features/FEATUREMODEL.md
-/workspace/devproc/skills/feature-init/FEATUREMODEL.md` — no output, confirming
-this repo's own copy is byte-identical to the shipped canonical file the skill
-copies from, as the design's audit check requires.
-
-## Sub-task 2 (`extract-feature-model`, #43) scope boundary on `devproc/README.md`
-
-Three `devproc/README.md` lines describe `feature-init`'s own current behaviour
-("adds the feature model to `CLAUDE.md`", "writes the feature model section to
-`CLAUDE.md`", "Adds a `## Feature model` section to `CLAUDE.md`" — the Contents
-table entry and the `feature-init` section's opening two sentences). These were
-deliberately **not** changed in Sub-task 2, even though grep flags them: they
-are accurate descriptions of what `feature-init` still actually does today (it
-has not been rewritten yet — that is Sub-task 3). Changing them now to claim
-`feature-init` writes `features/FEATUREMODEL.md` would make the README
-describe behaviour that does not yet exist. The one README line that *was*
-changed (the parenthetical "(The canonical statement of the sign-off model
-lives in the `### Sign-off criteria` section...)") is a **location reference**
-for where other tools should look, not a description of `feature-init`'s
-mechanism, so it correctly repoints now regardless of when `feature-init`
-itself is rewritten. Sub-task 3 should update these three remaining lines as
-part of rewriting `feature-init`'s actual behaviour, since they are the
-README's documentation of that skill.
+`/context` only lists an import; it does not prove the content reached the
+model. The stronger check: launch a fresh `claude -p` in the repo root **with
+`Read`/`Bash`/`Grep`/`Glob`/`Task`/`WebFetch` disabled** and ask it to quote a
+sentence that exists *only* in the imported file. With every file-reading tool
+disabled, the sole route for that text into context is the `@import` expanding
+at launch. Used to confirm `CLAUDE.md`'s `@features/FEATUREMODEL.md` import
+(2026-07-26), and reusable for any future "does an `@import` load?" question.
 
 ## Only some fixture flaws needed relocating when `## Spec` was added (Sub-task 7, #57)
 
@@ -947,11 +613,8 @@ dedicated fixture — a gap, not a defect, and not something this sub-task's
 scope (relocate existing flaws, add the design suite's `no-spec` case) asked
 to fix.
 
-`incomplete-requirements.md`/`.expected.md` were renamed to
-`incomplete-spec.md`/`.expected.md` (via `mv`, not `git mv` — this repo's rule
-against git commands that change repository state applies to renames too; an
-accidental `git mv` here was caught and unstaged with `git reset HEAD` before
-any further edits).
+Fixture renames use `mv`, not `git mv` — this repo's rule against git commands
+that change repository state applies to renames too.
 
 ## Obscuring a spec for the clarity fixture also plants an unsourced-claims flaw (Sub-task 8, #57)
 
