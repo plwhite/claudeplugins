@@ -14,9 +14,9 @@ This guide walks through configuring Claude Code for a productive development wo
 
 - Install the plugin.
 
-- Drop a recommended `.claudeignore` into each project to suppress speculative scans of high-noise paths.
+- Drop a recommended `.claudeignore` into each workspace to suppress speculative scans of high-noise paths.
 
-- Initialise the plugin in each repo where you want to use it.
+- Initialise the plugin in each workspace where you want to use it.
 
 None of these steps are required; this is "how to configure your system in the right way for me", which you may wish to tweak appropriately.
 
@@ -36,9 +36,9 @@ To set everything up, follow the stages below.
 
 6. [Enable the `devproc` plugin](#enable-the-devproc-plugin).
 
-7. [Configure `.claudeignore`](#configure-claudeignore) for each repo where you use Claude.
+7. [Configure `.claudeignore`](#configure-claudeignore) for each workspace where you use Claude.
 
-8. Initialise the [`devproc` plugin for each repo](#initialise-devproc-in-each-repo-for-which-you-want-to-use-it).
+8. Initialise the [`devproc` plugin for each workspace](#initialise-devproc-in-each-workspace-for-which-you-want-to-use-it).
 
 ### Prerequisites
 
@@ -192,9 +192,9 @@ The `devproc` plugin is the heart of this repository, with skills and agents to 
 
 ### Configure .claudeignore
 
-Claude Code respects a `.claudeignore` file at the project root, which excludes the matching paths from speculative directory scans. Without it, Claude can spend tokens and time grepping through `node_modules/`, build output, lockfiles, large data files, and other high-noise / low-value paths.
+Claude Code respects a `.claudeignore` file at the workspace root, which excludes the matching paths from speculative directory scans. Without it, Claude can spend tokens and time grepping through `node_modules/`, build output, lockfiles, large data files, and other high-noise / low-value paths.
 
-A recommended template lives at [`setup-files/.claudeignore`](../setup-files/.claudeignore); the file's section comments document what each pattern group covers. Drop it into each project root:
+A recommended template lives at [`setup-files/.claudeignore`](../setup-files/.claudeignore); the file's section comments document what each pattern group covers. Drop it into each workspace root — one copy at the top of the workspace, not one per nested repository, since scans are rooted where Claude starts:
 
 ```bash
 cp /some/path/claudeplugins/setup-files/.claudeignore .
@@ -202,9 +202,11 @@ cp /some/path/claudeplugins/setup-files/.claudeignore .
 
 Adapt the patterns to your project as needed — the file is intended as a sensible default, not a fixed list.
 
-### Initialise devproc in each repo for which you want to use it
+### Initialise devproc in each workspace for which you want to use it
 
-Before you use the `devproc` plugins features, it needs certain files and instructions set up. To do this, start Claude in your project either from the CLI or in the IDE, and enter
+Before you use the `devproc` plugins features, it needs certain files and instructions set up. The unit is the **workspace** — the directory holding `CLAUDE.md`, `NOTES.md` and `features/`. That is usually a git repository, but it may instead be a plain directory with one or more repositories beneath it; run `/feature-init` at the top of the workspace either way, not inside a nested repository. See [workflow.md](workflow.md#where-the-workspace-is).
+
+To do this, start Claude in your workspace either from the CLI, in the IDE, or using the container, and enter
 
 ~~~
 /feature-init

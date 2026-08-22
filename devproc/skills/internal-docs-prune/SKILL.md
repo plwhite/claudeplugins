@@ -39,7 +39,7 @@ rather than acting on it.
 
 ## Step 3 — Spawn the reviewer and collect findings
 
-Call @internal-docs-reviewer with the repository root (or the specific
+Call @internal-docs-reviewer with the workspace root (or the specific
 in-scope files from Step 2) to review.
 
 Parse its output into a list of findings, each carrying: Gating class
@@ -195,7 +195,7 @@ Keep a `MEMORY.md` index at
 (namespaced under the reviewer agent's name with the `devproc-` plugin prefix,
 so this skill's memory stays distinct from other devproc agents' and skills').
 Always resolve the
-path against `$CLAUDE_PROJECT_DIR` (the repository root), never the current
+path against `$CLAUDE_PROJECT_DIR` (the workspace root), never the current
 working directory, so memory lands in the same place regardless of where the
 skill is invoked from. Create the directory and file if they do not yet exist;
 the first run that settles a `judgment` call creates them.

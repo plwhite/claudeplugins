@@ -11,7 +11,7 @@ description: |
   (`docs/`, `README.md`, `CONTRIBUTING.md`). It produces findings only, each
   tagged with an action and a gating class; it does not modify any files.
 
-  Pass the repository root (or specific files) to review in the prompt.
+  Pass the workspace root (or specific files) to review in the prompt.
 
   Examples:
 
