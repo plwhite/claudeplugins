@@ -8,7 +8,7 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 
 | Type | Name | Description |
 |------|------|-------------|
-| Skill | `feature-init` | One-time setup: copies the canonical `FEATUREMODEL.md` shipped with the skill to `features/FEATUREMODEL.md`, adds its `@import` to `CLAUDE.md`, creates the `features/` directory including a git-ignored `features/tmp` scratch directory, and migrates an older `FEATURES.md`/`plans/` layout |
+| Skill | `feature-init` | One-time setup: copies the canonical `FEATUREMODEL.md` shipped with the skill to `features/FEATUREMODEL.md`, adds its `@import` to `CLAUDE.md`, creates the `features/` directory including a `features/tmp` scratch directory (git-ignored in a tracked workspace), and migrates an older `FEATURES.md`/`plans/` layout |
 | Skill | `feature-spec` | Create a new feature in `features/PENDING.md`, capture the input as `## Requirements` and write `## Spec` — what the feature must do — from a GitHub issue, a one-line description, or material staged in `features/tmp`, and agree the sign-off strategy |
 | Skill | `feature-design` | Move a feature to `features/CURRENT.md` and write its design and sub-task plan, with per-sub-task sign-off criteria |
 | Skill | `feature-checkpoint` | Sync all documentation and tracking to the current state |
@@ -29,7 +29,9 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 
 ## Setup
 
-Run `/feature-init` once per project before using any other skills. This copies the canonical `FEATUREMODEL.md` shipped with the skill to `features/FEATUREMODEL.md`, adds its `@import` to `CLAUDE.md`, and creates the `features/` directory, whose feature list is split across four files by status (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) so the large completed list need not be read into context every session. It also creates a git-ignored `features/tmp/` scratch directory for staging requirements material as input to `/feature-spec`, and migrates an older single-file layout (`FEATURES.md` plus a top-level `plans/` or `notes/` directory) to the new structure. Safe to re-run — it refreshes `features/FEATUREMODEL.md` from the shipped canonical copy (so the model always matches the plugin version) and leaves your feature-list files and plans in place.
+These skills run from the **workspace** — the directory holding `CLAUDE.md`, `NOTES.md` and `features/`. Usually the workspace is itself a git repository (a *tracked workspace*); it may instead be a plain directory with one or more repositories beneath it (an *untracked workspace*), in which case feature tracking sits at the top of the workspace, outside every repository, and no `.gitignore` is written. `/feature-init` installs the full definition as `features/FEATUREMODEL.md` § `### The workspace`; [docs/workflow.md](../docs/workflow.md#where-the-workspace-is) covers it for users.
+
+Run `/feature-init` once per workspace before using any other skills. This copies the canonical `FEATUREMODEL.md` shipped with the skill to `features/FEATUREMODEL.md`, adds its `@import` to `CLAUDE.md`, and creates the `features/` directory, whose feature list is split across four files by status (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) so the large completed list need not be read into context every session. It also creates a `features/tmp/` scratch directory for staging requirements material as input to `/feature-spec` (git-ignored in a tracked workspace), and migrates an older single-file layout (`FEATURES.md` plus a top-level `plans/` or `notes/` directory) to the new structure. Safe to re-run — it refreshes `features/FEATUREMODEL.md` from the shipped canonical copy (so the model always matches the plugin version) and leaves your feature-list files and plans in place.
 
 ### Feature tracking files
 
@@ -41,7 +43,7 @@ Run `/feature-init` once per project before using any other skills. This copies 
 | `features/DEFERRED.md` | Features explicitly deferred, including those blocked by a dependency |
 | `features/COMPLETED.md` | Completed features, dated — the large list kept out of routine context |
 | `features/plans/<slug>.md` | Per-feature plan with requirements, spec, sign-off strategy, design, sub-tasks (with sign-off checkboxes), handoff state, and a review record |
-| `features/tmp/` | Git-ignored scratch space for staging requirements material as input to `/feature-spec`; only the tracked `README.md` persists — not a store for tracking requirements |
+| `features/tmp/` | Scratch space for staging requirements material as input to `/feature-spec` — git-ignored in a tracked workspace; only the tracked `README.md` persists — not a store for tracking requirements |
 | `NOTES.md` | Non-obvious technical findings recorded continuously |
 | `CLAUDE.md` | High-level project status only — no implementation detail |
 
@@ -53,7 +55,7 @@ Run `/feature-init` once per project before using any other skills. This copies 
 
 **Invoke with:** `/feature-init`
 
-One-time project setup. Copies the canonical `FEATUREMODEL.md` shipped alongside this skill into the project as `features/FEATUREMODEL.md` and ensures `CLAUDE.md` carries an un-backticked `@features/FEATUREMODEL.md` import (adding a `## Feature model` section for it if absent), creates the `features/` directory with its four status files (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) and a `features/plans/` subdirectory, and migrates an older `FEATURES.md`/`plans/` layout if present — including an older project whose `CLAUDE.md` still embeds the full model text, whose embedded section is replaced with the import (the canonical text is copied into `features/FEATUREMODEL.md`, superseding whatever was embedded). It also scaffolds `features/tmp/` — a git-ignored scratch directory where you can stage requirements material as input to `/feature-spec` — creating or updating `.gitignore` as needed. Safe to re-run — it refreshes `features/FEATUREMODEL.md` from the canonical copy and preserves your feature-list files and plans.
+One-time project setup. Copies the canonical `FEATUREMODEL.md` shipped alongside this skill into the project as `features/FEATUREMODEL.md` and ensures `CLAUDE.md` carries an un-backticked `@features/FEATUREMODEL.md` import (adding a `## Feature model` section for it if absent), creates the `features/` directory with its four status files (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) and a `features/plans/` subdirectory, and migrates an older `FEATURES.md`/`plans/` layout if present — including an older project whose `CLAUDE.md` still embeds the full model text, whose embedded section is replaced with the import (the canonical text is copied into `features/FEATUREMODEL.md`, superseding whatever was embedded). It also scaffolds `features/tmp/` — a scratch directory where you can stage requirements material as input to `/feature-spec` — creating or updating `.gitignore` to ignore it in a tracked workspace. In an untracked workspace it writes no `.gitignore` and does not inspect one an earlier run may have left — it reports that the step was skipped and why. Safe to re-run — it refreshes `features/FEATUREMODEL.md` from the canonical copy and preserves your feature-list files and plans.
 
 ---
 

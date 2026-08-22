@@ -5,7 +5,7 @@ Container mode runs Claude inside an isolated Docker container with full permiss
 The container:
 
 - Runs Claude in a detached tmux session so it continues working after you detach. The session survives Claude exiting — if Claude exits it is automatically relaunched (resuming the conversation), and `exit`/Ctrl-D/Ctrl-C cannot destroy the session.
-- Mounts the project directory read-write at `/workspace`.
+- Mounts the project directory read-write at `/workspace`. That directory is the *workspace* in the feature model's sense — the one holding `CLAUDE.md`, `NOTES.md` and `features/` — whether or not it is itself a git repository (see [workflow.md](workflow.md#where-the-workspace-is)); container mode is a common place for a workspace that merely contains repositories.
 - Bakes in the `devproc` plugin so the full feature workflow is available.
 - Uses a "YOLO" `~/.claude/` config: `--dangerously-skip-permissions`, bypass-permissions mode, onboarding skipped.
 - Copies in your Claude login credentials (from `~/.claude/.credentials.json`) automatically when the container starts.

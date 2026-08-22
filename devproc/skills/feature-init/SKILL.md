@@ -148,7 +148,7 @@ developed. Headings must end with the date of completion in YYYY-MM-DD format.
 
 Create the `features/plans/` directory if it does not exist.
 
-## 5. Ensure the tmp scratch directory exists and is git-ignored
+## 5. Ensure the tmp scratch directory exists, git-ignored only where the workspace is a git repository
 
 Create `features/tmp/` if it does not exist, and create `features/tmp/README.md`
 from the template below **only if it does not already exist** (do not overwrite
@@ -158,16 +158,40 @@ an existing one):
 # features/tmp
 
 Scratch space for dropping requirements material — notes, documents,
-screenshots — as input to `/feature-spec`. Contents here are git-ignored and
-transient: `/feature-spec` captures anything it uses into the feature's plan
-file and then removes it from here.
+screenshots — as input to `/feature-spec`. Contents here are transient:
+`/feature-spec` captures anything it uses into the feature's plan file and then
+removes it from here. Where the workspace is a git repository, contents are
+also git-ignored.
 
 Do not use this directory to *track* requirements. Requirements live in
 issues or, once captured, in the plan file under `features/plans/`.
 ~~~
 
-Then ensure `.gitignore` at the repo root contains the following two lines,
-so `features/tmp` contents are ignored but its README is kept:
+**Then determine whether the workspace is tracked, and only handle
+`.gitignore` if it is.** (The workspace is defined in full here rather than
+by reference to `features/FEATUREMODEL.md` § `### The workspace`: this skill is
+what installs that file, so on a fresh project it does not yet exist while this
+runs, and an import added mid-session does not load.) The workspace Claude is run in — the directory holding
+`CLAUDE.md`, `NOTES.md` and `features/` — is not always a git repository
+itself: it may instead be a plain directory with one or more git repositories
+somewhere beneath it. Run `git rev-parse --is-inside-work-tree` in the
+workspace root:
+
+- **Exit status 0 with `true` on stdout — tracked.** The workspace is a git
+  repository (its root, in fact — this is the only shape this check needs to
+  distinguish). Proceed exactly as below.
+- **Anything else — exit status non-zero, `false` on stdout, or `git` not
+  installed — untracked.** Do not create, read, or modify any `.gitignore`.
+  Do not inspect or comment on rules an earlier run may have left in one — a
+  `.gitignore` in an untracked workspace is the user's own file to manage, not
+  this skill's to tidy. State plainly that this step was skipped and why (the
+  workspace is not a git repository). Skip the rest of this section and move
+  on; creating `features/tmp/` and its `README.md` above is unaffected by this
+  guard.
+
+In a **tracked** workspace, ensure `.gitignore` at the repo root (which, since
+the workspace is tracked, is the workspace root) contains the following two
+lines, so `features/tmp` contents are ignored but its README is kept:
 
 ```gitignore
 features/tmp/*

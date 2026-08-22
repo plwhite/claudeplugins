@@ -9,7 +9,20 @@ Each feature moves through a lifecycle, with a slash command for each stage:
 3. **Implement** — work through the sub-tasks (no slash command; `/feature-checkpoint` keeps state in sync as you go). A sub-task is complete only when all its sign-off boxes are ticked.
 4. **End** (`/feature-end`) — verify completion, close the feature out, and review the docs.
 
-`/feature-init` sets the model up once per repository before any of this.
+`/feature-init` sets the model up once per workspace before any of this — see [Where the workspace is](#where-the-workspace-is).
+
+This guide describes driving the workflow yourself, one step at a time. You can also hand the same workflow to the [Dev Process Manager](capabilities.md#dev-process-manager), a top-level agent that works through sub-tasks semi-autonomously — spawning a teammate per sub-task, reviewing its work, and checking in with you at the points you choose. The steps below are exactly what that agent automates.
+
+## Where the workspace is
+
+The **workspace** is the directory you start Claude in, and the one that holds `CLAUDE.md`, `NOTES.md` and `features/`. It takes one of two shapes:
+
+- a **tracked workspace** is itself a git repository — the common case, and what most projects have;
+- an **untracked workspace** is a plain directory that is not under git control, holding one or more repositories beneath it. This suits a container or a scratch directory where you work across several repositories at once.
+
+Either way, run `/feature-init` at the top of the workspace, not inside a nested repository: feature tracking always lives at the workspace root. In an untracked workspace that means `features/` and `NOTES.md` sit outside every repository and are not part of any branch, and `/feature-init` writes no `.gitignore` — there is no repository there to read it.
+
+## Working with git
 
 Best practice regarding git is to:
 
@@ -19,7 +32,7 @@ Best practice regarding git is to:
 
 - finish off by squashing commits as necessary, and merge the branch.
 
-This guide describes driving the workflow yourself, one step at a time. You can also hand the same workflow to the [Dev Process Manager](capabilities.md#dev-process-manager), a top-level agent that works through sub-tasks semi-autonomously — spawning a teammate per sub-task, reviewing its work, and checking in with you at the points you choose. The steps below are exactly what that agent automates.
+In an untracked workspace these apply to the repository (or repositories) the feature actually changes, since the workspace itself is not under git control.
 
 ---
 
@@ -45,7 +58,7 @@ When you have a piece of work to track — from a GitHub issue, a design doc, or
   /feature-spec "the issue about improving error messages"
   ```
 
-  When an issue reference is used, Claude calls `git remote -v` to identify your repo and fetches the issue (and its comments) via `gh`, using its title for the feature and copying the full description plus any design/requirements-relevant comments into the plan file. `gh` must be configured — see [setup.md](setup.md).
+  When an issue reference is used, Claude reads the remote from the repository if the workspace itself is a repository, or from a repository beneath it if not, asking you if that's ambiguous. It fetches the issue (and its comments) via `gh`, using its title for the feature and copying the full description plus any design/requirements-relevant comments into the plan file. `gh` must be configured - see [setup.md](setup.md).
 
 - From material staged in `features/tmp`:
 
@@ -177,7 +190,7 @@ Often, you will find more necessary work as you go along; you can ask Claude to 
 
 When returning to an in-progress feature in a new session:
 
-1. Open Claude in the project directory. It reads `features/CURRENT.md` on startup and sees the in-progress feature.
+1. Open Claude in the workspace. It reads `features/CURRENT.md` on startup and sees the in-progress feature.
 2. Open `features/plans/<slug>.md` and read the `## Handoff` section — this contains the session summary, current sub-task state, and the specific first action.
 3. Ask Claude to continue. It resumes from exactly where the last session stopped.
 

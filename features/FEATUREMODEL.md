@@ -13,6 +13,15 @@ through their lifecycle — **spec → design → implement → end**:
 
 `NOTES.md` is maintained continuously. Any non-obvious technical finding — page structure quirks, API behaviour, design decisions, scope changes — goes there as it is discovered.
 
+### The workspace
+
+The **workspace** is the directory Claude is run in, and the one holding `CLAUDE.md`, `NOTES.md` and `features/`. Every path in this document is relative to it. It takes one of two shapes:
+
+- **Tracked workspace** — the workspace is itself the root of a git repository. This is the common case.
+- **Untracked workspace** — the workspace is not under git control; the code being worked on sits in one or more git repositories beneath it.
+
+These two are exhaustive: the workspace is either the repository root, or it is not a repository at all. Either way, `CLAUDE.md`, `NOTES.md` and `features/` live at the top of the workspace, never inside a nested repository — so in an untracked workspace they are not part of any repository, and anything git-specific (ignore rules, branches, diffs) applies to the repositories beneath, not to the tracking files.
+
 ### Sign-off criteria
 
 This section is the **canonical statement of the sign-off model**. The
@@ -162,7 +171,7 @@ These apply at all times, not just when completing features:
 
     Optionally, a sibling `features/plans/<slug>/` directory holds un-inlinable requirements artefacts (screenshots, Word docs, other binaries) that `/feature-spec` copied in and linked from `## Requirements`.
 
-- **`features/tmp/`** — git-ignored scratch space for staging requirements material as input to `/feature-spec`; a hand-off channel, not a store — its contents (other than the tracked `README.md`) are captured into the plan and then removed.
+- **`features/tmp/`** — scratch space for staging requirements material as input to `/feature-spec`, git-ignored in a tracked workspace; a hand-off channel, not a store — its contents (other than the tracked `README.md`) are captured into the plan and then removed.
 
 - **`NOTES.md`** — non-obvious findings only. Do not record things derivable from reading the code.
 

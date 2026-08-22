@@ -4,13 +4,32 @@ Non-obvious findings. Do not record things derivable from reading the code.
 
 ---
 
-`feature-init` has `disable-model-invocation: true`, so it cannot be launched
-via the Skill tool — attempting it errors out. To "run feature-init" (e.g. to
-test a change to its `## Feature model` template), apply its step 1 by hand:
-update the project `CLAUDE.md` Feature model section to match the template block.
-The project `CLAUDE.md` is therefore kept in sync with the template manually, not
-automatically; a diff of the two (ignoring line-wrapping) is the check that they
-agree.
+## `feature-init` can be run from the CLI despite `disable-model-invocation`
+
+`feature-init` has `disable-model-invocation: true`, which blocks only the
+Skill tool — attempting `Skill(devproc:feature-init)` errors out. A CLI
+invocation is not blocked: `claude -p --permission-mode bypassPermissions
+"/feature-init"`, run with the working directory set to a scratch workspace,
+runs the skill end to end (verified). To apply a model-text change without a
+CLI run, hand-apply step 1b instead: copy
+`devproc/skills/feature-init/FEATUREMODEL.md` over `features/FEATUREMODEL.md`
+byte-for-byte. The two copies must stay identical, and
+`diff devproc/skills/feature-init/FEATUREMODEL.md features/FEATUREMODEL.md`
+is the check. Never hand-edit the installed copy: the next `/feature-init`
+overwrites it from the canonical one, silently discarding the edit.
+
+## Verifying a skill's internal steps needs the verbose transcript
+
+`claude -p`'s default output is only the final summary text, which is not
+enough to verify a skill took a specific *internal* step (e.g. which
+directory it ran a command in) rather than merely reaching the right end
+state. Add `--verbose --output-format stream-json` to get the full
+tool-call transcript as JSONL — each assistant text block and tool_use/
+tool_result pair — which can be grepped or parsed for the literal command and
+its output (verified while testing `features-outside-repo` sub-task 3: the
+default summary didn't name which repository `/feature-spec` step 1a read the
+remote from, but the verbose transcript showed the exact `cd .../repo && git
+remote -v` call and the resolved `owner/repo`).
 
 ---
 
