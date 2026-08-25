@@ -54,6 +54,24 @@ Wildcards are supported (e.g. `*.npmjs.org`). Domain arrays merge across setting
 
 On macOS with a MITM proxy and custom CA, Go-based tools like `gh` may additionally need `"enableWeakerNetworkIsolation": true` under `sandbox.network` to reach the system TLS trust service — but this relaxes isolation and should only be used if needed.
 
+## `gh issue view --comments` fails on this repo; use `--json` (#64)
+
+`gh issue view N --repo owner/repo --comments` — the exact command
+`/feature-spec` step 1b prescribes — exits non-zero here with:
+
+```
+GraphQL: Projects (classic) is being deprecated in favor of the new Projects
+experience ... (repository.issue.projectCards)
+```
+
+The failure is in a `projectCards` field the default (non-JSON) view requests,
+not in the issue fetch itself, and it has nothing to do with the issue or with
+auth. `gh issue view N --repo owner/repo --json number,title,body,comments`
+works, because the JSON path requests only the named fields. Reach for the
+`--json` form as soon as the plain one fails this way rather than treating it
+as a network or permission problem — the error text points at Projects, which
+is misleading.
+
 ---
 
 ## Docker build context must be repo root when baking plugins
@@ -771,6 +789,101 @@ but only because the duplication was noticed. The fourth agent's CLI fallback
 is what actually produced the architectural review, so the fallback strategy
 was still correct — it was the diagnosis that was premature, not the response.
 
+## `devproc/README.md`'s step-1c description was split across two clauses, not one (`remove-migration-code`, Sub-task 2)
+
+The per-skill `feature-init` reference in `devproc/README.md` described step 1c's
+"no `## Feature model` section" case in an early clause ("ensures `CLAUDE.md`
+carries an un-backticked import (adding a section for it if absent)") and its
+"embedded text / inert mention" case in a later, separate clause nested inside
+the migration sentence ("including an older project whose `CLAUDE.md` still
+embeds the full model text..."). The two clauses were not adjacent and did not
+read as one description of step 1c — worth knowing before editing this passage
+again, since simply deleting the migration sentence's wrapper and keeping its
+embedded-text detail (as a first pass here did) produces a sentence that states
+"ensures `CLAUDE.md` carries the import" twice. The fix was to merge both
+clauses into one, covering all three of step 1c's cases (absent section /
+non-import body, whether embedded text or an inert mention / already correct)
+in a single place.
+
+## Sub-task 3 validation runs for `remove-migration-code` (#64)
+
+Five real CLI invocations (`claude -p --permission-mode bypassPermissions
+--verbose --output-format stream-json "/feature-init"`) against throwaway
+`/tmp` workspaces, after refreshing `/home/claude/claudeplugins/devproc/skills/feature-init/SKILL.md`
+from the repo copy and confirming `diff -q` byte-identical (the repo's
+`FEATUREMODEL.md` was already identical to the installed copy, so it did not
+need refreshing).
+
+- **(a) empty directory, git-init'd.** End state matched `## Spec` point 3
+  exactly: `features/FEATUREMODEL.md` byte-identical to the shipped canonical
+  copy, `CLAUDE.md` with the live un-backticked import, all four list files
+  from templates, `features/plans/`, `features/tmp/README.md`, and
+  `.gitignore` with the two lines in the correct order
+  (`features/tmp/*` before `!features/tmp/README.md`). Transcript: zero
+  case-insensitive `migrat` hits. **PASS.**
+- **(b) re-run over (a)'s result, seeded first** with a
+  `### Test feature [test-feature]` entry appended to `features/PENDING.md`
+  and a stub `features/plans/test-feature.md`. Checksummed every file
+  (including `.gitignore`) before and after: `diff` of the two checksum
+  listings was empty — every file, including the seeded entry and stub plan,
+  came out byte-identical, and `features/FEATUREMODEL.md` matched the
+  canonical copy throughout. Zero `migrat` hits. **PASS.**
+- **(c) old layout** — root `FEATURES.md` (with `## In progress` /
+  `## Completed` content) and root `notes/` (two files), git-init'd. The
+  skill's own actions were fully compliant: the new `features/` layout was
+  created exactly as in (a), and `FEATURES.md`/`notes/*.md` came out
+  byte-identical (checksummed before/after). **But the "no run may mention
+  migration in its output" criterion failed, reproducibly.** The general
+  agentic assistant — not any instruction in `SKILL.md`, which is clean, and
+  not any tool call the skill's steps call for — did a routine `ls -la`
+  orientation, noticed the leftover `FEATURES.md`/`notes/`, then on its own
+  initiative `Read`/`cat`'d them and appended unprompted commentary to its
+  final summary ("this repo already has an old-style `FEATURES.md`... Let me
+  know if you'd like help porting that old content..."), using the word
+  "migrate"/"migrating". Repeated once more independently (fresh directory,
+  same fixture) to rule out a fluke: same outcome both times — the model read
+  the old files and volunteered a "flagging, not touching" paragraph offering
+  migration help. This is not a defect in the skill's prose (confirmed via the
+  tool-call transcript: no skill step reads or reasons about these files) but
+  it is real, reproducible model behavior on this exact input, and it is
+  output the design's validation criterion says must not occur. **FAIL on the
+  no-migration-mention criterion; PASS on every file/end-state check.**
+  Flagged to the team lead rather than worked around, since fixing it (e.g.
+  telling the skill to instruct the model not to comment) would reintroduce
+  exactly the kind of added verbiage issue #64 rules out, and the fix isn't
+  obviously a `SKILL.md` wording problem at all.
+
+  **Resolved 2026-08-26: accepted as out of scope by the user.** The criterion
+  failed on its literal wording, but what it was written to detect — the skill
+  advertising or performing migration — is provably absent: the transcript
+  shows only `Read`/`cat` against the leftover files (no write, move or
+  delete), and `FEATURES.md` and both `notes/` files were re-checksummed
+  byte-identical. Every `migrat` hit sits in the general assistant's own
+  closing summary. The lesson worth keeping for future validation criteria:
+  **a "no run mentions X in its output" criterion cannot distinguish the
+  skill's output from the surrounding assistant's own commentary**, so it
+  over-triggers whenever a fixture contains anything the model finds worth
+  remarking on. Word such criteria against the *tool-call transcript* (what
+  the skill did) rather than the run's prose, or scope them to the skill's own
+  emitted text.
+- **(d) untracked directory** (no `git init`; confirmed `git rev-parse
+  --is-inside-work-tree` fails, including up the parent chain). No
+  `.gitignore` written, `features/tmp/README.md` still created, and the skill
+  stated plainly that the `.gitignore` step was skipped because the workspace
+  is not a git repository. Zero `migrat` hits. **PASS.**
+- **(e1) pre-existing `CLAUDE.md`, embedded model text** — `## Feature model`
+  held the full canonical `FEATUREMODEL.md` body inline plus a hand-added
+  "special linter" sentence and an unrelated `## Other section`. After the
+  run: the embedded text was replaced with the live un-backticked import, the
+  hand-added sentence and the other section were left intact and unduplicated.
+  Zero `migrat` hits. **PASS.**
+- **(e2) pre-existing `CLAUDE.md`, inert backticked mention** — `## Feature
+  model` held only `` See `features/FEATUREMODEL.md` for the feature model. ``
+  plus a hand-added "two-factor auth" sentence and an unrelated
+  `## Other section`. After the run: the backticked mention was replaced with
+  the live import, the hand-added sentence and other section preserved. Zero
+  `migrat` hits. **PASS.**
+
 ## `features/tmp/regression/` harness scripts are superseded, not just stale (`move-tests-out-of-plugin`)
 
 `features/tmp/regression/run.sh`, `runall.sh`, and `rerun.sh` — a leftover,
@@ -784,3 +897,27 @@ hand-maintained (and already-drifted) lists. The `features/tmp/regression/`
 scripts themselves were deliberately left as they are, dead path and all, since
 only the harness concept was promoted, not the files; do not update or run
 them — use `tests/devproc/harness/run.sh` instead.
+
+## Appending to `NOTES.md` can silently clobber the paragraph above the insertion point
+
+While adding the `gh issue view --comments` entry above during
+`remove-migration-code` (#64), the immediately preceding paragraph — the macOS
+MITM-proxy / `enableWeakerNetworkIsolation` note — was deleted in the same
+commit (`5c47868`). Nothing recorded the removal, and the fact survived nowhere
+else in the tree, so it was pure loss; it was caught only during the feature's
+`/review-branch` gate and restored from `main`.
+
+The failure mode is worth knowing because it is invisible in the obvious check:
+the new entry appears exactly as intended, and the file reads fine. It shows up
+only in the diff, as a `-` line with no matching `+`. So when a change to
+`NOTES.md` is meant to be purely additive, verify that against the diff rather
+than by reading the result:
+
+```
+git diff main -- NOTES.md | grep "^-[^-]"
+```
+
+Any output means content was removed. The same check is worth running over the
+other tracking files (`CLAUDE.md`, `features/`) after a session that appends to
+them, since the same editing pattern is used there and history-only files make
+the loss hard to notice later.

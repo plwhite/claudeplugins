@@ -4,7 +4,7 @@
 
 No feature in progress.
 
-`features-outside-repo` completed 2026-08-22 — taught the skills and feature model that the workspace need not be a git repository (it may hold repositories beneath it): `/feature-init` now writes `.gitignore` only in a tracked workspace, `/feature-spec` says which repository it reads the git remote from, and the "git-ignored `features/tmp`" claims were swept from the docs (#60). See `features/COMPLETED.md` for detail.
+`remove-migration-code` completed 2026-08-28 — removed `/feature-init`'s legacy-layout migration (the workspace-root `FEATURES.md`, `plans/` and `notes/` checks), leaving it a setup-only skill with nothing added in place of what was removed; the `CLAUDE.md` normalisation in step 1c was deliberately kept, as correcting state rather than migrating a layout (#64). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -31,7 +31,7 @@ Skills and agents for feature lifecycle management, workflow orchestration, code
 
 Contents:
 - `devproc/.claude-plugin/plugin.json`
-- `devproc/skills/feature-init/SKILL.md` — one-time setup: copies the canonical `FEATUREMODEL.md` shipped with the skill to `features/FEATUREMODEL.md`, adds its `@import` to `CLAUDE.md`, creates the `features/` directory including a `features/tmp` scratch directory (git-ignored when the workspace is a repository), and migrates an older `FEATURES.md`/`plans/` layout
+- `devproc/skills/feature-init/SKILL.md` — one-time setup: copies the canonical `FEATUREMODEL.md` shipped with the skill to `features/FEATUREMODEL.md`, ensures `CLAUDE.md`'s `## Feature model` section holds the `@features/FEATUREMODEL.md` import, and creates the `features/` directory including a `features/tmp` scratch directory (git-ignored in a tracked workspace)
 - `devproc/skills/feature-spec/SKILL.md` — create a new feature in `features/PENDING.md`, capture the input as `## Requirements` and write `## Spec` (what the feature must do) into the plan file, from a GitHub issue, a one-line description, or requirements material staged in `features/tmp`
 - `devproc/skills/feature-design/SKILL.md` — move a feature to `features/CURRENT.md` and write its design (overview first) and sub-task plan; may amend `## Spec` with the user's approval
 - `devproc/skills/feature-checkpoint/SKILL.md` — sync all documentation to current state

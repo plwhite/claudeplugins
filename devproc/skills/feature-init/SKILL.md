@@ -5,10 +5,10 @@ disable-model-invocation: true
 ---
 
 Make updates to `CLAUDE.md` and the `features/` directory as required — see below
-for details. This skill also **migrates** projects that still use the older
-single-file layout (`FEATURES.md` plus a top-level `plans/` or `notes/`
-directory). It is safe to re-run: on an already-migrated project it leaves the
-existing content in place and only fills in anything missing. Do not change the
+for details. It is safe to re-run: it refreshes `features/FEATUREMODEL.md` from
+the canonical copy every time and brings `CLAUDE.md`'s `## Feature model`
+section's model content to the import line (step 1c); otherwise it leaves
+existing content in place, filling in only what is missing. Do not change the
 structure defined here.
 
 ## 1. Ensure features/FEATUREMODEL.md exists and is loaded by CLAUDE.md
@@ -42,16 +42,15 @@ section and apply the single case that matches:
 - **No `## Feature model` section** — add one whose entire body is the import
   line below.
 - **Section present, but its body is not the live un-backticked import** —
-  whether the body is the full embedded model text (an older initialised
-  project, recognisable because it is more than the one-line import — e.g. it
-  carries the model's own `### Sign-off criteria` / `### Resuming after a session
-  restart` / `### Documents to support the model` sub-sections) or merely a
-  backticked or Markdown-link mention of the path. Replace the model text (and
-  any such inert mention) with the import line, removing the embedded
-  sub-sections so nothing is left duplicated. If the section also holds other,
-  non-model prose someone added by hand, preserve that and replace only the
-  model content. (Step b has already ensured `features/FEATUREMODEL.md` holds
-  the model text.)
+  whether the body is the full embedded model text (recognisable because it is
+  more than the one-line import — e.g. it carries the model's own
+  `### Sign-off criteria` / `### Resuming after a session restart` /
+  `### Documents to support the model` sub-sections) or merely a backticked or
+  Markdown-link mention of the path. Replace the model text (and any such inert
+  mention) with the import line, removing the embedded sub-sections so nothing
+  is left duplicated. If the section also holds other, non-model prose someone
+  added by hand, preserve that and replace only the model content. (Step b has
+  already ensured `features/FEATUREMODEL.md` holds the model text.)
 - **Section present with the live un-backticked import already** — nothing to do.
 
 The import line must be written as a **single physical line** in ordinary prose —
@@ -64,44 +63,11 @@ fence, and place it in `CLAUDE.md` as ordinary prose):
 The feature model for this project — lifecycle, sign-off criteria, and the documents that support it — is defined in @features/FEATUREMODEL.md and applies at all times.
 ```
 
-## 2. Migrate an older layout if present
-
-Perform these older-layout migration steps before creating the fresh
-feature-list files in step 3, so existing feature content is preserved rather
-than overwritten. (Step 1 may already have created `features/` and
-`features/FEATUREMODEL.md`; that is unrelated to the `FEATURES.md`/`plans/`
-migration below.)
-
-1. **Slug directory.** If a top-level `plans/` directory exists (or the older
-   `notes/` directory), move it to `features/plans/`, preserving all its
-   contents. Create the `features/` directory first if needed. If both a
-   top-level `plans/` and `notes/` exist, move `plans/` to `features/plans/` and
-   merge any `notes/` contents into it, then remove the empty `notes/`.
-
-2. **FEATURES.md.** If `FEATURES.md` exists, split it into the four list files
-   under `features/`, mapping its sections as follows:
-
-   | `FEATURES.md` section   | Destination            |
-   |-------------------------|------------------------|
-   | `## In progress`        | `features/CURRENT.md`  |
-   | `## Pending`            | `features/PENDING.md`  |
-   | `## Explicitly deferred`| `features/DEFERRED.md` |
-   | `## Completed`          | `features/COMPLETED.md`|
-
-   Copy each section's `###` feature entries verbatim into the corresponding
-   file under that file's standard header (see templates below). Then delete
-   `FEATURES.md`. Update any links elsewhere in the repo that pointed at
-   `FEATURES.md` or `plans/<slug>.md` to the new paths — at minimum check
-   `CLAUDE.md` and any project README.
-
-If neither `FEATURES.md` nor a top-level `plans/`/`notes/` directory exists,
-there is nothing to migrate; continue to step 3.
-
-## 3. Ensure the feature-list files exist
+## 2. Ensure the feature-list files exist
 
 Create the `features/` directory if it does not exist. For each of the four list
 files, create it from the template below **only if it does not already exist**
-(do not overwrite a file that migration or a previous run produced):
+(do not overwrite a file a previous run produced):
 
 `features/CURRENT.md`:
 
@@ -144,11 +110,11 @@ Features that have been completed, described to reflect what was actually
 developed. Headings must end with the date of completion in YYYY-MM-DD format.
 ~~~
 
-## 4. Ensure the plans directory exists
+## 3. Ensure the plans directory exists
 
 Create the `features/plans/` directory if it does not exist.
 
-## 5. Ensure the tmp scratch directory exists, git-ignored only where the workspace is a git repository
+## 4. Ensure the tmp scratch directory exists, git-ignored only where the workspace is a git repository
 
 Create `features/tmp/` if it does not exist, and create `features/tmp/README.md`
 from the template below **only if it does not already exist** (do not overwrite
