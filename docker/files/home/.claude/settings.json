@@ -6,9 +6,6 @@
     "DISABLE_AUTOUPDATER": "1"
   },
   "theme": "dark-ansi",
-  "permissions": {
-    "defaultMode": "bypassPermissions"
-  },
   "enabledPlugins": {
     "devproc@local-plugins": true
   },
@@ -20,6 +17,5 @@
       }
     }
   },
-  "effortLevel": "high",
-  "defaultMode": "auto"
+  "effortLevel": "high"
 }
