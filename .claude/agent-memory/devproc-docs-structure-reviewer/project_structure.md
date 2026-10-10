@@ -43,6 +43,13 @@ type: project
 - **Where the vocabulary still has NOT reached (2nd pass):** root `README.md` (Documentation table, never mentions it — declined SUGGESTION), `docs/capabilities.md`, `docs/container.md` ("the project directory", no equivalence sentence — declined MINOR), `docs/workflow.md` L191 ("Open Claude in the project directory", one screen below its own workspace definition), `docs/setup.md` `.claudeignore` step (mixes "each project" / "each workspace" / "each project root").
 - **Deliberate wording exception, do NOT flag:** `feature-init/SKILL.md` step 5's heading says "where the workspace is a git repository" rather than "tracked" because the heading precedes the inline definition; the skill also carries a parenthetical explaining why it restates the definition instead of referencing `FEATUREMODEL.md` (the skill is what installs that file).
 
+## Sub-task format, post subtask-handling (#67, 2026-10-10)
+
+- Sub-tasks are `### N. Name` headings under `## Sub-tasks`; `✓ (YYYY-MM-DD)` appended to heading; `▶ NEXT:` + list-wide notes at TOP of section. Old numbered-list format still accepted (reviewer must not flag; `old-format-control` fixture).
+- FEATUREMODEL `### Sign-off criteria` gained: performed-order rule, **Docs-first sub-tasks** para (judgement; allowance for extra docs-review box), written-steps rule (inline or `features/plans/<slug>/` file). New `### Changing the sub-task list` (lettered `7a` vs fix in passing; choice stated).
+- Rule-ownership: FEATUREMODEL owns rules; skills/agents carry a one-line action + pointer (NOTES "Where devproc rules are restated"); user-doc homes = workflow.md + capabilities.md (manager unattended), devproc/README links.
+- Design suite: 11 cases (two controls); spec suite 7; harness covers 18.
+
 ## Conventions observed
 
 - Plugin layout: `.claude-plugin/plugin.json` + `skills/<name>/SKILL.md` + `agents/<name>.md`

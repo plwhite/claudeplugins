@@ -87,16 +87,27 @@ and provide corrections before implementation begins.>
 
 ## Sub-tasks
 
-1. **<Sub-task name>** — <brief description of what success looks like>
-   - [ ] <sign-off criterion>   (see step 6)
-2. **<Sub-task name>** — ...
-...
-N. **Final sign-off criteria** — <only when `## Sign-off strategy` defines end-of-feature gates; one checkbox per gate, omitted entirely otherwise — see step 6>
-   - [ ] <gate>   (add "(performed at `/feature-end`)" if that gate is performed by `/feature-end` itself)
-
 **▶ NEXT:** Sub-task 1
 
 > Run `/feature-checkpoint` after each sub-task completes.
+
+<List-wide notes, if any — e.g. a recurring omission justified once (see step 6).>
+
+### 1. <Sub-task name>
+
+<Brief description of what the sub-task covers and what success looks like.>
+
+- [ ] <sign-off criterion>   (see step 6)
+
+### 2. <Sub-task name>
+
+...
+
+### N. Final sign-off criteria
+
+<Only when `## Sign-off strategy` defines end-of-feature gates; one checkbox per gate, omitted entirely otherwise — see step 6.>
+
+- [ ] <gate>   (add "(performed at `/feature-end`)" if that gate is performed by `/feature-end` itself)
 
 ## Review record
 
@@ -109,27 +120,37 @@ Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md`
 6. Give each sub-task its **sign-off criteria**, derived from the `## Sign-off strategy` agreed at `/feature-spec`. The conventions these must follow — the standard categories, the checkbox format, auditability, performer attribution on review boxes, omitting categories that do not apply rather than writing untickable placeholders, and materialising any strategy-defined end-of-feature gates as a conditional final sub-task rather than leaving them only in strategy prose — are defined in `features/FEATUREMODEL.md` under `### Sign-off criteria`. Apply them. Specific to this step:
 
    - Under each sub-task, add a checkbox for every sign-off that applies to it — the applicable standard categories plus any feature-specific sign-offs the strategy defined. List only what genuinely applies: a small internal sub-task may need only one box, a risky one may need all of them.
-   - If an omission is one a reader might question, justify it once where it belongs: a feature-wide skip in `## Sign-off strategy`, or a note beneath the sub-task list for a case that recurs across several sub-tasks (e.g. "sub-tasks 1–2 carry no user review — no user-visible surface until sub-task 3").
+   - If an omission is one a reader might question, justify it once where it belongs: a feature-wide skip in `## Sign-off strategy`, or a list-wide note at the top of `## Sub-tasks`, after the `▶ NEXT:` line, for a case that recurs across several sub-tasks (e.g. "sub-tasks 1–2 carry no user review — no user-visible surface until sub-task 3").
+   - List each sub-task's criteria in the order they will be performed.
+   - For each sub-task that changes both docs and code, decide whether to make it docs-first (**Docs-first sub-tasks** in `FEATUREMODEL.md`). Where it is unclear, ask the user.
+   - For each sign-off, decide whether it needs written steps, and if so whether they go inline or in a file under `features/plans/<slug>/`, per `FEATUREMODEL.md`. Where it is unclear, ask the user.
    - Check whether `## Sign-off strategy` defines any end-of-feature gates (e.g. one feature-wide `/review-branch`, one `docs-structure-reviewer` pass, a final user review). If it does, add them as the last sub-task, named **"Final sign-off criteria"**, one checkbox per gate — never spread across earlier sub-tasks and never left as strategy prose alone. If the strategy defines no such gates, do not add this sub-task; an empty or placeholder final sub-task is exactly the untickable-box case the conventions rule out.
    - Annotate the final-sub-task box (if any) that `/feature-end` performs itself (typically the close-out docs-review box, since `/feature-end` runs that review as it closes the feature) with "(performed at `/feature-end`)". This is the one box the model expects to stay unticked until `/feature-end` runs — everything else, including every other box in the final sub-task, must be ticked before it starts.
 
-   Example:
+   Example — a docs-first sub-task, in which the user reviews the documented syntax before the parser is written:
+
    ```
-   3. **Add the config parser** — handle the new format
-      - [ ] Testing: unit tests for the parser, passing
-      - [ ] Code review (agent): /review-component the parser
-      - [ ] Docs review (agent): docs-structure-reviewer over the updated config docs
-      - [ ] User review: user confirms the config syntax
+   ### 3. Add the config parser
+
+   Document the new config format, then parse it.
+
+   - [ ] Documentation: config docs describe the new syntax
+   - [ ] Docs review (user): user confirms the config syntax as documented, before the parser is written
+   - [ ] Testing: unit tests for the parser, passing
+   - [ ] Code review (agent): /review-component the parser
    ```
 
    Final sub-task example — added only because the strategy in this case defined
    these four gates; a feature whose strategy defines none gets no such sub-task:
    ```
-   6. **Final sign-off criteria** — end-of-feature gates for this feature, per `## Sign-off strategy`
-      - [ ] Testing (dry-run): representative walkthrough recorded in NOTES.md
-      - [ ] Code review (agent): /review-branch over all changed files; findings resolved or dismissed
-      - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
-      - [ ] User review: user confirms the feature matches intent
+   ### 6. Final sign-off criteria
+
+   End-of-feature gates for this feature, per `## Sign-off strategy`.
+
+   - [ ] Testing (dry-run): representative walkthrough recorded in NOTES.md
+   - [ ] Code review (agent): /review-branch over all changed files; findings resolved or dismissed
+   - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
+   - [ ] User review: user confirms the feature matches intent
    ```
 
 > Step 7 below is near-identical in `feature-spec` and `feature-design`. If you change the review invocation, the finding-handling rules, the two-invocation cap, the unattended-mode gate, or the `## Review record` format, update both — a silent divergence in the unattended gate is the worst case, since it governs when human sign-off is bypassed. If you add or remove a finding marker, update both agents' `## Output Format` too: the markers are the contract between them.
@@ -171,6 +192,7 @@ Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md`
    - what the review changed, in a line or two — not a transcript of its findings;
    - every `[decision]` finding, as a question they need to answer;
    - any question *you* could not settle from the requirements, whether or not the review raised it, recorded in the plan file's Handoff section as well — a skipped review does not mean there is nothing to ask;
+   - the sign-off choices you made, so the user can see they were explicit: which sub-tasks you made docs-first, and for each sign-off with written steps whether they are inline or in a separate file under `features/plans/<slug>/`;
    - any MINOR or SUGGESTION finding you did not apply, in brief — enough that the user knows it was raised, not a transcript;
    - the verdict, or a plain statement that the review was skipped and on whose instruction.
 

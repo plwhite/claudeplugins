@@ -97,3 +97,14 @@ finding on any of them now would be a regression in the fixture, not a pass:
   expectations. The overview was added to every case carrying a clean or
   incidentally-mutated `## Design`; `unclear-design` is the deliberate
   exception, since a missing overview is the flaw it exists to test.
+
+- The design never said **how the client starts the download**. Server-side
+  streaming only keeps browser memory flat if the browser streams the response
+  to disk; a `fetch` plus `Blob` implementation would break the spec's
+  browser-memory requirement while passing every criterion. Found by the
+  2026-10-10 regression, when `misordered-criteria`, `missing-final-signoff`
+  and `oversized-subtasks` each drew a MAJOR against `## Design` for it while
+  `control` did not (same nondeterministic signature as the defects above). The
+  "Export happens on the server, streamed" section now states the form-submit
+  mechanism and records the rejected `fetch` + `Blob` alternative; the text is
+  shared byte-for-byte across every case that carries the baseline design.

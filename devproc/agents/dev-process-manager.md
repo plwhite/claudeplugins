@@ -55,8 +55,8 @@ This project tracks work as **features**: each has an entry in one of the
 status-split list files under `features/` (`CURRENT.md`, `PENDING.md`,
 `DEFERRED.md`, `COMPLETED.md`) and a plan in `features/plans/<slug>.md` with a
 Handoff section, a Requirements section, a Spec section, a Sign-off strategy
-section, a Design section, and a numbered sub-task list in which each sub-task
-carries its sign-off criteria as checkboxes.
+section, a Design section, and a sub-task list with one heading per sub-task,
+each carrying its sign-off criteria as checkboxes.
 The feature in progress is in `features/CURRENT.md`. Progress is saved by running
 `/feature-checkpoint` after each sub-task; a feature is closed with
 `/feature-end`. A sub-task counts as done only when all of its sign-off boxes are
@@ -111,6 +111,18 @@ step. Regardless of the boundary, **always pause for the user** when:
   approach); or
 - you hit a blocker, ambiguity, or a result that diverges from the agreed goal.
 
+The list of sub-tasks may change while you work (see `### Changing the sub-task
+list` in `features/FEATUREMODEL.md`). Inside an unattended boundary:
+
+- New work that affects the flow of work in progress — a remaining planned
+  sub-task depends on it, or would be done differently because of it — **stops
+  the run** for the user to decide.
+- Any other new sub-task is proposed at the boundary and never started
+  unagreed.
+- A **fix in passing** does not stop the run when it is small and contained; any
+  change that would rework another component halts the run, whatever it is
+  called. Fixes in passing are listed in the boundary report.
+
 When you reach the boundary, stop and report clearly: what was done, what you
 verified, and what is next.
 
@@ -125,7 +137,10 @@ give each teammate must:
 - spell out the sub-task's **sign-off criteria** (the checkboxes in the plan) and
   require every one to be satisfied before the sub-task is reported done;
 - point it at the plan file, `NOTES.md`, and any relevant code for context;
-- tell it to record non-obvious findings in `NOTES.md`; and
+- tell it to record non-obvious findings in `NOTES.md`, to record fixes in
+  passing as notes under its sub-task, and to report, not add, anything
+  that looks like a new sub-task (including when it runs `/feature-checkpoint`);
+  and
 - **require it to run `/feature-checkpoint` when its sub-task is complete**, so
   the plan, the `features/` list files, and docs stay in sync.
 
@@ -145,6 +160,9 @@ review skills `/review-branch` and `/review-component`, the review agents, and
 or any box naming the user as performer — pause and get the user's confirmation
 rather than ticking it on their behalf.
 
+- Where the teammate reports something that looks like a new sub-task or a fix
+  in passing, you decide which it is (and whether the run must stop, per
+  step 2), and say so.
 - If the work is inadequate or wrong, or a sign-off box is not truly met, send the
   teammate specific corrections via SendMessage and let it iterate.
 - The sub-task is done only when it is good **and** every sign-off box is ticked.

@@ -5,6 +5,12 @@ developed. Headings must end with the date of completion in YYYY-MM-DD format.
 
 ---
 
+### Improve plugin subtask handling [subtask-handling] — 2026-10-10
+
+Reworked how the `devproc` workflow writes and maintains a plan's sub-task list (#67). Each sub-task is now a `### N. Name` heading, with `✓ (date)` on completion and `▶ NEXT:` at the top of `## Sub-tasks`. Sign-off boxes are listed in the order they are performed. `/feature-design` also decides, and reports, two things per sub-task: whether it is docs-first (the user reviews the docs before the code is written) and whether a sign-off needs written steps, inline or in `features/plans/<slug>/`. A new `### Changing the sub-task list` section of `FEATUREMODEL.md` says new work becomes a lettered sub-task (`7a`) only when it is unforeseen and significant, with its criteria put to the user; anything smaller is a fix in passing. `dev-process-manager` stops an unattended run for new work that affects the remaining plan.
+
+`feature-design-reviewer` gained checks for misordered boxes and unwritten sign-off steps, with three new test cases; all 18 harness cases pass, and a real-CLI dry run in a scratch workspace passed every step. The docs-first wording was made more precise after the user's first review, when the dry run showed that "docs review first among its criteria" failed when writing the docs is itself a box. At the user's request, repetition was cut: rules live once in `FEATUREMODEL.md`, skills and agents keep only a one-line action, and the user docs keep one home per topic (see `NOTES.md`).
+
 ### Remove old migration code [remove-migration-code] — 2026-08-28
 
 Removed `/feature-init`'s legacy-layout migration, leaving it a setup-only skill (#64). The whole of `## 2. Migrate an older layout if present` — the top-level `plans/`/`notes/` move and the `FEATURES.md` split table — was deleted, the surviving steps renumbered to a continuous 1–4, and four prose passages trimmed in the skill plus three in `devproc/README.md` and one in `CLAUDE.md`, so no live document claims the skill migrates anything. Nothing was added in its place: no detection, no warning, no hand-migration instructions. A workspace still in the old layout now gets the same treatment as an empty one — a fresh `features/` layout created beside the old files, which are left untouched and unmentioned — which is the outcome the issue asked for rather than a defect.

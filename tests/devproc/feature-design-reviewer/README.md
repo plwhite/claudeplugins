@@ -23,6 +23,16 @@ either as an artefact in its own right, so:
   versa — except where a single flaw genuinely spans both, which is recorded in
   that case's `.expected.md`.
 
+The baseline `## Design` and `## Sub-tasks` text is shared across the design
+cases in the same way, and follows the same rules as the spec suite's
+[Maintaining the shared baseline](../feature-spec-reviewer/README.md#maintaining-the-shared-baseline):
+a weakness found in it is fixed in every case that carries it. `NOTES.md`
+("Design-fixture baseline: a gap only some cases noticed") records why. The
+three cases whose `## Design` is the deliberate target (`unclear-design`,
+`unexplained-design`, `unresolved-design-question`) carry their own altered
+design text instead; likewise, the cases targeting `## Sub-tasks`, and
+`old-format-control`, carry their own sub-task text.
+
 ## Cases
 
 `unclear-design` and `unexplained-design` are deliberately kept distinct
@@ -57,7 +67,14 @@ against an untargeted section" rule is too weak for this case — the bar is tha
 | `unresolved-design-question` | Blocking issues |
 | `oversized-subtasks` | Sub-task quality |
 | `missing-final-signoff` | Delivery criteria — end-of-feature gates left in strategy prose instead of a "Final sign-off criteria" sub-task |
+| `misordered-criteria` | Delivery criteria — a sub-task's boxes listed out of performed order |
+| `unwritten-signoff-steps` | Delivery criteria — a substantial sign-off whose steps are written down nowhere |
+| `old-format-control` | None — `control` with `## Sub-tasks` in the old numbered-list format; must pass, with no finding about the format |
 | `no-spec` | The missing-`## Spec` guard — one BLOCKING `[decision]` finding and nothing else |
+
+`## Sub-tasks` in every case except `old-format-control` uses the heading format
+(`### N. Name`, description first, boxes beneath). `old-format-control` keeps the
+older numbered-list format so that the reviewer's acceptance of it stays tested.
 
 ## Running the tests
 

@@ -6,6 +6,23 @@ type: project
 
 (Prior history retained — see git log for older entries.)
 
+## Thirty-eighth review, second pass (2026-10-10) — confirmation; SOUND
+All 38th fixes verified; every anchor resolves (incl. new `#sub-tasks-and-their-sign-off-criteria`, `#when-the-sub-task-list-changes`, spec README `### Maintaining the shared baseline`); FEATUREMODEL twin matches at L92/108/214. User said do NOT re-raise: /feature-end follow-up placement in closed plan Handoff; Handoff/close-out timing.
+New MINORs: (1) **section-insertion swallow recurred** (cf. 37th 2nd pass) — workflow.md new `### Sub-tasks and their sign-off criteria` now contains the "Before the design reaches you" + "Review the design before approving it" paras, which are about the whole design; (2) devproc/README link labels name the parent section ("Design a feature", "Implement: …") while anchors target subsections; (3) devproc/README feature-design L91 + L95 both still talk about criteria (trim left a split). **Always check what follows a newly inserted heading.**
+
+## Thirty-eighth review (2026-10-10) — subtask-handling (#67) close-out; this IS the /feature-end docs-review gate
+
+Verdict SOUND (0 CRITICAL / 0 MAJOR). FEATUREMODEL twin identical by visual read of all changed regions. Settled user decision (do NOT re-raise as repetition the other way): rules live once in FEATUREMODEL; user docs have one home per topic — workflow.md (sub-task format/order/docs-first/written steps/list changes), capabilities.md (manager unattended behaviour); devproc/README links. Recommending *further* de-duplication is fine; reintroducing copies is not.
+Resolved since 37th: workflow.md git list now under its own `## Working with git`; "Open Claude in the workspace" (was "project directory").
+Findings (all MINOR/SUGGESTION):
+- **New class — stale fixture counts after adding cases**: spec-suite README "Maintaining the shared baseline" says "fifteen files" (now 18); tests/README.md says "one per check, plus a clean control" (design suite now has two controls). Grep for spelled-out counts whenever fixtures are added.
+- Design-suite shared `## Design`/`## Sub-tasks` baseline undocumented as a maintenance rule (NOTES L925 has the incident; 3 fixtures knowingly lack the download sentence).
+- Single-home sections have no own anchors: devproc/README + capabilities.md link to the top of long `## Design a feature` / `## Implement` sections.
+- capabilities.md "affects the flow of work in progress" undefined in the user doc (defined only in dev-process-manager.md).
+- workflow.md's only sub-task example models the late-docs-review pattern the feature argues against; skill example is docs-first.
+- Open follow-up (`/feature-end` step 2 vs performed-at box) recorded only in the closed plan's Handoff — orphaned. **Watch for "raise separately" items stranded in closed plans.**
+- Plan Handoff written ahead of the event ("/feature-end ... performed the close-out docs review") while box still [ ] — inverse of the usual stale-Handoff class.
+
 ## Thirty-seventh review, second pass (2026-08-22) — features-outside-repo fix verification; CONVERGING (1 CRITICAL + 4 MAJOR → 0 CRITICAL, 1 MAJOR)
 
 **CRITICAL twin divergence RESOLVED, and resolved the right way** — fixed at the canonical `devproc/skills/feature-init/FEATUREMODEL.md` and copied down, not patched in the installed copy. Both L16–23 now identical; `### The workspace` moved above `### Sign-off criteria` so the definition precedes every use; single dense sentence-chain replaced by lead sentence + two bullets. The over-claiming "exhaustive" sentence is now "either the repository root, or it is not a repository at all" — **the two-shape model is a user decision, not reopenable; a zero-repository workspace is not a third shape, and `/feature-spec` step 1a's "none found" branch is defensive handling.** Do not re-raise.

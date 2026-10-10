@@ -19,18 +19,24 @@ Steps:
 1. Read `features/CURRENT.md` to identify the in-progress feature and its plan file reference.
 
 2. Read the plan file (`features/plans/<slug>.md`). Update it to reflect the actual current state:
-   - Mark a sub-task complete (✓) with a completion date **only when all of its sign-off boxes are `[x]`** — the completion rule defined in `features/FEATUREMODEL.md` under `### Sign-off criteria`. If any sign-off box is still `[ ]`, the sub-task is *not* complete — leave it unmarked and record its state (see partial progress below). Tick a sign-off box only when the work it names is genuinely done; never tick one — especially a *user review* box — on the user's behalf. This skill records state; it does not grant sign-off.
-   - Move the **▶ NEXT:** marker to the next incomplete sub-task if applicable.
+   - Mark a sub-task complete (✓) with a completion date, appended to its heading as `✓ (YYYY-MM-DD)`, **only when all of its sign-off boxes are `[x]`** — the completion rule defined in `features/FEATUREMODEL.md` under `### Sign-off criteria`. If any sign-off box is still `[ ]`, the sub-task is *not* complete — leave it unmarked and record its state (see partial progress below). Tick a sign-off box only when the work it names is genuinely done; never tick one — especially a *user review* box — on the user's behalf. This skill records state; it does not grant sign-off.
+   - Update the **▶ NEXT:** marker at the top of `## Sub-tasks` to name the next incomplete sub-task if applicable.
    - For any sub-task that is *partially* complete, record what has been done and what remains. Its sign-off boxes already carry most of this — ticked ones are done, unticked ones outstanding — so make sure they are accurate, and add indented notes for any progress a box does not capture. Example:
      ```
-     3. **Refactor auth module** — extract session handling to its own class
-        - [x] Testing: SessionManager unit tests passing
-        - [ ] Code review (agent): /review-component the auth module
-        - [ ] User review: user confirms the new interface
-        - Remaining: token-refresh path still to extract
+     ### 3. Refactor auth module
+
+     Extract session handling to its own class.
+
+     - [x] Testing: SessionManager unit tests passing
+     - [ ] Code review (agent): /review-component the auth module
+     - [ ] User review: user confirms the new interface
+     - Remaining: token-refresh path still to extract
      ```
-   - Add any new sub-tasks discovered during implementation, giving each its sign-off criteria.
-   - Keep sub-task headline descriptions concise (one line each).
+   - If the sub-task list has changed during implementation, apply `### Changing the sub-task list` in `features/FEATUREMODEL.md`, and state which of its two routes you chose so the user can overturn it:
+     - **A new lettered sub-task** (e.g. `7a`), with its own heading and criteria. Mark the criteria as proposed until the user has agreed them. If you are a teammate working under `dev-process-manager`, do not add one yourself: report it to the manager, which decides and records it.
+     - **A fix in passing**, recorded as a note under the sub-task it arose in.
+   - `▶ NEXT:` follows document order, so a lettered sub-task such as `7a` comes before `8`.
+   - Keep sub-task descriptions concise (one line each).
 
 3. Update the `## Handoff` section at the top of the plan file. Create it if it does not exist. This section is the single source of truth for resuming work in a new session:
 

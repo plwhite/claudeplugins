@@ -921,3 +921,41 @@ Any output means content was removed. The same check is worth running over the
 other tracking files (`CLAUDE.md`, `features/`) after a session that appends to
 them, since the same editing pattern is used there and history-only files make
 the loss hard to notice later.
+
+## Design-fixture baseline: a gap only some cases noticed (subtask-handling, sub-task 4)
+
+After converting the design fixtures to the heading format, three of the
+shared-baseline cases (`misordered-criteria`, `missing-final-signoff`,
+`oversized-subtasks`) drew a MAJOR against `## Design` that `control` did not:
+the design never said how the client receives the download, so a `fetch` +
+`Blob` implementation would hold the whole file in browser memory despite server
+streaming. The format change did not cause it; it was a latent baseline gap the
+reviewer notices nondeterministically. Fixed in the fixtures (a form-submit
+sentence plus the rejected alternative), not the reviewer. A MAJOR on the
+unnamed query-builder / column-definition modules appeared once as well; that
+stays a tolerated soft spot since the fixture product is not this repository.
+
+## Dry-running `/feature-checkpoint` on hand-ticked boxes (Sub-task 6, #67)
+
+`/feature-checkpoint` audits ticked boxes against the work, not just their
+state: boxes ticked by hand with no `README.md` behind them made it refuse to
+mark the sub-task complete and ask the user, and a stub README that missed
+required spec items got the same treatment. A dry-run fixture that hand-ticks
+a sub-task must therefore contain work that genuinely meets the criteria.
+Also pass `< /dev/null` to `claude -p --continue` runs, or each waits 3s for
+stdin and prints a warning.
+
+## Where devproc rules are restated, and where not (subtask-handling, #67)
+
+A rule lives once, in `FEATUREMODEL.md`. A skill or agent file carries only the
+one-line *action* it must take, plus a pointer — not the rule's full text or
+its reasons. The action line is still needed even though the model is in
+context: an agent works from its own file, and a bare "apply section X" tends
+to lose the specifics at the moment of acting. `/review-branch` found exactly
+this: `/feature-checkpoint` told a teammate to add a lettered sub-task while
+`dev-process-manager` told it to report one, and the fix had to go in both
+files. Exception: `feature-design-reviewer` keeps its checks written out with
+severities, because it needs to know what to flag and how hard. User docs
+carry no copies: `docs/workflow.md` is the single home for the sub-task rules,
+`docs/capabilities.md` for the manager's unattended behaviour, and
+`devproc/README.md` links to them.

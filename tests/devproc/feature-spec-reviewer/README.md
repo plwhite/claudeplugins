@@ -40,7 +40,7 @@ sign-off criterion harder to audit.
 "One shared baseline" is a statement about the text, not about the files: the
 baseline `## Requirements`, `## Spec` and `## Sign-off strategy` are copied
 **byte-for-byte into every case in both suites**, not referenced from one place.
-So a weakness in that text is a weakness in fifteen files at once.
+So a weakness in that text is a weakness in every case file of both suites at once.
 
 This matters more than it used to. Since the clarity criterion checks *every*
 section of *every* fixture against a MAJOR-capable standard, a wording weakness
