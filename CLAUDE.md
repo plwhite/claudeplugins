@@ -4,7 +4,7 @@
 
 No feature in progress.
 
-`remove-migration-code` completed 2026-08-28 — removed `/feature-init`'s legacy-layout migration (the workspace-root `FEATURES.md`, `plans/` and `notes/` checks), leaving it a setup-only skill with nothing added in place of what was removed; the `CLAUDE.md` normalisation in step 1c was deliberately kept, as correcting state rather than migrating a layout (#64). See `features/COMPLETED.md` for detail.
+`subtask-handling` completed 2026-10-10 — sub-tasks are now `### N. Name` headings with sign-off boxes listed in performed order, docs-first and written-step choices made at `/feature-design`, and mid-feature changes to the sub-task list made as an explicit choice between a lettered sub-task and a fix in passing (#67). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -42,7 +42,7 @@ Contents:
 - `devproc/skills/internal-docs-prune/SKILL.md` — prune internal Claude-facing docs (root and nested `CLAUDE.md` files, `NOTES.md`, `.claude/rules/*.md`): spawn `internal-docs-reviewer`, auto-apply redundant/stale findings without content loss, escalate or defer judgment findings
 - `devproc/agents/dev-process-manager.md` — top-level Opus orchestrator (`claude --agent dev-process-manager`); drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user
 - `devproc/agents/feature-spec-reviewer.md` — reviews a feature spec (`## Spec` and sign-off strategy, including clarity against the `### Readability` standard) before a human reads it, ending with a `READY FOR USER REVIEW` / `NEEDS WORK` verdict
-- `devproc/agents/feature-design-reviewer.md` — reviews a feature design (`## Design`) and its sub-task plan (`## Spec` coverage, design clarity, recorded rationale, auditable criteria) before a human reads it, ending with the same verdict
+- `devproc/agents/feature-design-reviewer.md` — reviews a feature design (`## Design`) and its sub-task plan (`## Spec` coverage, design clarity, recorded rationale, auditable, ordered criteria with non-obvious steps written down) before a human reads it, ending with the same verdict
 - `devproc/agents/docs-structure-reviewer.md` — audits documentation structure and quality, producing actionable findings
 - `devproc/agents/internal-docs-reviewer.md` — reviews internal Claude-facing docs for redundant, stale, or judgment-call content, producing gated findings (action + class) without modifying files
 - `devproc/agents/code-review-architectural.md` — architectural review agent (`opus`)

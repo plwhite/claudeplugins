@@ -131,20 +131,39 @@ server cannot know the user's timezone and the two dates differ near midnight.
 
 ## Sub-tasks
 
-1. **Reports page export control** — the control appears on the reports page, calls the export endpoint with the current filters and the client's local date, and downloads the returned file
-   - [ ] Testing: automated test that the control issues the request with the current filters and the client's local date, and that the returned file downloads with the correct name, passing; one manual export of the largest available test tenant, opened in a spreadsheet with values confirmed correct
-   - [ ] User review: the user opens an exported file from a filtered report and confirms it is what finance needs
-2. **Cell formatting and CSV serialisation** — ISO dates, unformatted numbers, column order/headings matching the screen, and correctly quoted output
-   - [ ] Testing: automated tests for ISO date formatting, unformatted numbers, and column order against the on-screen column set, passing
-   - [ ] Testing: automated tests for serialisation of values containing commas, quotes and newlines, and for the header row, passing
-3. **Export endpoint with streamed row selection** — the endpoint returns the correct rows for a given filter set, streamed, with flat memory use
-   - [ ] Testing: automated tests for filter application (including a filter set spanning more than one page), passing; a 200,000-row export completes with flat server memory
-4. **Help page section and implementation notes** — user-facing documentation of the export, and the memory-constraint record
-   - [ ] Documentation: help page section describing the export and its column meanings; `NOTES.md` entry recording how the large-export memory constraint was met
-5. **Final sign-off criteria** — end-of-feature gates for this feature, per `## Sign-off strategy`
-   - [ ] Code review (agent): /review-branch over all changed files
-   - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
-
 **▶ NEXT:** Sub-task 1
 
 > Run `/feature-checkpoint` after each sub-task completes.
+
+### 1. Reports page export control
+
+The control appears on the reports page, calls the export endpoint with the current filters and the client's local date, and downloads the returned file
+
+- [ ] Testing: automated test that the control issues the request with the current filters and the client's local date, and that the returned file downloads with the correct name, passing; one manual export of the largest available test tenant, opened in a spreadsheet with values confirmed correct
+- [ ] User review: the user opens an exported file from a filtered report and confirms it is what finance needs
+
+### 2. Cell formatting and CSV serialisation
+
+ISO dates, unformatted numbers, column order/headings matching the screen, and correctly quoted output
+
+- [ ] Testing: automated tests for ISO date formatting, unformatted numbers, and column order against the on-screen column set, passing
+- [ ] Testing: automated tests for serialisation of values containing commas, quotes and newlines, and for the header row, passing
+
+### 3. Export endpoint with streamed row selection
+
+The endpoint returns the correct rows for a given filter set, streamed, with flat memory use
+
+- [ ] Testing: automated tests for filter application (including a filter set spanning more than one page), passing; a 200,000-row export completes with flat server memory
+
+### 4. Help page section and implementation notes
+
+User-facing documentation of the export, and the memory-constraint record
+
+- [ ] Documentation: help page section describing the export and its column meanings; `NOTES.md` entry recording how the large-export memory constraint was met
+
+### 5. Final sign-off criteria
+
+End-of-feature gates for this feature, per `## Sign-off strategy`
+
+- [ ] Code review (agent): /review-branch over all changed files
+- [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)

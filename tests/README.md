@@ -32,7 +32,7 @@ captures output, it does not judge pass/fail.
 | Directory | What it holds |
 |-----------|---------------|
 | [tests/devproc/feature-spec-reviewer/](devproc/feature-spec-reviewer/README.md) | Fixtures for `feature-spec-reviewer`: deliberately flawed plan files, one per check, plus a clean control, each paired with a recorded `.expected.md` |
-| [tests/devproc/feature-design-reviewer/](devproc/feature-design-reviewer/README.md) | Fixtures for `feature-design-reviewer`, on the same terms |
+| [tests/devproc/feature-design-reviewer/](devproc/feature-design-reviewer/README.md) | Fixtures for `feature-design-reviewer`, on the same terms, with two controls (the current heading format and the older list format) and several cases for the delivery-criteria check |
 | [tests/devproc/internal-docs-reviewer/](devproc/internal-docs-reviewer/README.md) | Fixtures for `internal-docs-reviewer`. Shaped differently: each case is a fixture *directory* reviewed as a stand-in repository root, not a single file |
 | [tests/devproc/harness/](devproc/harness/README.md) | Regression harness (`run.sh`) for the two plan-file suites. Does **not** cover `internal-docs-reviewer`, whose fixture shape needs a different invocation |
 

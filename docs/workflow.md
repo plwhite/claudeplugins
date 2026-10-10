@@ -110,23 +110,37 @@ Claude reads `## Requirements` and `## Spec` in the plan file, researches the re
 
 Design work sometimes turns up a problem with the spec itself that `/feature-spec` did not anticipate — a requirement that turns out to be impossible as written, or one where a cheap alternative beats the literal ask. `/feature-design` can amend `## Spec` to fix this, but never without telling you: every amendment is put to you for approval before the design proceeds on it, and once approved it is logged in the plan file's `## Review record` alongside the amendment's reason. If you are running unattended, a proposed amendment stops the run and waits for your answer, the same as any other open question.
 
-Each sub-task is given its own **sign-off criteria** — checkboxes for the categories that apply to it (the relevant subset of testing / documentation / code review / docs review / user review), derived from the sign-off strategy agreed at spec time. These appear under the sub-task in the plan file, e.g.:
-
-```
-3. **Add the parser** — handle the new config format
-   - [ ] Testing: unit tests for the parser, passing
-   - [ ] Code review (agent): /review-component the parser
-   - [ ] Docs review (agent): docs-structure-reviewer over the updated config docs
-   - [ ] User review: user confirms the config syntax
-```
-
-`- [ ]` is pending and `- [x]` is satisfied; the sub-task is complete only once every box is `[x]`.
-
-Where the sign-off strategy defines any end-of-feature gate — a single `/review-branch` before the feature closes, one `docs-structure-reviewer` pass, a final user review — Claude adds it as a last sub-task, **"Final sign-off criteria"**, one checkbox per gate. This only happens when such gates actually exist; a feature whose sign-offs are all satisfied within earlier sub-tasks gets no final sub-task. A box that `/feature-end` performs itself (typically the docs-review box, since `/feature-end` runs that review as it closes the feature) is marked "(performed at `/feature-end`)" — the one box expected to stay unticked until then.
-
 Before the design reaches you, the `feature-design-reviewer` agent reads it — see [Review before you read it](#review-before-you-read-it) below.
 
 **Review the design before approving it.** The design, the sub-task plan, and each sub-task's sign-off criteria are presented to you before any implementation begins. This is the moment to correct the approach, adjust scope, add constraints, or change what each sub-task must satisfy before it counts as done. Implementation does not start until you confirm.
+
+### Sub-tasks and their sign-off criteria
+
+Each sub-task is given its own **sign-off criteria** — checkboxes for the categories that apply to it (the relevant subset of testing / documentation / code review / docs review / user review), derived from the sign-off strategy agreed at spec time. These appear under the sub-task in the plan file, e.g.:
+
+```
+### 3. Add the config parser
+
+Document the new config format, then parse it.
+
+- [ ] Documentation: config docs describe the new syntax
+- [ ] Docs review (user): user confirms the config syntax as documented, before the parser is written
+- [ ] Testing: unit tests for the parser, passing
+- [ ] Code review (agent): /review-component the parser
+```
+
+This one is docs-first: you confirm the documented syntax before the parser is written. `- [ ]` is pending and `- [x]` is satisfied; the sub-task is complete only once every box is `[x]`.
+
+Each sub-task is its own heading, so it appears in your editor's outline; on completion `/feature-checkpoint` appends `✓` and the date to the heading. The `▶ NEXT:` marker sits at the top of the `## Sub-tasks` section.
+
+Boxes are listed in the order they are performed, so the list reads as a sequence: no box comes before one that has to happen first. Boxes that can run in parallel may appear in any order.
+
+Claude also makes two judgements while writing these criteria, and states each in its report so you can overturn it:
+
+- **Docs-first.** Where a sub-task changes both docs and code, Claude considers writing the docs first and putting the docs review ahead of the code. The reason is that docs review is where "that procedure is wrong" surfaces, and catching it after the code, tests and docs are written means redoing all three. It is a judgement, not a rule, and Claude asks you when it is unclear. It may add a docs review box the sign-off strategy does not call for; you agree it with the rest of the criteria.
+- **Written steps.** Where a sign-off needs substantial or non-obvious steps (typically a test plan), Claude writes them down: inline beneath the criterion when short, or in a file in `features/plans/<slug>/`, linked from the criterion, when complex.
+
+Where the sign-off strategy defines any end-of-feature gate — a single `/review-branch` before the feature closes, one `docs-structure-reviewer` pass, a final user review — Claude adds it as a last sub-task, **"Final sign-off criteria"**, one checkbox per gate. This only happens when such gates actually exist; a feature whose sign-offs are all satisfied within earlier sub-tasks gets no final sub-task. A box that `/feature-end` performs itself (typically the docs-review box, since `/feature-end` runs that review as it closes the feature) is marked "(performed at `/feature-end`)" — the one box expected to stay unticked until then.
 
 ---
 
@@ -182,7 +196,14 @@ Implementation has no slash command of its own — once the design is approved, 
 
 So long as you have run `/feature-checkpoint`, you can restart Claude at any time and it will be able to pick up where it is left off, as all context is recorded.
 
-Often, you will find more necessary work as you go along; you can ask Claude to add more sub-tasks at any point.
+### When the sub-task list changes
+
+You will often find more necessary work as you go along. The sub-task list can change at any point, and Claude makes the choice explicit, on a sliding scale of size and reach:
+
+- **Unforeseen and significant work becomes a new lettered sub-task** (`7a`, then `7b`, so later sub-tasks are not renumbered), with its own heading and sign-off criteria. Those criteria are put to you for agreement, since the new scope's quality bar has not been agreed.
+- **Anything smaller is a fix in passing.** It is not a sub-task: it is made as part of the sub-task it arose in and noted under it.
+
+Claude states which it chose, so you can overturn it. See `### Changing the sub-task list` in `features/FEATUREMODEL.md`. Under the [Dev Process Manager](capabilities.md#dev-process-manager), the manager makes this call and decides whether it stops an unattended run.
 
 ---
 

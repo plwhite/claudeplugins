@@ -107,6 +107,11 @@ Rejected alternative: generating the file client-side from an existing paginated
 API by fetching every page. This was rejected on the memory constraint above,
 and because it would multiply request count on the largest tenants.
 
+The control starts the download by submitting a form to the endpoint (a plain
+navigation), so the browser streams the response straight to disk. Requesting
+the file with `fetch` and saving the resulting `Blob` was rejected: the whole
+file would then sit in browser memory, which is the same constraint again.
+
 ### Row selection reuses the existing report query
 
 The export endpoint builds its query with the same query-builder the reports
@@ -140,21 +145,44 @@ server cannot know the user's timezone and the two dates differ near midnight.
 
 ## Sub-tasks
 
-1. **Build the export** — build the export
-   - [ ] Testing: automated tests for filter application, ISO date formatting, unformatted numbers, column order, and serialisation of values containing commas, quotes and newlines, all passing; a 200,000-row export completes with flat server memory; the reports page control issues the request correctly; one manual export of the largest available test tenant, opened in a spreadsheet with values confirmed correct
-   - [ ] User review: the user opens an exported file from a filtered report and confirms it is what finance needs
-2. **Rename the `ReportView` props for consistency** — `data` becomes `rows`
-   - [ ] Testing: existing reports page tests still passing
-3. **Add a `TODO` comment to the legacy PDF exporter** — note that it should adopt the new formatting layer
-   - [ ] Testing: none — comment only
-4. **Bump the `csv-writer` dependency to 4.2.1** — the version with the quoting fix
-   - [ ] Testing: existing tests still passing
-5. **Help page section and implementation notes** — user-facing documentation of the export, and the memory-constraint record
-   - [ ] Documentation: help page section describing the export and its column meanings; `NOTES.md` entry recording how the large-export memory constraint was met
-6. **Final sign-off criteria** — end-of-feature gates for this feature, per `## Sign-off strategy`
-   - [ ] Code review (agent): /review-branch over all changed files
-   - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
-
 **▶ NEXT:** Sub-task 1
 
 > Run `/feature-checkpoint` after each sub-task completes.
+
+### 1. Build the export
+
+Build the export
+
+- [ ] Testing: automated tests for filter application, ISO date formatting, unformatted numbers, column order, and serialisation of values containing commas, quotes and newlines, all passing; a 200,000-row export completes with flat server memory; the reports page control issues the request correctly; one manual export of the largest available test tenant, opened in a spreadsheet with values confirmed correct
+- [ ] User review: the user opens an exported file from a filtered report and confirms it is what finance needs
+
+### 2. Rename the `ReportView` props for consistency
+
+`data` becomes `rows`
+
+- [ ] Testing: existing reports page tests still passing
+
+### 3. Add a `TODO` comment to the legacy PDF exporter
+
+Note that it should adopt the new formatting layer
+
+- [ ] Testing: none — comment only
+
+### 4. Bump the `csv-writer` dependency to 4.2.1
+
+The version with the quoting fix
+
+- [ ] Testing: existing tests still passing
+
+### 5. Help page section and implementation notes
+
+User-facing documentation of the export, and the memory-constraint record
+
+- [ ] Documentation: help page section describing the export and its column meanings; `NOTES.md` entry recording how the large-export memory constraint was met
+
+### 6. Final sign-off criteria
+
+End-of-feature gates for this feature, per `## Sign-off strategy`
+
+- [ ] Code review (agent): /review-branch over all changed files
+- [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)

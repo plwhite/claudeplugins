@@ -8,7 +8,7 @@ through their lifecycle — **spec → design → implement → end**:
 - `/feature-spec` — create a new feature in `features/PENDING.md`, write its specification into the plan file, and agree the feature's **sign-off strategy**
 - `/feature-design` — move a feature to `features/CURRENT.md`, write its design and sub-task plan, and agree the **sign-off criteria** for each sub-task
 - *(implementation has no slash command — work through the sub-tasks directly; a sub-task is complete only when all its sign-off boxes are ticked)*
-- `/feature-checkpoint` — during implementation, sync all feature documentation and plans to the current state (run after each sub-task and when prompted within subtasks)
+- `/feature-checkpoint` — during implementation, sync all feature documentation and plans to the current state (run after each sub-task and when prompted within sub-tasks)
 - `/feature-end` — mark a feature complete and move it to `features/COMPLETED.md`
 
 `NOTES.md` is maintained continuously. Any non-obvious technical finding — page structure quirks, API behaviour, design decisions, scope changes — goes there as it is discovered.
@@ -59,11 +59,37 @@ parentheses — e.g. `- [ ] Code review (agent): /review-component the parser`,
 `- [ ] Code review (user): user reads the parser diff`. (A **User review**
 box needs no parenthetical — the user is the performer by definition.)
 
+Under each sub-task the boxes are listed **in the order they are performed**: a
+criterion is never listed before one that logically comes before it, and
+criteria that can be carried out in parallel may appear in any order relative to
+each other. There is no fixed category order; the order comes from the
+sub-task, not from the list of categories.
+
+**Docs-first sub-tasks.** Where a sub-task changes both documentation and code,
+it is often worth writing the documentation first and having the user review it
+before the code is written. Reviewing docs is where a user says "no, that is not
+the right procedure" — and if that comes after the code is written and tested,
+the code, the tests and the docs all have to be redone. This is a judgement,
+not a rule: `/feature-design` considers it for each sub-task that changes both,
+and asks the user when it is unclear. A docs-first sub-task's docs review box
+comes before the boxes for the code written after it; the docs-first work may
+also be a sub-task of its own, ahead of the one that writes the code.
+`/feature-design` may add that box even where the strategy has no
+per-sub-task docs review; the user agrees it with the rest of the criteria.
+
+Auditability also means a criterion can be carried out without guessing. Where
+a sign-off needs a substantial or non-obvious set of steps, write them down —
+inline beneath the criterion when they are short, or in a separate file in
+`features/plans/<slug>/`, linked from the criterion, when they are complex or
+multi-step. Whether a sign-off needs written steps, and which form, is a
+judgement made at `/feature-design`, which asks the user when it is unclear and
+states the choices it made.
+
 For each category it is legitimate to decide *not* to do it — but that decision
 is made explicitly and up front, where the user can comment on it:
 
 - **Strategy (at `/feature-spec`).** The plan file's `## Sign-off strategy` section records the quality bar per category for the whole feature (e.g. "100% test coverage" vs "basic tests" vs "none"; "full production docs" vs "internal notes only"), including the bar for any end-of-feature gates (e.g. "one `/review-branch` before end", "one `docs-structure-reviewer` review", "final user review"). The user agrees it.
-- **Criteria (at `/feature-design`).** Each sub-task in `## Sub-tasks` carries the applicable sign-off categories as checkboxes, derived from the strategy. Where the strategy defines end-of-feature gates, `/feature-design` also materialises them as an explicit final sub-task named **"Final sign-off criteria"**, one checkbox per gate — added only when such gates actually exist, never as an empty placeholder. The user agrees them.
+- **Criteria (at `/feature-design`).** Each sub-task in `## Sub-tasks` carries the applicable sign-off categories as checkboxes, derived from the strategy. Where the strategy defines end-of-feature gates, `/feature-design` also materialises them as an explicit final sub-task named **"Final sign-off criteria"**, one checkbox per gate — added only when such gates actually exist, never as an empty placeholder. The user agrees them. Criteria may go beyond the strategy in one case: the docs review box of a docs-first sub-task (see **Docs-first sub-tasks** above).
 - **Completion (at implement time).** A sub-task may be marked complete (✓) only when every one of its sign-off boxes is ticked.
 
 Checkbox convention:
@@ -78,6 +104,26 @@ which boxes are ticked and which remain so the hand-off is accurate, and never
 marks a sub-task complete while a box is still outstanding — except the one
 `/feature-end`-performed box noted above, whose unticked state before `/feature-end`
 runs is the model's expected state, not a sign of incompleteness.
+
+### Changing the sub-task list
+
+The sub-task list may change after `/feature-design`. A change is handled in one
+of two ways:
+
+- **A new sub-task**, only for work that is both unforeseen and significant
+  enough to be a sub-task in its own right. It is numbered with the next free
+  letter suffix on the sub-task that prompted it (`7a`, then `7b`) rather than
+  by renumbering later sub-tasks, and placed after that sub-task and any
+  lettered sub-tasks already following it. It has its own heading and its own
+  sign-off criteria, derived from the strategy and ordered as set out under
+  `### Sign-off criteria`. Those criteria are put to the user for agreement,
+  since the new scope's quality bar has not been agreed.
+- **A fix in passing**, for anything smaller. It is not a sub-task: it is part
+  of the sub-task it arose in, and is recorded as a note under it.
+
+Which applies is a judgement on a sliding scale, set by the size and reach of
+the change rather than by what it is called. Whoever makes the choice states it
+when it is made, so the user can overturn it.
 
 ### Readability
 
@@ -165,11 +211,11 @@ These apply at all times, not just when completing features:
 
     - Design (implementation strategy)
 
-    - Subtask list with short descriptions, per-sub-task sign-off checkboxes, and status markers (`✓`, `▶ NEXT:`)
+    - Sub-tasks: each sub-task is a `### N. Name` heading one level below `## Sub-tasks`, with a short description, then its sign-off checkboxes. `✓ (date)` is appended to the heading on completion. The `▶ NEXT:` line and any notes that apply to the whole list sit at the top of the section.
 
     - Review record (a log, appended by `/feature-spec`, `/feature-design`, and `/feature-end`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped — and of any amendment `/feature-design` makes to `## Spec`, recording the user's approval and why it changed. Always the last section of the file; a line is written every time a stage runs or a spec amendment is made, so an absent line means neither has happened. Preserve it across edits.)
 
-    Optionally, a sibling `features/plans/<slug>/` directory holds un-inlinable requirements artefacts (screenshots, Word docs, other binaries) that `/feature-spec` copied in and linked from `## Requirements`.
+    Optionally, a sibling `features/plans/<slug>/` directory holds un-inlinable requirements artefacts (screenshots, Word docs, other binaries) that `/feature-spec` copied in and linked from `## Requirements`, and sign-off plans (e.g. test plans) that `/feature-design` wrote and linked from the criteria they serve.
 
 - **`features/tmp/`** — scratch space for staging requirements material as input to `/feature-spec`, git-ignored in a tracked workspace; a hand-off channel, not a store — its contents (other than the tracked `README.md`) are captured into the plan and then removed.
 

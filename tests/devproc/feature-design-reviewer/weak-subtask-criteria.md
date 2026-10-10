@@ -107,6 +107,11 @@ Rejected alternative: generating the file client-side from an existing paginated
 API by fetching every page. This was rejected on the memory constraint above,
 and because it would multiply request count on the largest tenants.
 
+The control starts the download by submitting a form to the endpoint (a plain
+navigation), so the browser streams the response straight to disk. Requesting
+the file with `fetch` and saving the resulting `Blob` was rejected: the whole
+file would then sit in browser memory, which is the same constraint again.
+
 ### Row selection reuses the existing report query
 
 The export endpoint builds its query with the same query-builder the reports
@@ -150,18 +155,37 @@ the only way to satisfy the requirement without guessing at a timezone.
 
 ## Sub-tasks
 
-1. **Export endpoint with streamed row selection** — the endpoint returns the correct rows for a given filter set, streamed, with flat memory use
-   - [ ] Testing: tests added for the endpoint
-2. **Cell formatting layer** — ISO dates, unformatted numbers, and column order/headings matching the screen
-3. **Reports page export control** — the control appears on the reports page and downloads the file with the correct name
-   - [ ] Testing: the control works
-   - [ ] User review: none
-4. **Help page section and implementation notes** — user-facing documentation of the export, and the memory-constraint record
-   - [ ] Documentation: docs updated
-5. **Final sign-off criteria** — end-of-feature gates for this feature, per `## Sign-off strategy`
-   - [ ] Code review (agent): /review-branch over all changed files
-   - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
-
 **▶ NEXT:** Sub-task 1
 
 > Run `/feature-checkpoint` after each sub-task completes.
+
+### 1. Export endpoint with streamed row selection
+
+The endpoint returns the correct rows for a given filter set, streamed, with flat memory use
+
+- [ ] Testing: tests added for the endpoint
+
+### 2. Cell formatting layer
+
+ISO dates, unformatted numbers, and column order/headings matching the screen
+
+
+### 3. Reports page export control
+
+The control appears on the reports page and downloads the file with the correct name
+
+- [ ] Testing: the control works
+- [ ] User review: none
+
+### 4. Help page section and implementation notes
+
+User-facing documentation of the export, and the memory-constraint record
+
+- [ ] Documentation: docs updated
+
+### 5. Final sign-off criteria
+
+End-of-feature gates for this feature, per `## Sign-off strategy`
+
+- [ ] Code review (agent): /review-branch over all changed files
+- [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)

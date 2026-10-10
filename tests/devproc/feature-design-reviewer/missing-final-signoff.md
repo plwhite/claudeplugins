@@ -107,6 +107,11 @@ Rejected alternative: generating the file client-side from an existing paginated
 API by fetching every page. This was rejected on the memory constraint above,
 and because it would multiply request count on the largest tenants.
 
+The control starts the download by submitting a form to the endpoint (a plain
+navigation), so the browser streams the response straight to disk. Requesting
+the file with `fetch` and saving the resulting `Blob` was rejected: the whole
+file would then sit in browser memory, which is the same constraint again.
+
 ### Row selection reuses the existing report query
 
 The export endpoint builds its query with the same query-builder the reports
@@ -152,17 +157,6 @@ the only way to satisfy the requirement without guessing at a timezone.
 
 ## Sub-tasks
 
-1. **Export endpoint with streamed row selection** — the endpoint returns the correct rows for a given filter set, streamed, with flat memory use
-   - [ ] Testing: automated tests for filter application (including a filter set spanning more than one page), passing; a 200,000-row export completes with flat server memory
-2. **Cell formatting and CSV serialisation** — ISO dates, unformatted numbers, column order/headings matching the screen, and correctly quoted output
-   - [ ] Testing: automated tests for ISO date formatting, unformatted numbers, and column order against the on-screen column set, passing
-   - [ ] Testing: automated tests for serialisation of values containing commas, quotes and newlines, and for the header row, passing
-3. **Reports page export control** — the control appears on the reports page and downloads the file with the correct name
-   - [ ] Testing: automated test that the control issues the request with the current filters and the client's local date, passing; one manual export of the largest available test tenant, opened in a spreadsheet with values confirmed correct
-   - [ ] User review: the user opens an exported file from a filtered report and confirms it is what finance needs
-4. **Help page section and implementation notes** — user-facing documentation of the export, and the memory-constraint record
-   - [ ] Documentation: help page section describing the export and its column meanings; `NOTES.md` entry recording how the large-export memory constraint was met
-
 **▶ NEXT:** Sub-task 1
 
 > Feature-level sign-off: one agent `/review-branch` and one agent docs review
@@ -173,3 +167,29 @@ the only way to satisfy the requirement without guessing at a timezone.
 > until sub-task 3, where the user review for the feature sits.
 
 > Run `/feature-checkpoint` after each sub-task completes.
+
+### 1. Export endpoint with streamed row selection
+
+The endpoint returns the correct rows for a given filter set, streamed, with flat memory use
+
+- [ ] Testing: automated tests for filter application (including a filter set spanning more than one page), passing; a 200,000-row export completes with flat server memory
+
+### 2. Cell formatting and CSV serialisation
+
+ISO dates, unformatted numbers, column order/headings matching the screen, and correctly quoted output
+
+- [ ] Testing: automated tests for ISO date formatting, unformatted numbers, and column order against the on-screen column set, passing
+- [ ] Testing: automated tests for serialisation of values containing commas, quotes and newlines, and for the header row, passing
+
+### 3. Reports page export control
+
+The control appears on the reports page and downloads the file with the correct name
+
+- [ ] Testing: automated test that the control issues the request with the current filters and the client's local date, passing; one manual export of the largest available test tenant, opened in a spreadsheet with values confirmed correct
+- [ ] User review: the user opens an exported file from a filtered report and confirms it is what finance needs
+
+### 4. Help page section and implementation notes
+
+User-facing documentation of the export, and the memory-constraint record
+
+- [ ] Documentation: help page section describing the export and its column meanings; `NOTES.md` entry recording how the large-export memory constraint was met

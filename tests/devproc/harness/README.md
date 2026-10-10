@@ -18,7 +18,7 @@ limit of this harness, not an oversight.
   error otherwise.
 - The fixture suites must be present under `tests/devproc/`.
 - **Budget for the agent invocations.** A bare `./run.sh` runs every case in
-  both suites (15 at the time of writing), three at a time, each with a
+  both suites (18 at the time of writing), three at a time, each with a
   900-second ceiling.
   Run `-n` first to confirm the case list without spending anything.
 

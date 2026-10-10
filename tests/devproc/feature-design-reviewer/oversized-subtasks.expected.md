@@ -26,7 +26,7 @@ not reviewed.
 The findings should also raise at least one of:
 
 3. **Sub-task 1's description is empty** — "build the export" restates the name
-   and states nothing about what success looks like.
+   and states nothing about what it covers or what success looks like.
 4. **Ordering leaves work stranded** — the `TODO` comment in sub-task 3 refers to
    the formatting layer, which is buried inside sub-task 1 with no independent
    existence; and the trivia sub-tasks sit between the feature work and its
