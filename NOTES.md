@@ -54,23 +54,27 @@ Wildcards are supported (e.g. `*.npmjs.org`). Domain arrays merge across setting
 
 On macOS with a MITM proxy and custom CA, Go-based tools like `gh` may additionally need `"enableWeakerNetworkIsolation": true` under `sandbox.network` to reach the system TLS trust service — but this relaxes isolation and should only be used if needed.
 
-## `gh issue view --comments` fails on this repo; use `--json` (#64)
+## `gh issue view --comments`: old `gh` fails, new `gh` prints only comments; use `--json` (#64, #70)
 
-`gh issue view N --repo owner/repo --comments` — the exact command
-`/feature-spec` step 1b prescribes — exits non-zero here with:
+`gh issue view N --repo owner/repo --comments`, which `/feature-spec` step 1b
+prescribed until #70, misbehaves in two ways depending on the
+`gh` version:
 
-```
-GraphQL: Projects (classic) is being deprecated in favor of the new Projects
-experience ... (repository.issue.projectCards)
-```
+- **Old `gh` (such as Ubuntu's 2.46.0) exits non-zero** with
+  `GraphQL: Projects (classic) is being deprecated ... (repository.issue.projectCards)`.
+  The default view requests a `projectCards` field GitHub has retired. This is
+  not a network, auth or issue problem, despite the error naming Projects. The
+  container image installs `gh` from GitHub's apt repository (#70), so it no
+  longer happens there, but a host with an old `gh` still hits it.
+- **Current `gh` (2.102.0) succeeds but prints only the comments when stdout
+  is not a terminal**, with no title or body. Claude's Bash tool never has a
+  terminal, so for an issue with no comments the output is empty, with exit 0.
+  In a terminal the same command prints the whole issue.
 
-The failure is in a `projectCards` field the default (non-JSON) view requests,
-not in the issue fetch itself, and it has nothing to do with the issue or with
-auth. `gh issue view N --repo owner/repo --json number,title,body,comments`
-works, because the JSON path requests only the named fields. Reach for the
-`--json` form as soon as the plain one fails this way rather than treating it
-as a network or permission problem — the error text points at Projects, which
-is misleading.
+`gh issue view N --repo owner/repo --json number,title,body,comments` works in
+both cases, because it requests only the named fields and its output does not
+depend on whether stdout is a terminal. `/feature-spec` steps 1b and 1c use
+this form for that reason (#70).
 
 ---
 

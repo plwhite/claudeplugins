@@ -5,6 +5,10 @@ developed. Headings must end with the date of completion in YYYY-MM-DD format.
 
 ---
 
+### Upgrade to latest gh [upgrade-gh] — 2026-10-11
+
+The container image now installs `gh` from GitHub's own apt repository, unpinned, in a separate commented `RUN` step (#70). Ubuntu's package (2.46.0 on Ubuntu 26.04) was too old to run `gh issue view --comments`. Implementation also found that current `gh` (2.102.0) prints only the comments for `--comments` when there is no terminal. With the user's approval, `/feature-spec` steps 1b and 1c now read issues with `gh issue view --json`, and `NOTES.md` records both behaviours. The user's host build test passed, and the final `/review-branch` and `/review-docs` (accuracy, agent docs) gates found only wording fixes; `--state all` for the natural-language issue search was noted as a possible follow-up.
+
 ### Docs review overhaul [explicit-docs-review] — 2026-10-11
 
 Rebuilt docs review in the shape of code review (#69). `docs-structure-reviewer` and its memory are retired; four stateless, findings-only agents replace it, architectural (`opus`), accuracy and style for the user docs and agent docs for `CLAUDE.md`, `NOTES.md` and `.claude/rules/`, run by a new `/review-docs` skill over a `full`, `change` (default) or described scope. The skill applies minor in-doc fixes, bounds later passes to serious findings so prose review does not churn, and escalates significant and boundary findings. Docs review is now an ordinary sign-off with per-kind bars in the strategy, and `/feature-end` runs none, so the "(performed at `/feature-end`)" exception is gone.

@@ -5,7 +5,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     curl \
     git \
-    gh \
     tmux \
     nodejs \
     npm \
@@ -15,6 +14,21 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     shellcheck \
     sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install gh from GitHub's own apt repository rather than Ubuntu's archive.
+# Ubuntu's package lags well behind GitHub's releases, even on ubuntu:latest,
+# and old versions break `gh issue view --comments`. Follows GitHub's Debian
+# instructions (https://github.com/cli/cli/blob/trunk/docs/install_linux.md),
+# using the curl installed above instead of wget.
+RUN mkdir -p -m 755 /etc/apt/keyrings \
+    && curl -fsSL -o /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+        https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+    && mkdir -p -m 755 /etc/apt/sources.list.d \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+        > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup locale - necessary for Claude to look right
