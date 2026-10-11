@@ -5,12 +5,14 @@ fixture suites (`../feature-spec-reviewer/`, `../feature-design-reviewer/`)
 through their respective agents and records the output for comparison
 against each case's `<case>.expected.md`.
 
-**Does not cover `internal-docs-reviewer`.** That suite's cases are fixture
-*directories* (each pointed at as a stand-in repository root), not single
-`.md` files, and need a different invocation shape than the one this script
-implements. See `../internal-docs-reviewer/README.md` for how to run that
-suite by hand. Covering only the two plan-file suites is a deliberate scope
-limit of this harness, not an oversight.
+**Does not cover `internal-docs-reviewer` or `review-docs`.** `internal-docs-reviewer`'s
+cases are fixture *directories* (each pointed at as a stand-in repository
+root), not single `.md` files; `review-docs` is a scratch git repository
+built by a script, reviewed with a skill invocation. Both need a different
+invocation shape than the one this script implements. See
+`../internal-docs-reviewer/README.md` and `../review-docs/README.md` for how
+to run them by hand. Covering only the two plan-file suites is a deliberate
+scope limit of this harness, not an oversight.
 
 ## Prerequisites
 
@@ -18,7 +20,7 @@ limit of this harness, not an oversight.
   error otherwise.
 - The fixture suites must be present under `tests/devproc/`.
 - **Budget for the agent invocations.** A bare `./run.sh` runs every case in
-  both suites (18 at the time of writing), three at a time, each with a
+  both suites (19 at the time of writing), three at a time, each with a
   900-second ceiling.
   Run `-n` first to confirm the case list without spending anything.
 

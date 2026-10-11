@@ -142,27 +142,6 @@ The container exposes the agent via `claude-run --manager` (or `--agent NAME`),
 passed through `CLAUDE_AGENT` to `run-claude.sh`, which adds `--agent` to the
 `--continue` relaunch args too so a resumed session keeps the same agent.
 
-## Agent memory paths must be anchored to `$CLAUDE_PROJECT_DIR` (#23)
-
-A bare relative path in an agent prompt (e.g. "Store findings in
-`.claude/agent-memory/...`") resolves against the agent's current working
-directory, not the repo root. The `docs-structure-reviewer` agent was run from
-various directories and created stray `.claude/agent-memory/` trees wherever it
-happened to be. The `memory: project` frontmatter field does not save this — the
-prose path in the prompt body is what governs where files actually land. The fix
-is to write the path as `$CLAUDE_PROJECT_DIR/.claude/agent-memory/...`, which
-Claude Code expands to the project root regardless of cwd, and to use the same
-anchored path for both the write target and the start-of-review `MEMORY.md` read.
-
-A second, subtler point surfaced during the feature-end review: a plugin agent's
-`memory: project` directory is **namespace-prefixed** with the plugin name. The
-runtime tree for this agent is `.claude/agent-memory/devproc-docs-structure-reviewer/`,
-not the bare `.claude/agent-memory/docs-structure-reviewer/` — so the prose path
-must include the `devproc-` prefix to match where memory actually lands, otherwise
-the agent's manual reads/writes miss the automatically provisioned tree. (A stale
-unprefixed `docs-structure-reviewer/` tree from before the fix is a leftover
-artifact and can be deleted manually.)
-
 ### `--agent` does not apply the agent's model to the top-level session
 
 Found in Sub-task 4 testing: `claude --agent dev-process-manager` ran as Sonnet,
@@ -184,6 +163,14 @@ overrides it, and an agent whose definition is not in this repo (so the model
 cannot be derived) falls back to no `--model`, i.e. the previous default
 behaviour. Verified the derivation handles both the alias (`opus`) and pinned
 ids (`claude-opus-4-6`).
+
+## Docs review agents are stateless (#69, supersedes #23)
+
+The four `docs-review-*` agents carry no `memory:` field and no memory section.
+The old `docs-structure-reviewer` kept project memory, and what accumulated
+there turned into instructions the next run followed (settled calls, wording
+preferences) rather than facts about the code. A reviewer that re-derives its
+findings each run cannot be steered by its own earlier output.
 
 ## Testing a new agent in the session that creates it (#20)
 
@@ -270,13 +257,6 @@ for no apparent reason. Both agents therefore now state the category distinction
 explicitly rather than leaving it to be inferred: stylistic preference is wording
 one would phrase differently where the meaning is *already clear*; a failure
 against `### Readability` is a different kind of thing and is MAJOR.
-
-`docs-structure-reviewer` had the same conflation in a worse form, and predates
-this feature: its severity ladder defined MINOR as a "clarity or consistency
-issue", and its constraints capped stylistic preference below MAJOR "unless they
-cause genuine confusion" — making confusion an exception carved out of taste.
-Split into separate Clarity and Stylistic Consistency criteria, with MINOR
-now reserved for issues that do not obscure meaning.
 
 Generalises two ways. First, the severity ceiling in a closing `## Constraints`
 list is easy to miss when writing a new `## Review Criteria` entry, because the
@@ -489,7 +469,7 @@ and parsing its live prose output.
 
 ## internal-docs-prune documentation placement (sub-task 4)
 
-`internal-docs-reviewer` was grouped next to `docs-structure-reviewer` in both
+`internal-docs-reviewer` was grouped next to the docs review agents in both
 `devproc/README.md`'s Contents table and its `## Agent reference` section
 (rather than at the end, alphabetically, or beside the code-review agents) —
 the two are thematically paired (both are read-only findings-only review
@@ -507,15 +487,6 @@ new capabilities.md section's anchor (`#internal-docs-hygiene`) is linked back
 from workflow.md — checked both resolve under GitHub's heading-to-anchor
 convention (lowercase, spaces to hyphens) since Markdown doesn't fail loudly
 on a broken in-repo anchor.
-
-## `/feature-design` step 6: which end-of-feature gates get an annotation (#47)
-
-A category is an end-of-feature gate only if it is once-only, performed at
-close, and owned by no ordinary sub-task; where none qualifies, no "Final
-sign-off criteria" sub-task is added at all. The "(performed at
-`/feature-end`)" annotation attaches only to a box `/feature-end` itself
-performs — the close-out docs review, yes; a `/review-branch` run as a separate
-invocation beforehand, no. Annotating both boxes, or neither, is a real bug.
 
 ## Memory belongs to the skill, not the agent (#46, code-review resolution)
 
@@ -757,8 +728,8 @@ This was caught on 2026-08-11 only because the divergence was checked with
 reports success, and the resulting `features/FEATUREMODEL.md` is internally
 consistent — just stale. Nothing downstream notices.
 
-The existing note "Agents loaded through the `Agent` tool come from
-`/home/claude/claudeplugins/devproc/`" covers agent *definitions*. This is the
+The existing note "`/home/claude/claudeplugins` is a live plugin copy,
+separate from this repo" covers agent *definitions*. This is the
 same root cause with a wider blast radius: it applies to any **data file a
 skill ships and copies**, where the effect is not "you tested old prose" but
 "you reverted a committed change". The working order is: edit the repo, refresh
@@ -934,6 +905,11 @@ reviewer notices nondeterministically. Fixed in the fixtures (a form-submit
 sentence plus the rejected alternative), not the reviewer. A MAJOR on the
 unnamed query-builder / column-definition modules appeared once as well; that
 stays a tolerated soft spot since the fixture product is not this repository.
+It recurs as a MAJOR `[decision]` in `weak-subtask-criteria` and
+`oversized-subtasks`, so those two `.expected.md` files tolerate that one
+finding explicitly (#69). The reviewer rule that produces it (an unconfirmable
+component is at least MAJOR `[decision]`) is right for real plans; no fixture
+text can make a fictional product's modules confirmable.
 
 ## Dry-running `/feature-checkpoint` on hand-ticked boxes (Sub-task 6, #67)
 
@@ -959,3 +935,20 @@ severities, because it needs to know what to flag and how hard. User docs
 carry no copies: `docs/workflow.md` is the single home for the sub-task rules,
 `docs/capabilities.md` for the manager's unattended behaviour, and
 `devproc/README.md` links to them.
+
+## `rsync` is not in the container image
+
+The plugin refresh steps use `rsync -a --delete`; it is absent from the image
+and must be installed (`sudo apt-get install -y rsync`) before the first
+refresh. `/feature-init` reads the installed plugin copy, so run before that
+refresh it reports "nothing to do" even after the canonical `FEATUREMODEL.md`
+has been edited.
+
+## Testing `/review-docs` in print mode (`tests/devproc/review-docs/`)
+
+- A scratch repo built by copying a baseline, committing, then overlaying changed files back-to-back can leave a same-size edit (e.g. `--name` to `--user`) invisible to `git status`/`git diff`: the copied mtime and size match the index's stat cache. `setup.sh` touches the overlaid files and refreshes the index; without that the agents saw a code change that git did not show.
+- In `claude -p`, the `result` is only the last assistant message, and review agents run in the background. A skill that reports in earlier turns, or asks its first escalation question before the report, loses the report from the captured output; `/review-docs` writes the whole report as one message before any question.
+
+## Docs review boundary: agent docs and feature records are not user docs (#69)
+
+A `/review-docs` test fixture for the user-docs boundary needs faults on both sides of it, and its baseline must not itself have a user doc relying on `CLAUDE.md`, or the planted fault is not the only one of its kind. Passing the fixture does not mean the agent docs agent catches every stranded procedure: on this repository's own final review it missed that the feature-model maintenance procedure was held only in `CLAUDE.md` (moved to `CONTRIBUTING.md` by hand), so treat its "nothing a person needs is held only here" check as best-effort.

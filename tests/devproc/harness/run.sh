@@ -3,9 +3,11 @@
 # fixture suites (../feature-spec-reviewer/, ../feature-design-reviewer/).
 # See README.md in this directory for usage and how to read the output.
 #
-# Does NOT cover the internal-docs-reviewer suite: its cases are fixture
-# directories reviewed as a stand-in repository root, not single .md files,
-# and need a different invocation shape. See README.md.
+# Does NOT cover the internal-docs-reviewer suite (its cases are fixture
+# directories reviewed as a stand-in repository root, not single .md files) or
+# the review-docs suite (a scratch git repository built by a script, reviewed
+# with a skill invocation). Both need a different invocation shape. See
+# README.md.
 set -uo pipefail
 shopt -s nullglob
 

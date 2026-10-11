@@ -20,10 +20,9 @@ observation about this file — not an invented fault.
   (client-side generation) is recorded with why it lost.
 - **Delivery criteria** — each sub-task's boxes derive from the agreed strategy;
   each is auditable; the strategy's feature-level `/review-branch` and
-  `docs-structure-reviewer` gates are materialised as sub-task 5 ("Final
-  sign-off criteria"), one box each, rather than repeated on every sub-task —
-  with the docs-review box correctly carrying the "(performed at
-  `/feature-end`)" annotation.
+  `/review-docs` gates are materialised as sub-task 5 ("Final
+  sign-off criteria"), one box each, rather than repeated on every sub-task,
+  the docs-review box naming `/review-docs` and the kinds.
 - **Blocking issues** — none: no deferred decisions, no dependency on anything
   that does not exist, and the ordering works (endpoint, then formatting, then
   the control that uses both, then docs, then the closing gates).

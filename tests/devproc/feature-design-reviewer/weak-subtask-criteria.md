@@ -70,8 +70,8 @@ exporting anything other than the reports page.
 - **Documentation** — User-facing help page section describing the export and
   its column meanings, plus a `NOTES.md` entry recording how the large-export
   memory constraint was met.
-- **Docs review** — One agent docs review (`docs-structure-reviewer`) over the
-  updated docs at `/feature-end`.
+- **Docs review** — One agent `/review-docs` over the change, all kinds, in the
+  final sub-task.
 - **Code review** — One agent `/review-branch` before `/feature-end`.
 - **User review** — The user opens an exported file and confirms it is what
   finance needs, before the export sub-task is marked complete.
@@ -188,4 +188,4 @@ User-facing documentation of the export, and the memory-constraint record
 End-of-feature gates for this feature, per `## Sign-off strategy`
 
 - [ ] Code review (agent): /review-branch over all changed files
-- [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
+- [ ] Docs review (agent): /review-docs over the change, all kinds

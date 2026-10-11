@@ -10,8 +10,8 @@ README first. The differences are below.
 
 ## What the untargeted sections are
 
-These fixtures carry all five sections (`## Requirements`, `## Spec`, `##
-Sign-off strategy`, `## Design`, `## Sub-tasks`), because a design can only be
+These fixtures carry all five sections (`## Requirements`, `## Spec`,
+`## Sign-off strategy`, `## Design`, `## Sub-tasks`), because a design can only be
 judged against what the feature must do (`## Spec`) and the strategy its
 criteria derive from. The agent reads `## Requirements` and `## Spec` for
 background and traces design coverage against `## Spec`, but does not review
@@ -26,12 +26,21 @@ either as an artefact in its own right, so:
 The baseline `## Design` and `## Sub-tasks` text is shared across the design
 cases in the same way, and follows the same rules as the spec suite's
 [Maintaining the shared baseline](../feature-spec-reviewer/README.md#maintaining-the-shared-baseline):
-a weakness found in it is fixed in every case that carries it. `NOTES.md`
-("Design-fixture baseline: a gap only some cases noticed") records why. The
+a weakness found in it is fixed in every case that carries it. The
 three cases whose `## Design` is the deliberate target (`unclear-design`,
 `unexplained-design`, `unresolved-design-question`) carry their own altered
 design text instead; likewise, the cases targeting `## Sub-tasks`, and
 `old-format-control`, carry their own sub-task text.
+
+There is one recorded exception to fixing baseline weaknesses. The baseline
+design reuses a query-builder module and column definitions that the reviewer
+cannot confirm exist, because the fixture describes a fictional product, not
+this repository; a reviewer may raise a MAJOR `[decision]` finding about it.
+That finding may be tolerated in the expectations of any case that uses the
+shared baseline, and nothing else is widened that way. No wording of the
+fixture can make a fictional product's modules confirmable, and the reviewer
+rule behind the finding is right for real plans, so the fixture is not changed
+and the reviewer is not weakened.
 
 ## Cases
 
@@ -97,8 +106,7 @@ The CLI route matters for a regression run specifically. In-session `Agent`
 spawns have been observed to stop delivering their output partway through a
 session, returning an empty idle notification instead of a review — and a
 dozen-plus-invocation run is expensive to re-do once a silent failure is
-noticed. With the CLI, stdout either carries a verdict line or it does not. See
-`NOTES.md`, "Agent result delivery can fail silently mid-session".
+noticed. With the CLI, stdout either carries a verdict line or it does not.
 
 A review you never saw is **unrun, not passed** — never record a case as
 passing on the strength of an invocation that returned nothing.

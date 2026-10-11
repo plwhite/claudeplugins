@@ -4,7 +4,7 @@
 
 No feature in progress.
 
-`subtask-handling` completed 2026-10-10 — sub-tasks are now `### N. Name` headings with sign-off boxes listed in performed order, docs-first and written-step choices made at `/feature-design`, and mid-feature changes to the sub-task list made as an explicit choice between a lettered sub-task and a fix in passing (#67). See `features/COMPLETED.md` for detail.
+`explicit-docs-review` completed 2026-10-11 — docs review rebuilt as four stateless agents (architectural, accuracy and style for user docs; agent docs for `CLAUDE.md`/`NOTES.md`) run by `/review-docs`, planned as an ordinary sign-off with no docs review at `/feature-end`, and user docs, agent docs and feature records kept apart (#69). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -39,11 +39,15 @@ Contents:
 - `devproc/skills/review-full/SKILL.md` — full-codebase code review; auto-applies code-level findings, escalates architectural changes
 - `devproc/skills/review-component/SKILL.md` — code review scoped to a described component (resolves natural-language description to files)
 - `devproc/skills/review-branch/SKILL.md` — code review scoped to files changed in the current branch (uses git diff for scope and context)
+- `devproc/skills/review-docs/SKILL.md` — docs review scoped to the whole doc set, the current change, or a described area; runs the four docs review agents, auto-applies minor in-doc fixes, escalates significant findings
 - `devproc/skills/internal-docs-prune/SKILL.md` — prune internal Claude-facing docs (root and nested `CLAUDE.md` files, `NOTES.md`, `.claude/rules/*.md`): spawn `internal-docs-reviewer`, auto-apply redundant/stale findings without content loss, escalate or defer judgment findings
 - `devproc/agents/dev-process-manager.md` — top-level Opus orchestrator (`claude --agent dev-process-manager`); drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user
 - `devproc/agents/feature-spec-reviewer.md` — reviews a feature spec (`## Spec` and sign-off strategy, including clarity against the `### Readability` standard) before a human reads it, ending with a `READY FOR USER REVIEW` / `NEEDS WORK` verdict
 - `devproc/agents/feature-design-reviewer.md` — reviews a feature design (`## Design`) and its sub-task plan (`## Spec` coverage, design clarity, recorded rationale, auditable, ordered criteria with non-obvious steps written down) before a human reads it, ending with the same verdict
-- `devproc/agents/docs-structure-reviewer.md` — audits documentation structure and quality, producing actionable findings
+- `devproc/agents/docs-review-architectural.md` — user docs structure review agent (`opus`)
+- `devproc/agents/docs-review-accuracy.md` — user docs-match-code review agent (`sonnet`)
+- `devproc/agents/docs-review-style.md` — user docs clarity and consistency review agent (`sonnet`)
+- `devproc/agents/docs-review-agent-docs.md` — agent docs review agent (`sonnet`): `CLAUDE.md`, `NOTES.md` and `.claude/rules/*.md` match the repo, hold nothing a person needs, and link to the user docs
 - `devproc/agents/internal-docs-reviewer.md` — reviews internal Claude-facing docs for redundant, stale, or judgment-call content, producing gated findings (action + class) without modifying files
 - `devproc/agents/code-review-architectural.md` — architectural review agent (`opus`)
 - `devproc/agents/code-review-simplicity.md` — simplicity and dead-code review agent (`sonnet`)
@@ -52,7 +56,7 @@ Contents:
 
 See `devproc/README.md` for full usage documentation.
 
-> **Maintainer note:** the canonical feature-model text is `devproc/skills/feature-init/FEATUREMODEL.md`, which `/feature-init` copies into every project that uses the plugin. This repo dogfoods the plugin, so it also carries its own installed copy at `features/FEATUREMODEL.md` (imported by this `CLAUDE.md`) — maintained by `/feature-init` exactly as in any other project, with no special-casing. **To change the model, edit the canonical `devproc/skills/feature-init/FEATUREMODEL.md` and re-run `/feature-init`**, which refreshes `features/FEATUREMODEL.md` to match. The two hold the same text and will only diverge if the canonical file is hand-edited without re-running `/feature-init`. (The obligation is kept out of `FEATUREMODEL.md` itself, since that file is copied verbatim into consumer projects where the twin does not exist.)
+> **Maintainer note:** to change the feature model, edit the canonical `devproc/skills/feature-init/FEATUREMODEL.md` and re-run `/feature-init`, never `features/FEATUREMODEL.md` — see [CONTRIBUTING.md](CONTRIBUTING.md#changing-the-feature-model). In a session, `/feature-init` reads the installed plugin copy, so refresh that first. (The obligation is kept out of `FEATUREMODEL.md` itself, since that file is copied verbatim into consumer projects where the twin does not exist.)
 
 ## setup-files directory
 
@@ -77,7 +81,8 @@ Contents:
 - `tests/devproc/feature-spec-reviewer/` — fixtures for `feature-spec-reviewer`
 - `tests/devproc/feature-design-reviewer/` — fixtures for `feature-design-reviewer`
 - `tests/devproc/internal-docs-reviewer/` — fixtures for `internal-docs-reviewer`
-- `tests/devproc/harness/` — `run.sh`, a regression harness that runs the `feature-spec-reviewer` and `feature-design-reviewer` suites (not `internal-docs-reviewer`, which needs a different invocation shape) and writes output to its git-ignored `out/`
+- `tests/devproc/review-docs/` — a stand-in git repository (`fixture/`, built into a scratch copy by `setup.sh`) for `/review-docs`, run by hand
+- `tests/devproc/harness/` — `run.sh`, a regression harness that runs the `feature-spec-reviewer` and `feature-design-reviewer` suites (not `internal-docs-reviewer` or `review-docs`, which need different invocation shapes: a fixture directory reviewed as a stand-in repository, and a scratch git repository built by a script) and writes output to its git-ignored `out/`
 
 Each suite pairs deliberately flawed inputs with recorded `.expected.md` outputs, and carries its own `README.md` explaining how to run it. `tests/README.md` indexes the area.
 
