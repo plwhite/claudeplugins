@@ -4,7 +4,7 @@
 
 No feature in progress.
 
-`explicit-docs-review` completed 2026-10-11 — docs review rebuilt as four stateless agents (architectural, accuracy and style for user docs; agent docs for `CLAUDE.md`/`NOTES.md`) run by `/review-docs`, planned as an ordinary sign-off with no docs review at `/feature-end`, and user docs, agent docs and feature records kept apart (#69). See `features/COMPLETED.md` for detail.
+`upgrade-gh` completed 2026-10-11 — the container installs `gh` from GitHub's apt repository instead of Ubuntu's outdated package, and `/feature-spec` reads issues with `gh issue view --json`, because current `gh` prints only the comments for `--comments` without a terminal (#70). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
