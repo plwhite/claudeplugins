@@ -93,8 +93,9 @@ clarity failure gets quietly downgraded.
 This is the sign-off strategy, and it is the most commonly weak part of a spec. The standard it must meet is defined in `features/FEATUREMODEL.md` under `### Sign-off criteria` — that section, not this list, is canonical; enforce it. In particular:
 
 - Does it cover every sign-off category the model expects (normally testing, documentation, code review, docs review, user review)? A category that is simply **absent** is a finding: skipping one is legitimate, but only as an explicit, justified "None — <reason>".
+- Does the **docs review** category say which kinds run — architectural, accuracy, style, agent docs — or skip the category, or an individual kind, explicitly with "None — <reason>"? It counts as covered only then; a bare single "docs review" bar is a finding. The kinds and when each is required are defined in `features/FEATUREMODEL.md` under `### Sign-off criteria`; enforce them from there rather than from a restatement here.
 - Is every entry **auditable** — is there a clear yes/no at the point a sub-task finishes? "Have some tests", "update docs as needed", and "review the code" are not auditable. "Unit tests for the parser, passing", "the user confirms coverage is sufficient", and "one agent `/review-branch` before `/feature-end`" are.
-- Does every review sign-off — code review, docs review, or otherwise — say **who performs it**: an agent (naming the skill or agent, e.g. `/review-branch`, `docs-structure-reviewer`) or the user? A bare "code review" is ambiguous and is a finding.
+- Does every review sign-off — code review, docs review, or otherwise — say **who performs it**: an agent (naming the skill or agent, e.g. `/review-branch`, `/review-docs`) or the user? A bare "code review" is ambiguous and is a finding.
 - Is the bar proportionate to the risk of the change? Flag a strategy that is conspicuously light for user-facing or hard-to-reverse work, and one that is disproportionately heavy for a small internal change.
 - Where the strategy names a feature-level sign-off (e.g. a single end-of-feature review), is it clear when it happens?
 

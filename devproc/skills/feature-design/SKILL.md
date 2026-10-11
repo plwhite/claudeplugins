@@ -107,7 +107,7 @@ and provide corrections before implementation begins.>
 
 <Only when `## Sign-off strategy` defines end-of-feature gates; one checkbox per gate, omitted entirely otherwise — see step 6.>
 
-- [ ] <gate>   (add "(performed at `/feature-end`)" if that gate is performed by `/feature-end` itself)
+- [ ] <gate>
 
 ## Review record
 
@@ -124,8 +124,7 @@ Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md`
    - List each sub-task's criteria in the order they will be performed.
    - For each sub-task that changes both docs and code, decide whether to make it docs-first (**Docs-first sub-tasks** in `FEATUREMODEL.md`). Where it is unclear, ask the user.
    - For each sign-off, decide whether it needs written steps, and if so whether they go inline or in a file under `features/plans/<slug>/`, per `FEATUREMODEL.md`. Where it is unclear, ask the user.
-   - Check whether `## Sign-off strategy` defines any end-of-feature gates (e.g. one feature-wide `/review-branch`, one `docs-structure-reviewer` pass, a final user review). If it does, add them as the last sub-task, named **"Final sign-off criteria"**, one checkbox per gate — never spread across earlier sub-tasks and never left as strategy prose alone. If the strategy defines no such gates, do not add this sub-task; an empty or placeholder final sub-task is exactly the untickable-box case the conventions rule out.
-   - Annotate the final-sub-task box (if any) that `/feature-end` performs itself (typically the close-out docs-review box, since `/feature-end` runs that review as it closes the feature) with "(performed at `/feature-end`)". This is the one box the model expects to stay unticked until `/feature-end` runs — everything else, including every other box in the final sub-task, must be ticked before it starts.
+   - Check whether `## Sign-off strategy` defines any end-of-feature gates (e.g. one feature-wide `/review-branch`, one `/review-docs` pass, a final user review). If it does, add them as the last sub-task, named **"Final sign-off criteria"**, one checkbox per gate — never spread across earlier sub-tasks and never left as strategy prose alone. If the strategy defines no such gates, do not add this sub-task; an empty or placeholder final sub-task is exactly the untickable-box case the conventions rule out.
 
    Example — a docs-first sub-task, in which the user reviews the documented syntax before the parser is written:
 
@@ -149,7 +148,7 @@ Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md`
 
    - [ ] Testing (dry-run): representative walkthrough recorded in NOTES.md
    - [ ] Code review (agent): /review-branch over all changed files; findings resolved or dismissed
-   - [ ] Docs review (agent): docs-structure-reviewer over the updated docs (performed at `/feature-end`)
+   - [ ] Docs review (agent): /review-docs over the change, all kinds
    - [ ] User review: user confirms the feature matches intent
    ```
 

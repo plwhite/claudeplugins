@@ -7,7 +7,7 @@ Each feature moves through a lifecycle, with a slash command for each stage:
 1. **Specify** (`/feature-spec`) — create the feature, capture what you said as input, write *what* it must do, and agree its sign-off strategy.
 2. **Design** (`/feature-design`) — decide *how* to build it, break it into sub-tasks, and set each sub-task's sign-off criteria.
 3. **Implement** — work through the sub-tasks (no slash command; `/feature-checkpoint` keeps state in sync as you go). A sub-task is complete only when all its sign-off boxes are ticked.
-4. **End** (`/feature-end`) — verify completion, close the feature out, and review the docs.
+4. **End** (`/feature-end`) — verify completion, and close the feature out.
 
 `/feature-init` sets the model up once per workspace before any of this — see [Where the workspace is](#where-the-workspace-is).
 
@@ -77,11 +77,11 @@ This adds an entry to `features/PENDING.md` with a slug (e.g. `[improve-error-me
 The plan file splits *input* from *what the feature must do* into two sections, because a single section cannot serve both well:
 
 - **`## Requirements`** is the input, captured faithfully — the issue or description or `features/tmp` material described above, kept as close to what you actually said as possible. It is deliberately **not** rewritten for readability: reorganising your own words to read better is exactly how their meaning gets lost.
-- **`## Spec`** is what the feature must do, written by Claude from that input to be clear on its own — followable by someone with no background on the feature, per the readability standard `features/FEATUREMODEL.md` defines. It resolves ambiguities in `## Requirements` and fills any gaps with proposals, each one marked so you can see what you are being asked to accept rather than mistaking it for something you already said.
+- **`## Spec`** is what the feature must do, written by Claude from that input to be clear on its own — followable by someone with no background on the feature, per the readability standard in the feature model (the text `/feature-init` installs in your workspace as `features/FEATUREMODEL.md`). It resolves ambiguities in `## Requirements` and fills any gaps with proposals, each one marked so you can see what you are being asked to accept rather than mistaking it for something you already said.
 
 A short description is still requirements. If you give `/feature-spec` one line — "add logging to the foo function" — `## Requirements` records that line verbatim, and `## Spec` is built out from it, almost entirely as marked proposals. A small feature is not blocked or penalised for having little input; it is judged on whether those proposals need your judgement, the same as any other spec.
 
-As part of specifying, Claude proposes a **sign-off strategy** — the quality bar for each of the five sign-off categories (testing, documentation, code review, docs review, user review) across the whole feature. Docs review is deliberately its own category, separate from writing the documentation: like code review it is a check of what was done, and it is the sign-off most routinely missed. The canonical statement of the model — categories, checkbox convention, auditability — lives in the `### Sign-off criteria` section of `features/FEATUREMODEL.md`, which your project gains from `/feature-init`. For example: 100% test coverage versus basic tests versus none; full production docs versus internal notes only. It is recorded in the plan file's `## Sign-off strategy` section. Skipping a category is fine, but it is a deliberate choice made here where you can comment on it — not something that quietly slips. This is the moment to set the standard the feature will be held to.
+As part of specifying, Claude proposes a **sign-off strategy** — the quality bar for each of the five sign-off categories (testing, documentation, code review, docs review, user review) across the whole feature. Docs review is deliberately its own category, separate from writing the documentation: like code review it is a check of what was done, and it is the sign-off most routinely missed. It has four kinds — accuracy, architectural, style and agent docs — and the strategy sets a bar for each or skips it explicitly; see [Documentation review](capabilities.md#documentation-review) for what each kind checks and when it is warranted. The canonical statement of the model — categories, checkbox convention, auditability — lives in the `### Sign-off criteria` section of `features/FEATUREMODEL.md`, which your project gains from `/feature-init`. For example: 100% test coverage versus basic tests versus none; full production docs versus internal notes only. It is recorded in the plan file's `## Sign-off strategy` section. Skipping a category is fine, but it is a deliberate choice made here where you can comment on it — not something that quietly slips. This is the moment to set the standard the feature will be held to.
 
 Those five categories are the usual set, not a fixed list: if a feature needs it, the strategy can split one (say, separate unit-test and manual-test sign-offs at different stages) or add a specific sign-off of another kind (e.g. "agent X has confirmed the output"). Whatever the criteria, each is worded to be **auditable** — there is a clear yes/no at the point a sub-task finishes. "Have some tests" is not auditable; "unit tests written to the agreed quality bar" or "enough tests that you confirm coverage is sufficient" are. Review sign-offs — code review, docs review, or otherwise — always say **who performs them**: an agent (naming the skill or agent, e.g. `/review-branch`) or you, so a "code review" box is never ambiguous about whether you are expected to do it.
 
@@ -140,7 +140,7 @@ Claude also makes two judgements while writing these criteria, and states each i
 - **Docs-first.** Where a sub-task changes both docs and code, Claude considers writing the docs first and putting the docs review ahead of the code. The reason is that docs review is where "that procedure is wrong" surfaces, and catching it after the code, tests and docs are written means redoing all three. It is a judgement, not a rule, and Claude asks you when it is unclear. It may add a docs review box the sign-off strategy does not call for; you agree it with the rest of the criteria.
 - **Written steps.** Where a sign-off needs substantial or non-obvious steps (typically a test plan), Claude writes them down: inline beneath the criterion when short, or in a file in `features/plans/<slug>/`, linked from the criterion, when complex.
 
-Where the sign-off strategy defines any end-of-feature gate — a single `/review-branch` before the feature closes, one `docs-structure-reviewer` pass, a final user review — Claude adds it as a last sub-task, **"Final sign-off criteria"**, one checkbox per gate. This only happens when such gates actually exist; a feature whose sign-offs are all satisfied within earlier sub-tasks gets no final sub-task. A box that `/feature-end` performs itself (typically the docs-review box, since `/feature-end` runs that review as it closes the feature) is marked "(performed at `/feature-end`)" — the one box expected to stay unticked until then.
+Where the sign-off strategy defines any end-of-feature gate — a single `/review-branch` before the feature closes, one `/review-docs` pass, a final user review — Claude adds it as a last sub-task, **"Final sign-off criteria"**, one checkbox per gate. This only happens when such gates actually exist; a feature whose sign-offs are all satisfied within earlier sub-tasks gets no final sub-task. Docs review is normally one of these boxes (`Docs review (agent): /review-docs over the change, all kinds`), run once at the end like any other sign-off; `/feature-end` runs no review of its own, and every box is ticked before it starts.
 
 ---
 
@@ -148,7 +148,7 @@ Where the sign-off strategy defines any end-of-feature gate — a single `/revie
 
 Both `/feature-spec` and `/feature-design` hand their output to a review agent before showing it to you — `feature-spec-reviewer` and `feature-design-reviewer` respectively. The point is that your attention goes on judgement calls rather than on catching vagueness, so that reviewing a spec or design is quicker and needs less back-and-forth.
 
-Each agent checks that the artefact is complete and clear — including against the readability standard `features/FEATUREMODEL.md` defines, the same one `## Spec` and `## Design` are written to — that its delivery criteria are explicit and auditable, and that anything blocking the next stage is surfaced. It ends with a one-line verdict: `READY FOR USER REVIEW` or `NEEDS WORK`.
+Each agent checks that the artefact is complete and clear — including against the feature model's readability standard, the same one `## Spec` and `## Design` are written to — that its delivery criteria are explicit and auditable, and that anything blocking the next stage is surfaced. It ends with a one-line verdict: `READY FOR USER REVIEW` or `NEEDS WORK`.
 
 What happens to a finding depends on how it is marked, not on how severe it is:
 
@@ -188,7 +188,9 @@ Implementation has no slash command of its own — once the design is approved, 
 
 - Work a sub-task until each of its sign-off boxes is satisfied, then tick it. A sub-task is **not done** while any box is unticked: that is the mechanism that stops testing, docs, review, or your confirmation being skipped under time pressure.
 
-- After each one completes, review whatever Claude did (and provide feedback or fix it); `git diff` or the VSCode git plugin are ideal for this. (Where a sub-task has a *user review* box, this review is itself the sign-off — tick it once you are content.)
+- A docs review box such as `Docs review (agent): /review-docs over the change, all kinds` is satisfied by running [`/review-docs`](capabilities.md#documentation-review) and ticking the box once its findings are dealt with. `/feature-end` does not run a docs review for you.
+
+- After each sub-task completes, review whatever Claude did (and provide feedback or fix it); `git diff` or the VSCode git plugin are ideal for this. (Where a sub-task has a *user review* box, this review is itself the sign-off — tick it once you are content.)
 
 - When you are content and all the sub-task's boxes are ticked, run `/feature-checkpoint` to mark the completed sub-task, advance the `▶ NEXT:` marker, and update the Handoff section so the session state is always recorded. Claude will often run this automatically; you can also run it explicitly at any point — including mid-sub-task, where it records which boxes are done and which remain without marking the sub-task complete.
 
@@ -203,7 +205,7 @@ You will often find more necessary work as you go along. The sub-task list can c
 - **Unforeseen and significant work becomes a new lettered sub-task** (`7a`, then `7b`, so later sub-tasks are not renumbered), with its own heading and sign-off criteria. Those criteria are put to you for agreement, since the new scope's quality bar has not been agreed.
 - **Anything smaller is a fix in passing.** It is not a sub-task: it is made as part of the sub-task it arose in and noted under it.
 
-Claude states which it chose, so you can overturn it. See `### Changing the sub-task list` in `features/FEATUREMODEL.md`. Under the [Dev Process Manager](capabilities.md#dev-process-manager), the manager makes this call and decides whether it stops an unattended run.
+Claude states which it chose, so you can overturn it. The installed feature model (`features/FEATUREMODEL.md`) states the same rule for Claude, under `### Changing the sub-task list`. Under the [Dev Process Manager](capabilities.md#dev-process-manager), the manager makes this call and decides whether it stops an unattended run.
 
 ---
 
@@ -225,7 +227,7 @@ When all sub-tasks are done:
 
 - Review that you are comfortable with the final state.
 
-- Run `/feature-end` to tell Claude that the feature is done. This will run a full checkpoint, verifying all sub-tasks are marked complete with every sign-off box ticked — except a "Final sign-off criteria" box marked "(performed at `/feature-end`)", which is expected to still be open at this point, since this step is what performs and ticks it — and move the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` with the completion date. The plan file is kept as a record. It also triggers an intensive docs review over all docs in the project — the same review that ticks the annotated docs-review box, so there is only ever one close-out docs review.
+- Run `/feature-end` to tell Claude that the feature is done. This will run a full checkpoint, verifying all sub-tasks are marked complete with every sign-off box ticked and move the feature entry from `features/CURRENT.md` to `features/COMPLETED.md` with the completion date. The plan file is kept as a record.
 
 - Commit the final state changes to git, squash commits as required, and push and merge the feature branch.
 
@@ -233,5 +235,5 @@ When all sub-tasks are done:
 
 ## Keep internal docs tidy
 
-`CLAUDE.md`, `NOTES.md`, and `.claude/rules/*.md` accumulate drift over time — status entries that duplicate `features/COMPLETED.md`, stale notes, judgment calls nobody revisited. Run `/internal-docs-prune` periodically — e.g. after a batch of completed features, or whenever one of these files starts to feel bloated — to clear it out. See [capabilities.md](capabilities.md#internal-docs-hygiene) for what it does and how it gates findings by class.
+`CLAUDE.md`, `NOTES.md`, and `.claude/rules/*.md` accumulate drift over time — status entries that duplicate `features/COMPLETED.md`, stale notes, judgment calls nobody revisited. Run `/internal-docs-prune` periodically — e.g. after a batch of completed features, or whenever one of these files starts to feel bloated — to clear it out. See [capabilities.md](capabilities.md#internal-docs-hygiene) for what it does, how it gates findings by class, and how it differs from the agent docs kind of `/review-docs`.
 

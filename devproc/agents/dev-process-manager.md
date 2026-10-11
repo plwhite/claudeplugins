@@ -156,7 +156,7 @@ the sub-task's **sign-off boxes**: every one must be genuinely satisfied, not
 merely ticked. Satisfy the ones that are yours to satisfy — e.g. run the review a
 *code review (agent)* or *docs review (agent)* box calls for (the project's
 review skills `/review-branch` and `/review-component`, the review agents, and
-`docs-structure-reviewer` are available to you), and for a *user review* box —
+`/review-docs` are available to you), and for a *user review* box —
 or any box naming the user as performer — pause and get the user's confirmation
 rather than ticking it on their behalf.
 

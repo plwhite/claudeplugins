@@ -5,6 +5,12 @@ developed. Headings must end with the date of completion in YYYY-MM-DD format.
 
 ---
 
+### Docs review overhaul [explicit-docs-review] — 2026-10-11
+
+Rebuilt docs review in the shape of code review (#69). `docs-structure-reviewer` and its memory are retired; four stateless, findings-only agents replace it, architectural (`opus`), accuracy and style for the user docs and agent docs for `CLAUDE.md`, `NOTES.md` and `.claude/rules/`, run by a new `/review-docs` skill over a `full`, `change` (default) or described scope. The skill applies minor in-doc fixes, bounds later passes to serious findings so prose review does not churn, and escalates significant and boundary findings. Docs review is now an ordinary sign-off with per-kind bars in the strategy, and `/feature-end` runs none, so the "(performed at `/feature-end`)" exception is gone.
+
+At the user's review the scope grew to separate three classes of document: user docs (from `README.md`, which must be self-sufficient), agent docs (for Claude only, which may rely on user docs but never the reverse) and feature records (`features/`, including `FEATUREMODEL.md`, never reviewed); both user-facing agents ask whether docs are fit for purpose. A new `/review-docs` fixture suite passes all 12 checks, the reviewer regression passes 19/19 (two design cases tolerating a recorded baseline soft spot), and the feature's own final `/review-docs` run moved the feature-model maintenance procedure into `CONTRIBUTING.md`.
+
 ### Improve plugin subtask handling [subtask-handling] — 2026-10-10
 
 Reworked how the `devproc` workflow writes and maintains a plan's sub-task list (#67). Each sub-task is now a `### N. Name` heading, with `✓ (date)` on completion and `▶ NEXT:` at the top of `## Sub-tasks`. Sign-off boxes are listed in the order they are performed. `/feature-design` also decides, and reports, two things per sub-task: whether it is docs-first (the user reviews the docs before the code is written) and whether a sign-off needs written steps, inline or in `features/plans/<slug>/`. A new `### Changing the sub-task list` section of `FEATUREMODEL.md` says new work becomes a lettered sub-task (`7a`) only when it is unforeseen and significant, with its criteria put to the user; anything smaller is a fix in passing. `dev-process-manager` stops an unattended run for new work that affects the remaining plan.

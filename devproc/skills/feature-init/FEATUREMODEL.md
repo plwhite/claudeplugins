@@ -35,7 +35,13 @@ the most likely sign-offs:
 - **Testing** — manual or automated checks that the work behaves correctly.
 - **Documentation** — user and architectural docs updated to reflect the change.
 - **Code review** — review of the code, by an agent (e.g. a light per-sub-task agent review, or a full `/review-branch`) or by the user.
-- **Docs review** — review of the updated documentation, by an agent (e.g. `docs-structure-reviewer`) or by the user. This is a review activity like code review — checking what was done, not writing it — and it has its own category because it is the sign-off most routinely missed.
+- **Docs review** — review of the documentation, by an agent (`/review-docs`) or by the user. This is a review activity like code review — checking what was done, not writing it — and it has its own category because it is the sign-off most routinely missed. It has four kinds, and the strategy sets a bar for each kind or skips it explicitly. The first three review the **user docs** (`README.md` and every document reachable from it, which people use to work with what the project delivers); the fourth reviews the **agent docs** (`CLAUDE.md`, `NOTES.md`, `.claude/rules/*.md`, which are for Claude only). Feature records (everything under `features/`, including this model) are never docs-reviewed:
+    - **Accuracy** — the docs still match the code and its behaviour. Warranted whenever any doc changes, or might need to.
+    - **Architectural** — the documentation set still hangs together: its structure, its links, and any docs in non-obvious places that the change should have touched. Warranted whenever there is any risk that the structure should change, a link might break, or a doc has been missed.
+    - **Style** — the docs read clearly and consistently. Warranted whenever any doc prose is added or changed, other than a trivial edit that manifestly cannot affect how it reads.
+    - **Agent docs** — the agent docs still match the repository, hold nothing a person needs that the user docs lack, and link to the user docs rather than repeat them. Warranted whenever an agent doc changes, or the change touches anything an agent doc describes (a file it lists, a path, a command, a component).
+
+    Skip a kind only for a trivial change that manifestly cannot need it. When in doubt, run it: a review that finds nothing costs a few tokens, and a missed one can leave errors in. Docs review is normally run once, in the final sub-task, like any other sign-off, and may also appear in other sub-tasks. A box names the skill and the kinds, e.g. `- [ ] Docs review (agent): /review-docs over the change, all kinds`.
 - **User review** — the user sees and confirms the work.
 
 These five are the usual set, not a closed list: a feature's strategy may split
@@ -52,10 +58,10 @@ done/not-done point. Word every criterion so it has a definite yes/no.
 
 Part of being auditable is that any review sign-off — code review, docs
 review, or otherwise — says **who performs it**: an agent (naming the skill or
-agent, e.g. `/review-branch`, `docs-structure-reviewer`) or the user. A bare
+agent, e.g. `/review-branch`, `/review-docs`) or the user. A bare
 "code review" box is ambiguous. In checkbox labels, write the performer in
 parentheses — e.g. `- [ ] Code review (agent): /review-component the parser`,
-`- [ ] Docs review (agent): docs-structure-reviewer over the updated docs`, or
+`- [ ] Docs review (agent): /review-docs over the updated docs, all kinds`, or
 `- [ ] Code review (user): user reads the parser diff`. (A **User review**
 box needs no parenthetical — the user is the performer by definition.)
 
@@ -88,7 +94,7 @@ states the choices it made.
 For each category it is legitimate to decide *not* to do it — but that decision
 is made explicitly and up front, where the user can comment on it:
 
-- **Strategy (at `/feature-spec`).** The plan file's `## Sign-off strategy` section records the quality bar per category for the whole feature (e.g. "100% test coverage" vs "basic tests" vs "none"; "full production docs" vs "internal notes only"), including the bar for any end-of-feature gates (e.g. "one `/review-branch` before end", "one `docs-structure-reviewer` review", "final user review"). The user agrees it.
+- **Strategy (at `/feature-spec`).** The plan file's `## Sign-off strategy` section records the quality bar per category for the whole feature (e.g. "100% test coverage" vs "basic tests" vs "none"; "full production docs" vs "internal notes only"), including the bar for any end-of-feature gates (e.g. "one `/review-branch` before end", "one `/review-docs` over the change, all kinds", "final user review"). The user agrees it.
 - **Criteria (at `/feature-design`).** Each sub-task in `## Sub-tasks` carries the applicable sign-off categories as checkboxes, derived from the strategy. Where the strategy defines end-of-feature gates, `/feature-design` also materialises them as an explicit final sub-task named **"Final sign-off criteria"**, one checkbox per gate — added only when such gates actually exist, never as an empty placeholder. The user agrees them. Criteria may go beyond the strategy in one case: the docs review box of a docs-first sub-task (see **Docs-first sub-tasks** above).
 - **Completion (at implement time).** A sub-task may be marked complete (✓) only when every one of its sign-off boxes is ticked.
 
@@ -97,13 +103,11 @@ Checkbox convention:
 - `- [ ]` is pending; `- [x]` is satisfied.
 - A sub-task is complete only when all its boxes are `[x]`; an unchecked box means it is not done.
 - Only the categories that apply to a sub-task are listed. When a category does not apply, omit it — never write a placeholder such as `- [ ] User review: none`, which can never be ticked and so blocks the sub-task from ever completing. A category skipped for the whole feature is justified once in `## Sign-off strategy`. But a sign-off that gates completion of the feature must not live only in that strategy prose: where the strategy defines end-of-feature gates, they are materialised as the "Final sign-off criteria" sub-task described above, one checkbox per gate, rather than recorded once and left unchecked against anything.
-- A box that is **performed by `/feature-end` itself** (e.g. the close-out docs review, since `/feature-end` runs it as part of closing the feature) carries the annotation "(performed at `/feature-end`)". This is the one box in the final sub-task legitimately left unticked before `/feature-end` runs — `/feature-checkpoint` and a resuming session must treat that as expected, not as an incomplete feature. Every other box, in the final sub-task and in all other sub-tasks, must be ticked before `/feature-end` starts.
+- Every box in every sub-task, including "Final sign-off criteria", must be `[x]` before `/feature-end` starts. `/feature-end` performs no sign-off itself.
 
 `/feature-checkpoint` may be run at any time, including mid-sub-task: it records
 which boxes are ticked and which remain so the hand-off is accurate, and never
-marks a sub-task complete while a box is still outstanding — except the one
-`/feature-end`-performed box noted above, whose unticked state before `/feature-end`
-runs is the model's expected state, not a sign of incompleteness.
+marks a sub-task complete while a box is still outstanding.
 
 ### Changing the sub-task list
 
@@ -213,7 +217,7 @@ These apply at all times, not just when completing features:
 
     - Sub-tasks: each sub-task is a `### N. Name` heading one level below `## Sub-tasks`, with a short description, then its sign-off checkboxes. `✓ (date)` is appended to the heading on completion. The `▶ NEXT:` line and any notes that apply to the whole list sit at the top of the section.
 
-    - Review record (a log, appended by `/feature-spec`, `/feature-design`, and `/feature-end`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped — and of any amendment `/feature-design` makes to `## Spec`, recording the user's approval and why it changed. Always the last section of the file; a line is written every time a stage runs or a spec amendment is made, so an absent line means neither has happened. Preserve it across edits.)
+    - Review record (a log, appended by `/feature-spec`, `/feature-design`, and `/feature-end`, of what review happened at each lifecycle stage — the reviewing agent's verdict, or `N/A` when the review was skipped, for `/feature-spec` and `/feature-design`; the closure date and that all sign-off boxes were ticked, for `/feature-end` — and of any amendment `/feature-design` makes to `## Spec`, recording the user's approval and why it changed. Always the last section of the file; a line is written every time a stage runs or a spec amendment is made, so an absent line means neither has happened. Preserve it across edits.)
 
     Optionally, a sibling `features/plans/<slug>/` directory holds un-inlinable requirements artefacts (screenshots, Word docs, other binaries) that `/feature-spec` copied in and linked from `## Requirements`, and sign-off plans (e.g. test plans) that `/feature-design` wrote and linked from the criteria they serve.
 

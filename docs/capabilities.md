@@ -76,17 +76,61 @@ If you want a deeper structural assessment (using `opus` in a slow pass), you ca
 
 ## Documentation review
 
-To audit the documentation structure and quality of a codebase, ask Claude to do a full docs review, which can trigger the `docs-structure-reviewer` agent. This can be asked for using natural language (`Do a full structural review of docs` or `Use the docs-structure-reviewer to review the docs`). This is automatically run by Claude at the end of each feature.
+To review the documentation, run `/review-docs`. It takes a scope and, optionally, the kinds of review to run:
 
-**Docs review** is also one of the five sign-off categories in the feature model, so a feature's sign-off strategy can require it — per sub-task (`Docs review (agent): ...` or `Docs review (user): ...` checkboxes), or as an end-of-feature gate, materialised at design time as a box in the "Final sign-off criteria" sub-task and marked "(performed at `/feature-end`)", since the automatic `/feature-end` run is what performs and ticks it.
+```
+/review-docs
+/review-docs full
+/review-docs the container docs, accuracy only
+```
 
-The docs structure reviewer checks discoverability, architectural completeness, procedural rigour, and consistency, and produces a prioritised list of findings without modifying any files (unless you tell Claude to run it and implement its findings).
+### Scope
+
+The scope is `full` (the whole documentation set), `change` (the docs touched by, or describing, the current change; the default), or an area described in plain language.
+
+### Classes of document
+
+A project has three classes of document, and docs review treats them differently:
+
+- **User docs** — `README.md` and every document reachable from it. They are for people using what the project delivers, so they must be correct, complete and self-sufficient. They must never rely on agent docs or feature records for information.
+- **Agent docs** — `CLAUDE.md` (at any depth), `NOTES.md` and `.claude/rules/*.md`. They are for Claude only; no person should need to read them. They may rely on the user docs.
+- **Feature records** — everything under `features/`, including `FEATUREMODEL.md` (which `/feature-init` overwrites). They are working records and history, and docs review never reviews or edits them.
+
+A user doc that only describes agent docs or feature records as something the project creates (as the plugin guide describes the `features/` layout) is not relying on them.
+
+### The four kinds
+
+Four kinds of review exist, each run by its own stateless, findings-only agent. All four run unless you name a subset, except that in `change` scope the agent docs kind is skipped (and reported as skipped) when no agent doc is in the change and nothing the change touches is described by one. The first three review the user docs and the fourth the agent docs:
+
+- **Architectural** (`docs-review-architectural`, `opus`) — the user docs still hang together: entry points, orphaned documents, broken links, hierarchy, one source of truth per fact, and docs in non-obvious places that a change should have touched. It asks whether the user docs are fit for purpose: everything a user would expect is documented, to the standard comparable features are, and nothing a user does not need is there. It also flags a user doc that relies on an agent doc or a feature record for information.
+- **Accuracy** (`docs-review-accuracy`, `sonnet`) — the user docs still match the code and its behaviour.
+- **Style** (`docs-review-style`, `sonnet`) — the user docs read clearly and consistently, and procedures are written as procedures.
+- **Agent docs** (`docs-review-agent-docs`, `sonnet`) — the agent docs still match the repository (file lists, paths, commands, descriptions of components), nothing a person needs is held only in them, and they link to the user docs rather than repeating them. It also asks whether they are fit for purpose: an agent finds everything it needs, and nothing it does not, such as history of completed work. A feature listed as in progress is expected, since the review runs before the feature closes. Style and bloat in agent docs are not its concern; they are left to [`/internal-docs-prune`](#internal-docs-hygiene).
+
+### Applied and escalated
+
+**Applied automatically:** minor fixes inside a single existing doc — a wording fix, a wrong command or path, a broken link repointed, a missing link added. The agents then re-run over the changed docs, up to five passes in all. From the second pass on, only CRITICAL or MAJOR findings and corrections to an earlier fix are applied, so prose review does not churn; anything else is listed in the report as not applied.
+
+**Escalated to you for confirmation:** significant findings — creating, deleting, moving or splitting a doc, changing how information is divided between docs, rewriting a section, or a mismatch where the code may be what is wrong. Two kinds are always escalated: every boundary finding (a user doc relying on an agent doc or feature record, information a person needs held only in an agent doc, or agent doc content repeating the user docs), because each changes which class of document holds the information; and removing content from an agent doc, unless it exactly duplicates what is kept.
+
+**Never edited:** skill and agent prompts, which are code, not docs.
+
+### As a sign-off
+
+**Docs review** is one of the five sign-off categories in the feature model. A feature's sign-off strategy sets a bar for each kind, or skips it explicitly, and each sub-task can carry `Docs review (agent): /review-docs ...` or `Docs review (user): ...` checkboxes. It is normally run once, as a box in the "Final sign-off criteria" sub-task, like any other sign-off. `/feature-end` runs no docs review of its own.
+
+Run each kind as follows. Skip one only for a trivial change that manifestly cannot need it; when in doubt, run it, since a review that finds nothing costs a few tokens and a missed one can leave errors in.
+
+- **Accuracy** — whenever any user doc changes, or might need to.
+- **Architectural** — whenever there is any risk that the documentation structure should change, a link might break, or a doc in a non-obvious place has been missed.
+- **Style** — whenever any doc prose is added or changed, other than a trivial edit (a typo, a path or version bump) that manifestly cannot affect how it reads.
+- **Agent docs** — whenever an agent doc changes, or the change touches anything an agent doc describes (a file it lists, a path, a command, a component).
 
 ---
 
 ## Internal docs hygiene
 
-The internal, Claude-facing documentation a project accumulates — `CLAUDE.md` (root and nested), `NOTES.md`, and `.claude/rules/*.md` — grows through append-only workflows: status sections that duplicate `features/COMPLETED.md`, post-mortems of bugs long since fixed, notes that no longer match the code. `/internal-docs-prune` finds and clears this drift. It is distinct from `docs-structure-reviewer` above, which audits user-facing documentation reachable from `README.md`; this tool never touches `docs/`, `README.md`, or `CONTRIBUTING.md`.
+The internal, Claude-facing documentation a project accumulates — `CLAUDE.md` (root and nested), `NOTES.md`, and `.claude/rules/*.md` — grows through append-only workflows: status sections that duplicate `features/COMPLETED.md`, post-mortems of bugs long since fixed, notes that no longer match the code. `/internal-docs-prune` finds and clears this drift. It complements `/review-docs` above: the agent docs kind of `/review-docs` checks that these docs are correct and respect the boundary with the user docs, normally as a feature sign-off, while `/internal-docs-prune` removes accumulated bloat and history, run periodically. This tool never touches `docs/`, `README.md`, or `CONTRIBUTING.md`.
 
 Run it with:
 

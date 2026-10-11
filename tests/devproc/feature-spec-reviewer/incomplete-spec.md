@@ -54,8 +54,8 @@ detail.
 - **Documentation** — User-facing help page section describing the export and
   its column meanings, plus a `NOTES.md` entry recording how the large-export
   memory constraint was met.
-- **Docs review** — One agent docs review (`docs-structure-reviewer`) over the
-  updated docs at `/feature-end`.
+- **Docs review** — One agent `/review-docs` over the change, all kinds, in the
+  final sub-task.
 - **Code review** — One agent `/review-branch` before `/feature-end`.
 - **User review** — The user opens an exported file and confirms it is what
   finance needs, before the export sub-task is marked complete.

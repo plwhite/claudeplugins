@@ -38,11 +38,16 @@ explicitly.
 
 - Any **BLOCKING or MAJOR** finding against `## Design`, which is the clean
   baseline. MINOR findings and SUGGESTIONs there are tolerated.
+  One exception, recorded in `NOTES.md` ("Design-fixture baseline: a gap only
+  some cases noticed"): a finding, at any severity and with or without
+  `[decision]`, that the reused query-builder / column-definition modules
+  cannot be confirmed to exist is tolerated, because the fixture's product is
+  not this repository. Any other MAJOR against `## Design` still fails the case.
 - Any finding faulting the absence of per-sub-task code-review boxes: the
   strategy puts code review at feature level, and sub-task 5 ("Final sign-off
   criteria") carries it as an explicit box, which is the correct place for it.
 - Any finding faulting sub-task 5 ("Final sign-off criteria") itself — it
   correctly materialises the strategy's `/review-branch` and
-  `docs-structure-reviewer` gates and is not part of this case's flaw.
+  `/review-docs` gates and is not part of this case's flaw.
 
 **Expected verdict:** `NEEDS WORK`

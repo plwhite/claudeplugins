@@ -39,6 +39,11 @@ The findings should also raise at least one of:
 
 - Any **BLOCKING or MAJOR** finding faulting `## Design` **on its own terms** —
   it is the clean baseline. MINOR findings and SUGGESTIONs there are tolerated.
+  One exception, recorded in `NOTES.md` ("Design-fixture baseline: a gap only
+  some cases noticed"): a finding, at any severity and with or without
+  `[decision]`, that the reused query-builder / column-definition modules
+  cannot be confirmed to exist is tolerated, because the fixture's product is
+  not this repository. Any other MAJOR against `## Design` still fails the case.
 
   A design finding that arises *from* this case's planted sub-tasks is not a
   violation, because the flaw genuinely creates it. The known instance: sub-task
@@ -52,6 +57,6 @@ The findings should also raise at least one of:
   criteria") carries it as an explicit box, which is the correct place for it.
 - Any finding faulting sub-task 6 ("Final sign-off criteria") itself — it
   correctly materialises the strategy's `/review-branch` and
-  `docs-structure-reviewer` gates and is not part of this case's flaw.
+  `/review-docs` gates and is not part of this case's flaw.
 
 **Expected verdict:** `NEEDS WORK`

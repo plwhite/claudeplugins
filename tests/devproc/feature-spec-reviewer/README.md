@@ -76,6 +76,7 @@ section, rather than `## Spec`, is the clean/dirty line for that case.
 | `unresolved-blocker` | Blocking issues |
 | `premature-design` | Scope discipline |
 | `deferred-requirements` | Complete and clear — the retained `## Requirements` capture check |
+| `undifferentiated-docs-review` | Delivery criteria — the docs review bar must say which kinds run |
 
 ## Running the tests
 
@@ -97,8 +98,7 @@ The CLI route matters for a regression run specifically. In-session `Agent`
 spawns have been observed to stop delivering their output partway through a
 session, returning an empty idle notification instead of a review — and a
 dozen-plus-invocation run is expensive to re-do once a silent failure is
-noticed. With the CLI, stdout either carries a verdict line or it does not. See
-`NOTES.md`, "Agent result delivery can fail silently mid-session".
+noticed. With the CLI, stdout either carries a verdict line or it does not.
 
 A review you never saw is **unrun, not passed** — never record a case as
 passing on the strength of an invocation that returned nothing.

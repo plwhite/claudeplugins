@@ -1,6 +1,7 @@
 # Tests
 
-Maintainer-only test fixtures for the `devproc` plugin's reviewer agents. They
+Maintainer-only test fixtures for the `devproc` plugin's reviewer agents and
+the `/review-docs` skill. They
 live here, outside `devproc/`, because that directory is the unit of
 distribution — the marketplace source, the tree `docker/Dockerfile` copies, and
 what `docs/setup.md` installs — and a consumer of the plugin has no use for
@@ -14,7 +15,7 @@ a later reorganisation.
 
 To run a regression pass over the two suites whose cases are single plan files
 (`feature-spec-reviewer` and `feature-design-reviewer` — `internal-docs-reviewer`
-is run by hand, see below):
+and `review-docs` are run by hand, see their READMEs):
 
 ```
 tests/devproc/harness/run.sh -n     # list the cases that would run
@@ -34,7 +35,8 @@ captures output, it does not judge pass/fail.
 | [tests/devproc/feature-spec-reviewer/](devproc/feature-spec-reviewer/README.md) | Fixtures for `feature-spec-reviewer`: deliberately flawed plan files, one per check, plus a clean control, each paired with a recorded `.expected.md` |
 | [tests/devproc/feature-design-reviewer/](devproc/feature-design-reviewer/README.md) | Fixtures for `feature-design-reviewer`, on the same terms, with two controls (the current heading format and the older list format) and several cases for the delivery-criteria check |
 | [tests/devproc/internal-docs-reviewer/](devproc/internal-docs-reviewer/README.md) | Fixtures for `internal-docs-reviewer`. Shaped differently: each case is a fixture *directory* reviewed as a stand-in repository root, not a single file |
-| [tests/devproc/harness/](devproc/harness/README.md) | Regression harness (`run.sh`) for the two plan-file suites. Does **not** cover `internal-docs-reviewer`, whose fixture shape needs a different invocation |
+| [tests/devproc/review-docs/](devproc/review-docs/README.md) | A stand-in git repository for `/review-docs`: a script builds a scratch copy with a committed baseline, a working-tree change and planted documentation faults; run by hand, with a pass rule over the skill's report and the scratch copy |
+| [tests/devproc/harness/](devproc/harness/README.md) | Regression harness (`run.sh`) for the two plan-file suites. Does **not** cover `internal-docs-reviewer` or `review-docs`, whose fixture shapes need different invocations |
 
 ## Adding a suite
 

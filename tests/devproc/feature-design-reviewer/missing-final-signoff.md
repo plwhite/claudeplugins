@@ -70,8 +70,8 @@ exporting anything other than the reports page.
 - **Documentation** — User-facing help page section describing the export and
   its column meanings, plus a `NOTES.md` entry recording how the large-export
   memory constraint was met.
-- **Docs review** — One agent docs review (`docs-structure-reviewer`) over the
-  updated docs at `/feature-end`.
+- **Docs review** — One agent `/review-docs` over the change, all kinds, in the
+  final sub-task.
 - **Code review** — One agent `/review-branch` before `/feature-end`.
 - **User review** — The user opens an exported file and confirms it is what
   finance needs, before the export sub-task is marked complete.
@@ -160,7 +160,7 @@ the only way to satisfy the requirement without guessing at a timezone.
 **▶ NEXT:** Sub-task 1
 
 > Feature-level sign-off: one agent `/review-branch` and one agent docs review
-> (`docs-structure-reviewer`) at `/feature-end`, per the sign-off strategy,
+> (`/review-docs`, all kinds) in the final sub-task, per the sign-off strategy,
 > rather than code-review or docs-review boxes on each sub-task.
 
 > Sub-tasks 1 and 2 carry no user-review box: there is no user-visible surface
