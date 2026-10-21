@@ -90,16 +90,26 @@ The container Dockerfile COPYs the plugin directory (`devproc/`) from the repo. 
 Claude is the tmux session's top-level process, so when it exits (`exit`,
 Ctrl-D, `/quit` or a crash) the pane closes and the session is destroyed — an
 accidental keypress would discard the working session. `run-claude.sh` wraps
-Claude in a loop that **auto-relaunches** it on exit, resuming the previous
+Claude in a loop that **auto-relaunches** it on exit, resuming the session's
 conversation, so the session is always running when you attach. `entrypoint.sh`
 runs `bash /home/claude/run-claude.sh` as the session command.
 
 Non-obvious details:
 
-- Relaunch uses `claude --continue`, which auto-resumes the most recent
-  conversation in the current directory. `-r`/`--resume` with no session ID
-  instead opens an interactive picker — wrong for an unattended loop. The first
-  launch is plain `claude` (nothing to resume yet).
+- Relaunch resumes the **recorded** session with `claude --resume <id>`, not
+  `--continue`. Originally (#17) relaunch used `claude --continue`, which
+  resumes the most recent conversation in the directory; that was replaced in
+  #73 because the agent warm-up and any `claude -p` run inside the container
+  also create conversations in `/workspace`, so "most recent" can be the wrong
+  one. The ID comes from a `SessionStart` hook; see "SessionStart hook records
+  the container's session (#73)" below. (`-r`/`--resume` with no ID opens an
+  interactive picker, wrong for an unattended loop, which is why the ID is
+  always given.) A new container's first launch is a plain `claude`; with no
+  recorded session, a later launch also starts fresh. Only the first launch
+  after a restart shows the "No previous session to resume" prompt; the marker
+  file `~/.claude/container-started`, written when `run-claude.sh` first runs,
+  is what tells a restart from a new container. Later keep-alive relaunches
+  with nothing to resume start fresh silently.
 - **Ctrl-C handling is the subtle part.** Between Claude runs the loop sets
   `trap '' INT` so Ctrl-C cannot kill the wrapper (and thus the session); it
   resets `trap - INT` immediately before launching Claude so Claude still gets
@@ -109,7 +119,10 @@ Non-obvious details:
 - A crash-guard avoids a tight respawn loop: if Claude exits within 5s of
   launch it is treated as a startup crash and the loop waits on a prompt
   (`while ! read -r _; do sleep 1; done`, which also ignores EOF/Ctrl-D) instead
-  of respawning immediately. A normal exit pauses ~2s then resumes.
+  of respawning immediately. A normal exit pauses ~2s then resumes. If the
+  quick exit was a `--resume` launch, the prompt instead offers to retry the
+  resume or start new; `new` deletes the recorded session ID (the transcript
+  stays on disk).
 
 `run-claude.sh` is invoked via `bash`, so unlike `entrypoint.sh` it does not
 need the executable bit set in the Dockerfile.
@@ -144,7 +157,8 @@ Teammate shutdown is via `SendMessage` with `{type: "shutdown_request"}`;
 
 The container exposes the agent via `claude-run --manager` (or `--agent NAME`),
 passed through `CLAUDE_AGENT` to `run-claude.sh`, which adds `--agent` to the
-`--continue` relaunch args too so a resumed session keeps the same agent.
+launch args too (first launch, relaunch and `claude-run --resume` restart alike),
+so a resumed session keeps the same agent.
 
 ### `--agent` does not apply the agent's model to the top-level session
 
@@ -160,8 +174,9 @@ Fix: `claude-run` derives the model from the agent's own definition and passes i
 explicitly. `derive_model()` reads the `model:` line from
 `devproc/agents/<agent>.md` (found via the repo root resolved with
 `readlink -f`), and the value flows host → `CLAUDE_MODEL` env var →
-`run-claude.sh`, which appends `--model "$CLAUDE_MODEL"` to both the initial and
-`--continue` relaunch args. The agent definition stays the single source of
+`run-claude.sh`, which appends `--model "$CLAUDE_MODEL"` to every launch
+(first, relaunch, and restart via `claude-run --resume`, since it lives in the
+container's environment). The agent definition stays the single source of
 truth — no model is hardcoded in `claude-run`. An explicit `claude-run --model`
 overrides it, and an agent whose definition is not in this repo (so the model
 cannot be derived) falls back to no `--model`, i.e. the previous default
@@ -416,8 +431,11 @@ Fix: `run-claude.sh` does a throwaway warm-up (`claude -p hello > /dev/null`)
 before the keep-alive loop, guarded on an agent being selected — plain
 `claude-run` never hit the bug, and the warm-up costs a model call and a few
 seconds of startup. The warm-up's throwaway conversation is never resumed: the
-first real launch is plain `claude` (fresh), and later `--continue` relaunches
-resume the interactive session, which is more recent.
+first real launch of a new container is a fresh `claude`. Since #73 the warm-up
+conversation is harmless for a different reason: launches resume the session ID
+recorded by the `SessionStart` hook, never the most recent conversation, so a
+warm-up that reruns on a `--resume` restart cannot be picked (see "SessionStart
+hook records the container's session (#73)").
 
 ## Dogfooding: run the reviewers at spec/design time, not feature-end (#20)
 
@@ -956,3 +974,28 @@ has been edited.
 ## Docs review boundary: agent docs and feature records are not user docs (#69)
 
 A `/review-docs` test fixture for the user-docs boundary needs faults on both sides of it, and its baseline must not itself have a user doc relying on `CLAUDE.md`, or the planted fault is not the only one of its kind. Passing the fixture does not mean the agent docs agent catches every stranded procedure: on this repository's own final review it missed that the feature-model maintenance procedure was held only in `CLAUDE.md` (moved to `CONTRIBUTING.md` by hand), so treat its "nothing a person needs is held only here" check as best-effort.
+
+## SessionStart hook records the container's session (#73)
+
+`run-claude.sh` passes the `SessionStart` hook via `--settings` (main session
+only); `record-session.sh` writes the session ID and transcript path to
+`~/.claude/container-session-id`. Observed in Claude Code 2.1.301:
+
+- The hook fires at interactive startup, **before any message is sent**, so the
+  recorded transcript does not exist yet. That is why `run-claude.sh` checks
+  the recorded path exists before using `--resume`.
+- A `claude -p` run from the session's Bash tool does not get the hook (its
+  transcript is a separate file, and the ID file is unchanged), and neither does
+  an in-process agent-team teammate.
+- `/clear` fires the hook with the new conversation's ID.
+- In a scratch directory, interactive `claude` first shows a folder-trust
+  dialog; `tmux send-keys` needs `Enter` sent as a separate call after the text
+  or the prompt can stay unsubmitted.
+
+## `claude-run` container-state check (#73)
+
+`claude-run` treats a `docker inspect --type container` failure as "no
+container" only when its error says "No such"; any other failure (the daemon
+down, say) is reported and exits, so it is never mistaken for a missing
+container. A container in state `created` (a `docker create` whose `start`
+failed) is restartable with `--resume`, the same as `exited`.

@@ -4,7 +4,7 @@
 
 No feature in progress.
 
-`upgrade-gh` completed 2026-10-11 — the container installs `gh` from GitHub's apt repository instead of Ubuntu's outdated package, and `/feature-spec` reads issues with `gh issue view --json`, because current `gh` prints only the comments for `--comments` without a terminal (#70). See `features/COMPLETED.md` for detail.
+`resume-container-session` completed 2026-10-21 — `claude-run --resume` restarts a stopped container and resumes its session, which a `SessionStart` hook records; `run-claude.sh` no longer uses `--continue` (#73). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -99,12 +99,13 @@ Contents:
 - `docker/files/home/.claude/CLAUDE.md` — global CLAUDE.md inside the container (full-permissions framing)
 - `docker/files/home/.claude/settings.json` — bypass-permissions mode, devproc plugin enabled
 - `docker/files/home/entrypoint.sh` — container entrypoint; starts the detached tmux session running `run-claude.sh`
-- `docker/files/home/run-claude.sh` — keep-alive loop that auto-relaunches Claude (via `claude --continue`) on exit so the tmux session survives `exit`/Ctrl-D/Ctrl-C
+- `docker/files/home/run-claude.sh` — keep-alive loop that auto-relaunches Claude on exit so the tmux session survives `exit`/Ctrl-D/Ctrl-C; every launch resumes the session recorded by `record-session.sh` (`claude --resume <id>`), or starts fresh if none
+- `docker/files/home/record-session.sh` — `SessionStart` hook (passed to the main session only, via `--settings`) that records the session ID and transcript path in `~/.claude/container-session-id`
 - `bin/claude-build` — builds the `claudedev` image with host UID/GID baked in
-- `bin/claude-run` — starts a detached container for a project directory; `--manager`/`--agent NAME` selects a top-level agent and `--model NAME` (default: derived from the agent's `model:` field) its session model, passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`; also passes `GH_TOKEN` into the container (from the environment, or sourced from `~/.config/gh/env` when unset) so `gh` can read issues there
+- `bin/claude-run` — starts a detached container for a project directory; `--manager`/`--agent NAME` selects a top-level agent and `--model NAME` (default: derived from the agent's `model:` field) its session model, passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`; `--resume` restarts the project's stopped container (fresh credentials, original agent/model/token/identity) so the session resumes, and plain `claude-run` fails if the container exists; also passes `GH_TOKEN` into the container (from the environment, or sourced from `~/.config/gh/env` when unset) so `gh` can read issues there
 - `bin/claude-attach` — attaches to the tmux session in a running container
 - `bin/claude-creds-refresh` — refreshes OAuth credentials in a running container mid-session (they are copied in at start, not bind-mounted, so a long session can outlive them)
-- `bin/claude-stop` — stops and removes the container
+- `bin/claude-stop` — stops and removes the container (and with it the conversation, so it cannot be resumed)
 
 See [docs/container.md](docs/container.md) for full usage documentation.
 
