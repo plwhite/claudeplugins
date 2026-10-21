@@ -4,7 +4,7 @@ Container mode runs Claude inside an isolated Docker container with full permiss
 
 The container:
 
-- Runs Claude in a detached tmux session so it continues working after you detach. The session survives Claude exiting — if Claude exits it is automatically relaunched (resuming the conversation), and `exit`/Ctrl-D/Ctrl-C cannot destroy the session.
+- Runs Claude in a detached tmux session so it continues working after you detach. The session survives Claude exiting — if Claude exits it is automatically relaunched (resuming the same conversation), and `exit`/Ctrl-D/Ctrl-C cannot destroy the session. If the container itself stops (a host reboot, say), you can [resume the session](#resume-after-the-container-stops).
 - Mounts the project directory read-write at `/workspace`. That directory is the *workspace* in the feature model's sense — the one holding `CLAUDE.md`, `NOTES.md` and `features/` — whether or not it is itself a git repository (see [workflow.md](workflow.md#where-the-workspace-is)); container mode is a common place for a workspace that merely contains repositories.
 - Bakes in the `devproc` plugin so the full feature workflow is available.
 - Uses a "YOLO" `~/.claude/` config: `--dangerously-skip-permissions`, bypass-permissions mode, onboarding skipped.
@@ -19,7 +19,7 @@ The container:
 
 ## Build the image
 
-Run this once, and again whenever you update plugins or pull changes from this repo:
+Run this once, and again whenever you update plugins or pull changes from this repo. A rebuilt image is used only by containers created afterwards; an existing container keeps its image even when [resumed](#edge-cases-and-limits).
 
 ```bash
 bash /some/path/claudeplugins/bin/claude-build
@@ -42,6 +42,8 @@ bash /some/path/claudeplugins/bin/claude-run /path/to/project
 ```
 
 This starts a detached container named `claude-<project-dirname>`, mounts the project at `/workspace`, and passes your git identity. Claude starts immediately in the tmux session.
+
+`claude-run` fails if a container for the project already exists, whether running or stopped. The message points to what fits the container's state: attach with `claude-attach` if it is running, [resume it with `--resume`](#resume-after-the-container-stops) if it is stopped, or [start fresh](#stop-and-remove-the-container) with `claude-stop` and then `claude-run`.
 
 ### GitHub access
 
@@ -78,7 +80,7 @@ To run as a different top-level agent, name it explicitly:
 bash /some/path/claudeplugins/bin/claude-run --agent some-agent-name
 ```
 
-`--agent dpm` is accepted as a short alias for `--agent dev-process-manager`. The agent must be discoverable in the container (the baked-in `devproc` plugin's agents always are). Options come before the optional project path, e.g. `claude-run --manager /path/to/project`. The selected agent persists across the container's automatic relaunches, so a resumed session keeps running as the same agent.
+`--agent dpm` is accepted as a short alias for `--agent dev-process-manager`. The agent must be discoverable in the container (the baked-in `devproc` plugin's agents always are). Options come before the optional project path, e.g. `claude-run --manager /path/to/project`. The selected agent persists across the container's automatic relaunches and across a [restart with `--resume`](#resume-after-the-container-stops), so a resumed session keeps running as the same agent.
 
 #### Session model
 
@@ -90,7 +92,7 @@ To override the model, or to set one for an agent whose definition is not in thi
 bash /some/path/claudeplugins/bin/claude-run --agent some-agent-name --model opus
 ```
 
-Like the agent, the model persists across the container's automatic relaunches.
+Like the agent, the model persists across the container's automatic relaunches and across a restart with `--resume`.
 
 ## Attach to Claude
 
@@ -108,9 +110,9 @@ bash /some/path/claudeplugins/bin/claude-attach /path/to/project
 
 This attaches to the tmux session running in the container.
 
-**To leave Claude without stopping it, detach with `Ctrl-b d`.** Claude keeps running in the background and you can re-attach later. Do *not* use `exit` or Ctrl-D for this: those exit Claude itself.
+**To leave Claude without stopping it, detach with `Ctrl-b d`.** Claude keeps running in the background and you can re-attach later.
 
-Even so, the session is hard to lose by accident. If Claude does exit (deliberately, accidentally, or via a crash) it is automatically relaunched, resuming the previous conversation, so the session is always running when you re-attach. Neither `exit`/Ctrl-D nor Ctrl-C can tear the session down — the only way to do that is `claude-stop`.
+`exit` and Ctrl-D are not the way to leave: they exit Claude itself, interrupting whatever it was doing. They are safe, though. Claude is relaunched automatically, resuming the same conversation, so the session is always running when you re-attach. The same happens if Claude crashes. Only removing the container, with `claude-stop`, ends the session and deletes its conversation (see [Stop and remove the container](#stop-and-remove-the-container)).
 
 The `reset` at the end of the attach script cleans up the terminal after you detach.
 
@@ -120,7 +122,7 @@ Copying text out of the tmux session can be awkward: a normal click-drag selecti
 
 ## Refresh credentials mid-session
 
-Credentials are copied into the container once, at startup — they are not bind-mounted, so a token refreshed on the host afterwards does not automatically propagate in. If the OAuth token expires during a long-running session, refresh it in place rather than restarting the container (which would lose session context):
+Credentials are copied into the container once, at startup — they are not bind-mounted, so a token refreshed on the host afterwards does not automatically propagate in. If the OAuth token expires during a long-running session, refresh it in place rather than restarting the container:
 
 ```bash
 bash /some/path/claudeplugins/bin/claude-creds-refresh
@@ -133,6 +135,39 @@ bash /some/path/claudeplugins/bin/claude-creds-refresh /path/to/project
 ```
 
 This forces a host-side token refresh (in case the host's own copy is also stale), then copies the refreshed credentials into the running container.
+
+A container restarted with `claude-run --resume` gets fresh credentials automatically, so this is only needed for a container that stays running.
+
+## Resume after the container stops
+
+If the container stops while a session is in progress — the host reboots, or Docker restarts during a system upgrade — the container still exists, stopped, and so does the conversation inside it. To carry on:
+
+```bash
+bash /some/path/claudeplugins/bin/claude-run --resume
+```
+
+Or with an explicit path:
+
+```bash
+bash /some/path/claudeplugins/bin/claude-run --resume /path/to/project
+```
+
+This runs the usual login check, copies fresh credentials into the container, and restarts it. Attach with `claude-attach` as usual: you should see your earlier conversation.
+
+The conversation that comes back is the one the session was in when the container stopped. If you switched conversations with `/clear` or `/resume`, it is the one that was active last. It is never another conversation that happened to run inside the container, such as the short throwaway run a container started with `--manager` or `--agent` makes at startup to load the plugins.
+
+**What comes back, and what does not.** The conversation comes back; interrupted work does not. Whatever Claude was doing when the container stopped is not restarted, so tell Claude to carry on.
+
+**Settings stay as they were.** Credentials are refreshed; the agent, model, `GH_TOKEN` and git identity are not. They keep the values the container was created with, so a changed `GH_TOKEN` takes effect only in a new container. `--manager`, `--agent` and `--model` are ignored with a warning when given with `--resume`.
+
+### Edge cases and limits
+
+- **Nothing to resume.** A conversation can be resumed only once at least one message has been sent in it. If there is nothing to resume (for example the container stopped before you sent anything), the attached pane shows "No previous session to resume. Press Enter to start a new conversation."
+- **If resuming fails.** If Claude exits within a few seconds of resuming, the pane says so and waits. Press Enter to try resuming again — if the cause is expired credentials, [refresh them](#refresh-credentials-mid-session) first. Or type `new` and Enter to start a new conversation instead; the old conversation then can no longer be resumed, though its transcript stays inside the container.
+- **Already running, or no container.** If the container is already running, `claude-run --resume` only prints the attach hint. If there is no container for the project, it fails and does not create one.
+- **Removed containers.** Removing the container deletes the conversation for good; see [Stop and remove the container](#stop-and-remove-the-container).
+- **Rebuilt images.** A restarted container keeps its original image. To use an image rebuilt with `claude-build`, run `claude-stop` and then `claude-run`. This deletes the conversation.
+- **Older containers.** Only containers created from an image that includes this feature can be resumed. A container created from an older image restarts with a new conversation.
 
 ## Stop and remove the container
 
@@ -148,7 +183,9 @@ Or with an explicit path:
 bash /some/path/claudeplugins/bin/claude-stop /path/to/project
 ```
 
-This stops and removes the container. Work is preserved in the project directory — only the container itself is removed.
+This stops and removes the container. Work is preserved in the project directory — only the container itself is removed. The conversation is deleted with it and cannot be resumed, because Claude keeps conversations inside the container. To get a stopped session back, use [`claude-run --resume`](#resume-after-the-container-stops), not `claude-stop`.
+
+To start fresh, run `claude-stop` and then `claude-run`.
 
 ## Convenience: symlink the scripts
 

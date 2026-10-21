@@ -5,9 +5,10 @@ REPO="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 
 usage() {
     cat <<'EOF'
-Usage: claude-run [--manager | --agent NAME] [--model NAME] [PROJECT]
+Usage: claude-run [--resume] [--manager | --agent NAME] [--model NAME] [PROJECT]
 
 Start a detached Claude container for PROJECT (default: current directory).
+Fails if a container for PROJECT already exists; see --resume.
 
 Options:
   -m, --manager      Run the session as the dev-process-manager agent, which
@@ -21,6 +22,13 @@ Options:
                      because '--agent' alone does not apply the agent's model to
                      the top-level session. Use this for agents not defined in
                      this repo, or to force a specific model.
+      --resume       Restart PROJECT's stopped container and resume the session it
+                     was running, instead of creating a new container. Fresh
+                     credentials are copied in first. The container keeps the
+                     agent, model, GH_TOKEN and git identity it was created
+                     with, so --manager, --agent and --model are ignored (with
+                     a warning). If the container is already running this only
+                     prints the attach hint; if there is none it fails.
   -h, --help         Show this help and exit.
 EOF
 }
@@ -39,11 +47,14 @@ derive_model() {
 AGENT=""
 MODEL=""
 PROJECT=""
+RESUME=0
+IGNORED_OPTS=()   # --manager/--agent/--model as given, to warn about under --resume
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -m|--manager)
             AGENT="dev-process-manager"
+            IGNORED_OPTS+=("$1")
             shift
             ;;
         -a|--agent)
@@ -52,6 +63,7 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             AGENT="$2"
+            IGNORED_OPTS+=("$1 $2")
             shift 2
             ;;
         --model)
@@ -60,7 +72,12 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             MODEL="$2"
+            IGNORED_OPTS+=("$1 $2")
             shift 2
+            ;;
+        --resume)
+            RESUME=1
+            shift
             ;;
         -h|--help)
             usage
@@ -107,39 +124,95 @@ PROJECT="${PROJECT:-$(pwd)}"
 PROJECT="$(cd "$PROJECT" && pwd)"
 CONTAINER="claude-$(basename "$PROJECT")"
 
-GIT_NAME="$(git -C "$PROJECT" config user.name 2>/dev/null || git config user.name)"
-GIT_EMAIL="$(git -C "$PROJECT" config user.email 2>/dev/null || git config user.email)"
-
-# GH_TOKEN lets Claude read GitHub issues inside the container (`gh` is
-# installed in the image, but the host's `gh` credentials are not copied in).
-# The token is taken from the environment; if it is not already set there,
-# source ~/.config/gh/env, which is the conventional place to keep it. An
-# already-exported GH_TOKEN wins, so a one-off `GH_TOKEN=... claude-run` can
-# override the file without editing it.
-GH_ENV_FILE="$HOME/.config/gh/env"
-if [[ -z "${GH_TOKEN:-}" && -f "$GH_ENV_FILE" ]]; then
-    # shellcheck source=/dev/null
-    source "$GH_ENV_FILE"
-fi
-
-# Pass the chosen agent and model through to run-claude.sh, which adds `--agent`
-# and `--model` to the claude command line on both the initial launch and every
-# --continue relaunch.
-extra_env=()
-if [[ -n "$AGENT" ]]; then
-    extra_env+=(-e CLAUDE_AGENT="$AGENT")
-fi
-if [[ -n "$MODEL" ]]; then
-    extra_env+=(-e CLAUDE_MODEL="$MODEL")
-fi
-
-# Pass the token through if we have one. Warn rather than fail when we do not:
-# a session that never touches GitHub works fine without it, and the skills
-# tell Claude to ask for help if it finds the token missing.
-if [[ -n "${GH_TOKEN:-}" ]]; then
-    extra_env+=(-e GH_TOKEN="$GH_TOKEN")
+# Inspect the project's existing container first, so the error and no-op cases
+# exit before the slow login check and the GH_TOKEN lookup. Only two cases fall
+# through: creating a new container (no container, no --resume) and restarting a
+# stopped one (--resume). An empty state means there is no such container; any
+# other docker failure (the daemon not running, say) is reported as it is, not
+# mistaken for a missing container.
+if inspect_output="$(docker inspect --type container -f '{{.State.Status}}' "$CONTAINER" 2>&1)"; then
+    STATE="$inspect_output"
+elif [[ "$inspect_output" == *"No such"* ]]; then
+    STATE=""
 else
-    echo "GH_TOKEN is not set and $GH_ENV_FILE does not define it - no gh access"
+    echo "claude-run: cannot inspect container $CONTAINER: $inspect_output" >&2
+    exit 1
+fi
+case "$STATE" in
+    "")
+        if [[ $RESUME -eq 1 ]]; then
+            echo "claude-run: no container $CONTAINER to resume; run claude-run without --resume to create one" >&2
+            exit 1
+        fi
+        ;;
+    running)
+        if [[ $RESUME -eq 1 ]]; then
+            echo "Container $CONTAINER is already running"
+            echo "Attach with: bash bin/claude-attach $PROJECT"
+            exit 0
+        fi
+        echo "claude-run: container $CONTAINER already exists and is running; attach with claude-attach, or run claude-stop to start again" >&2
+        exit 1
+        ;;
+    exited|created)
+        if [[ $RESUME -eq 0 ]]; then
+            echo "claude-run: container $CONTAINER already exists (stopped); use --resume to resume it, or run claude-stop to start again" >&2
+            exit 1
+        fi
+        ;;
+    *)
+        echo "claude-run: container $CONTAINER already exists and is $STATE; cannot continue" >&2
+        exit 1
+        ;;
+esac
+
+if [[ $RESUME -eq 1 ]]; then
+    # Restart path: the stopped container keeps the agent, model, GH_TOKEN and
+    # git identity it was created with, so none of them is looked up or passed
+    # here. Say so for any option the user gave that would have set them.
+    # The `+` form expands to nothing for an empty array; plain "${arr[@]}"
+    # fails under `set -u` on bash before 4.4 (macOS ships 3.2).
+    for opt in ${IGNORED_OPTS[@]+"${IGNORED_OPTS[@]}"}; do
+        echo "claude-run: warning: $opt is ignored with --resume; the container keeps the settings it was created with" >&2
+    done
+    AGENT=""
+    MODEL=""
+else
+    GIT_NAME="$(git -C "$PROJECT" config user.name 2>/dev/null || git config user.name)"
+    GIT_EMAIL="$(git -C "$PROJECT" config user.email 2>/dev/null || git config user.email)"
+
+    # GH_TOKEN lets Claude read GitHub issues inside the container (`gh` is
+    # installed in the image, but the host's `gh` credentials are not copied in).
+    # The token is taken from the environment; if it is not already set there,
+    # source ~/.config/gh/env, which is the conventional place to keep it. An
+    # already-exported GH_TOKEN wins, so a one-off `GH_TOKEN=... claude-run` can
+    # override the file without editing it.
+    GH_ENV_FILE="$HOME/.config/gh/env"
+    if [[ -z "${GH_TOKEN:-}" && -f "$GH_ENV_FILE" ]]; then
+        # shellcheck source=/dev/null
+        source "$GH_ENV_FILE"
+    fi
+
+    # Pass the chosen agent and model through to run-claude.sh, which adds
+    # `--agent` and `--model` to the claude command line on every launch (the
+    # first and each relaunch). They live in the container's environment, so
+    # they also survive a restart with --resume.
+    extra_env=()
+    if [[ -n "$AGENT" ]]; then
+        extra_env+=(-e CLAUDE_AGENT="$AGENT")
+    fi
+    if [[ -n "$MODEL" ]]; then
+        extra_env+=(-e CLAUDE_MODEL="$MODEL")
+    fi
+
+    # Pass the token through if we have one. Warn rather than fail when we do
+    # not: a session that never touches GitHub works fine without it, and the
+    # skills tell Claude to ask for help if it finds the token missing.
+    if [[ -n "${GH_TOKEN:-}" ]]; then
+        extra_env+=(-e GH_TOKEN="$GH_TOKEN")
+    else
+        echo "GH_TOKEN is not set and $GH_ENV_FILE does not define it - no gh access"
+    fi
 fi
 
 # Check that we are logged in, that we have tokens left, and that generally everything
@@ -148,35 +221,44 @@ fi
 # do it. Claude reports failure to stdout, so capture it and cat it only if an error.
 echo "Checking Claude login is valid, and forcing refresh"
 check_output="$(mktemp)"
+trap 'rm -f "$check_output"' EXIT
 if ! claude -p hello --model haiku > "$check_output"; then
     echo "Failed"
     cat "$check_output"
     exit 1
 fi
 
-docker create \
-    -v "$PROJECT":/workspace \
-    -e GIT_AUTHOR_NAME="$GIT_NAME" \
-    -e GIT_AUTHOR_EMAIL="$GIT_EMAIL" \
-    -e GIT_COMMITTER_NAME="$GIT_NAME" \
-    -e GIT_COMMITTER_EMAIL="$GIT_EMAIL" \
-    "${extra_env[@]}" \
-    --name "$CONTAINER" \
-    claudedev > /dev/null
+if [[ $RESUME -eq 0 ]]; then
+    docker create \
+        -v "$PROJECT":/workspace \
+        -e GIT_AUTHOR_NAME="$GIT_NAME" \
+        -e GIT_AUTHOR_EMAIL="$GIT_EMAIL" \
+        -e GIT_COMMITTER_NAME="$GIT_NAME" \
+        -e GIT_COMMITTER_EMAIL="$GIT_EMAIL" \
+        "${extra_env[@]}" \
+        --name "$CONTAINER" \
+        claudedev > /dev/null
+fi
 
 # Credentials are copied in rather than bind-mounted: Claude Code refreshes
 # them via atomic rename, which changes the file's inode, and a single-file
 # bind mount stays pinned to the old one — so a mounted container never sees a
 # refreshed token. Copying into the container before it starts avoids any
-# race with the entrypoint trying to read the file early. Ownership is fixed
-# up with chown once the container is running, since `docker cp` preserves
-# the UID/GID of the source file. If the token expires mid-session, refresh
-# it in place with claude-creds-refresh instead of restarting the container.
+# race with the entrypoint trying to read the file early. A --resume restart
+# gets fresh credentials the same way, since its container is still stopped
+# here. Ownership is fixed up with chown once the container is running,
+# since `docker cp` preserves the UID/GID of the source file. If the token
+# expires mid-session, refresh it in place with claude-creds-refresh instead
+# of restarting the container.
 docker cp "$HOME/.claude/.credentials.json" "$CONTAINER:/home/claude/.claude/.credentials.json"
 docker start "$CONTAINER" > /dev/null
 docker exec -u root "$CONTAINER" chown claude:claude /home/claude/.claude/.credentials.json
 
-echo "Started container: $CONTAINER"
+if [[ $RESUME -eq 1 ]]; then
+    echo "Restarted container: $CONTAINER"
+else
+    echo "Started container: $CONTAINER"
+fi
 if [[ -n "$AGENT" ]]; then
     echo "Top-level agent: $AGENT${MODEL:+ (model: $MODEL)}"
 fi

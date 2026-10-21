@@ -5,6 +5,10 @@ developed. Headings must end with the date of completion in YYYY-MM-DD format.
 
 ---
 
+### Add capability to resume a session [resume-container-session] — 2026-10-21
+
+A container stopped by a host reboot or a Docker restart can now be restarted with `claude-run --resume`, which copies in fresh credentials and reopens the session's conversation (#73). Plain `claude-run` now fails if the container exists. A new `SessionStart` hook (`record-session.sh`), passed through `--settings` to the main session only, records which conversation is active. `run-claude.sh` resumes exactly that conversation on every launch, replacing `--continue`, which picked by recency and could open the agent warm-up or a `claude -p` run instead. Removing the container still deletes the conversation, by the user's decision. The user's 8-step Docker test passed. The flag was renamed from `--reuse` to `--resume` at the end, and a full `/internal-docs-prune` is planned for the history wording in `NOTES.md`. Detail in [features/plans/resume-container-session.md](plans/resume-container-session.md).
+
 ### Upgrade to latest gh [upgrade-gh] — 2026-10-11
 
 The container image now installs `gh` from GitHub's own apt repository, unpinned, in a separate commented `RUN` step (#70). Ubuntu's package (2.46.0 on Ubuntu 26.04) was too old to run `gh issue view --comments`. Implementation also found that current `gh` (2.102.0) prints only the comments for `--comments` when there is no terminal. With the user's approval, `/feature-spec` steps 1b and 1c now read issues with `gh issue view --json`, and `NOTES.md` records both behaviours. The user's host build test passed, and the final `/review-branch` and `/review-docs` (accuracy, agent docs) gates found only wording fixes; `--state all` for the natural-language issue search was noted as a possible follow-up.
