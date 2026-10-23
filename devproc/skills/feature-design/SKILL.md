@@ -209,7 +209,7 @@ Keep sub-task descriptions to one line. Implementation detail goes in `NOTES.md`
 
 9. **If design work shows the spec itself is wrong, incomplete, or impossible as written, you may amend `## Spec` — but never silently.** This can come up at any point while researching or writing the design (steps 3–6): design legitimately turns up problems the spec did not anticipate — the canonical case is "this cannot be done exactly as specced, but a cheap 99% alternative is X" — and `/feature-design` is not frozen out of acting on that. This step is deliberately separate from steps 7 and 8 above: those two are near-identical to `feature-spec`'s equivalent steps by design, and a spec amendment is a `/feature-design`-only event that has no counterpart there.
 
-   a. Edit `## Spec` to the corrected text.
+   a. Edit `## Spec` to the corrected text. Where the amendment adds, rewords or removes a numbered requirement, follow the stable-numbering rule in the `Spec` entry under `### Documents to support the model` in `features/FEATUREMODEL.md`; do not renumber the requirements that are already there.
 
    b. **Put the amendment to the user for approval**, framed as either "this is uncontroversial, please confirm" or "I think the spec should change, is this acceptable" — whichever the change warrants. If the amendment surfaces while you are still researching or writing the design, raise it as soon as you make it rather than holding it back; if it lands at the same time as the design summary in step 8, fold it into that report instead of asking twice.
 

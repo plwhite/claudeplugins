@@ -4,7 +4,7 @@
 
 No feature in progress.
 
-`resume-container-session` completed 2026-10-21 — `claude-run --resume` restarts a stopped container and resumes its session, which a `SessionStart` hook records; `run-claude.sh` no longer uses `--continue` (#73). See `features/COMPLETED.md` for detail.
+`spec-requirement-headings` completed 2026-10-23 — numbered requirements in a plan's `## Spec` are their own `N. Name` headings with stable numbers, enforced by `feature-spec-reviewer` (#75). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)

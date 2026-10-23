@@ -79,6 +79,35 @@ The plan file splits *input* from *what the feature must do* into two sections, 
 - **`## Requirements`** is the input, captured faithfully — the issue or description or `features/tmp` material described above, kept as close to what you actually said as possible. It is deliberately **not** rewritten for readability: reorganising your own words to read better is exactly how their meaning gets lost.
 - **`## Spec`** is what the feature must do, written by Claude from that input to be clear on its own — followable by someone with no background on the feature, per the readability standard in the feature model (the text `/feature-init` installs in your workspace as `features/FEATUREMODEL.md`). It resolves ambiguities in `## Requirements` and fills any gaps with proposals, each one marked so you can see what you are being asked to accept rather than mistaking it for something you already said.
 
+Unless the requirements are only a few lines — in which case a paragraph or an unnumbered list is fine — `## Spec` numbers them, and each numbered requirement is its own heading (`N. Name`), so it appears in your editor's outline and can be referred to by number. Requirements sit directly under `## Spec` as `###` headings, or as `####` headings under a grouping `###` heading. Anything after the last requirement, such as the out-of-scope list, goes under its own unnumbered `###` heading so it is not read as part of that requirement. For example:
+
+```markdown
+## Spec
+
+The reports page gains a CSV export, so support staff can hand figures to finance.
+
+### 1. Columns match the screen
+
+The export includes exactly the on-screen columns, in the same order.
+
+### 2. The file is named by date
+
+The file is named `report-<YYYY-MM-DD>.csv`.
+
+### Out of scope
+
+Excel export.
+```
+
+Once you have agreed the spec, its requirement numbers never change, because the design, the sub-tasks and the handoff refer to them. When `/feature-design` amends the spec:
+
+- an added requirement takes the next free number, at the end;
+- a reworded requirement keeps its number, though its short name may change;
+- a removed requirement keeps its heading, with its text replaced by a note saying it was removed and why;
+- a spec agreed in the older numbered-list format (from before requirements were headings) is amended in that format, by the same rules.
+
+The canonical statement of these rules is the `Spec` entry in the feature model that `/feature-init` installs.
+
 A short description is still requirements. If you give `/feature-spec` one line — "add logging to the foo function" — `## Requirements` records that line verbatim, and `## Spec` is built out from it, almost entirely as marked proposals. A small feature is not blocked or penalised for having little input; it is judged on whether those proposals need your judgement, the same as any other spec.
 
 As part of specifying, Claude proposes a **sign-off strategy** — the quality bar for each of the five sign-off categories (testing, documentation, code review, docs review, user review) across the whole feature. Docs review is deliberately its own category, separate from writing the documentation: like code review it is a check of what was done, and it is the sign-off most routinely missed. It has four kinds — accuracy, architectural, style and agent docs — and the strategy sets a bar for each or skips it explicitly; see [Documentation review](capabilities.md#documentation-review) for what each kind checks and when it is warranted. The canonical statement of the model — categories, checkbox convention, auditability — lives in the `### Sign-off criteria` section of `features/FEATUREMODEL.md`, which your project gains from `/feature-init`. For example: 100% test coverage versus basic tests versus none; full production docs versus internal notes only. It is recorded in the plan file's `## Sign-off strategy` section. Skipping a category is fine, but it is a deliberate choice made here where you can comment on it — not something that quietly slips. This is the moment to set the standard the feature will be held to.
@@ -108,7 +137,7 @@ When you are ready to work on a feature, design it: Claude decides *how* it will
 
 Claude reads `## Requirements` and `## Spec` in the plan file, researches the relevant code, and fleshes out the design and sub-task breakdown in `features/plans/<slug>.md`. If either section is missing, `/feature-design` stops and tells you to run `/feature-spec`. `## Design` must open with an overview of how the design works as a whole, before any detailed section — followable by someone who has read only `## Requirements` and `## Spec`, not someone who sat through the design conversation. This is the same readability standard `## Spec` is held to, defined once in `features/FEATUREMODEL.md`.
 
-Design work sometimes turns up a problem with the spec itself that `/feature-spec` did not anticipate — a requirement that turns out to be impossible as written, or one where a cheap alternative beats the literal ask. `/feature-design` can amend `## Spec` to fix this, but never without telling you: every amendment is put to you for approval before the design proceeds on it, and once approved it is logged in the plan file's `## Review record` alongside the amendment's reason. If you are running unattended, a proposed amendment stops the run and waits for your answer, the same as any other open question.
+Design work sometimes turns up a problem with the spec itself that `/feature-spec` did not anticipate — a requirement that turns out to be impossible as written, or one where a cheap alternative beats the literal ask. `/feature-design` can amend `## Spec` to fix this, but never without telling you: every amendment is put to you for approval before the design proceeds on it, and once approved it is logged in the plan file's `## Review record` alongside the amendment's reason. If you are running unattended, a proposed amendment stops the run and waits for your answer, the same as any other open question. Amendments keep requirement numbers stable — see [Requirements and Spec are different jobs](#requirements-and-spec-are-different-jobs).
 
 Before the design reaches you, the `feature-design-reviewer` agent reads it — see [Review before you read it](#review-before-you-read-it) below.
 

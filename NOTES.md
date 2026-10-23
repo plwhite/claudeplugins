@@ -999,3 +999,16 @@ container" only when its error says "No such"; any other failure (the daemon
 down, say) is reported and exits, so it is never mistaken for a missing
 container. A container in state `created` (a `docker create` whose `start`
 failed) is restartable with `--resume`, the same as `exited`.
+
+## Design-reviewer `control` flake after the spec-format wording (spec-requirement-headings, sub-task 3)
+
+The reworded coverage check in `feature-design-reviewer` (numbered requirements traced by heading, older spec list format accepted) makes the known query-builder / column-definition MAJOR `[decision]` above show up in the design-suite controls in some runs. The tolerance covers `control`, `old-format-control` and `headed-requirements-control` under the design suite README's existing exception; nothing else is tolerated.
+
+## `/feature-spec` dry run in `claude -p` works unattended (spec-requirement-headings, sub-task 5)
+
+`claude -p --permission-mode bypassPermissions '/devproc:feature-spec --no-review <description>'`, run in a scratch directory that has been `git init`ed and had `claude -p '/devproc:feature-init'` run in it, writes the plan file and ends with its open questions and proposed sign-off strategy in the reply, rather than stalling.
+
+## Design-suite `unclear-design` draws MAJORs against its baseline `## Sub-tasks` (pre-existing)
+
+`feature-design-reviewer` on `tests/devproc/feature-design-reviewer/unclear-design.md` often raises MAJOR `[rewrite]` findings against the untouched baseline `## Sub-tasks`: the endpoint is built before the formatter it streams through, and no criterion checks the filename or column set. It did so in 3 of 3 runs of the pre-change agent and 2 of 4 runs after `spec-requirement-headings` (2026-10-23), so this feature did not cause it. The case still passes, because its `.expected.md` "Must not report" list covers only Requirements, Spec and Sign-off strategy. It does sit against the suite README's rule that a `## Design`-targeted case leaves `## Sub-tasks` clean, and the same text in `control` does not draw it, presumably because the clear design there resolves the ordering. A candidate baseline fix: add the wiring criterion, plus filename and column-set criteria, to every case carrying the baseline sub-tasks.
+

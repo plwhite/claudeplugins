@@ -44,18 +44,19 @@ A single "Export CSV" control on the reports page exports every row matching
 the user's current filters — not just the current page — as a downloaded CSV
 file.
 
-The export must:
+The export must meet these requirements:
 
-- Include exactly the on-screen columns, in the same order, with the same
-  headings.
-- Format dates as ISO 8601 (`YYYY-MM-DD`), not the localised display format,
-  and format numbers unformatted (no thousands separators, no currency
-  symbol) — finance's import step expects both.
-- Name the file `report-<YYYY-MM-DD>.csv`, using the user's local date at the
-  time of export.
-- Never hold the whole export in memory in the browser. The largest tenant has
-  around 200,000 rows, so the export must handle that scale without loading
-  every row into the browser at once.
+1. **Columns match the screen.** Include exactly the on-screen columns, in the
+   same order, with the same headings.
+2. **Dates are ISO 8601 and numbers are plain.** Format dates as ISO 8601
+   (`YYYY-MM-DD`), not the localised display format, and format numbers
+   unformatted (no thousands separators, no currency symbol) — finance's
+   import step expects both.
+3. **The file is named by date.** Name the file `report-<YYYY-MM-DD>.csv`,
+   using the user's local date at the time of export.
+4. **Memory use stays flat.** Never hold the whole export in memory in the
+   browser. The largest tenant has around 200,000 rows, so the export must
+   handle that scale without loading every row into the browser at once.
 
 Out of scope: Excel (`.xlsx`) export, scheduled or emailed exports, and
 exporting anything other than the reports page.

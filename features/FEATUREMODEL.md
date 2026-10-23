@@ -209,7 +209,10 @@ These apply at all times, not just when completing features:
 
     - Requirements (the input, captured faithfully — the full relevant content from the source issue, if the feature came from one — enough to resume without re-reading the issue. Not required to meet the `### Readability` standard: reorganising the user's own words to read better is how their meaning gets lost.)
 
-    - Spec (what the feature must do, written to stand alone against `### Readability` — clarifying ambiguities in the Requirements input and filling gaps with explicitly-marked proposals; agreed at `/feature-spec`)
+    - Spec (what the feature must do, written to stand alone against `### Readability` — clarifying ambiguities in the Requirements input and filling gaps with explicitly-marked proposals; agreed at `/feature-spec`). Its layout:
+
+        - **Numbered requirements.** A numbered requirement is a numbered statement of something the feature must do or make true. Where a spec numbers its requirements, each is a `N. Name` heading one level below its containing heading (`###` directly under `## Spec`, `####` under a grouping sub-heading), with its text beneath. A short spec may instead state its must-do content as an unnumbered paragraph or list. Purpose, background and out-of-scope content are not numbered requirements, and nor are lists inside a requirement's text; where such content follows the numbered requirements, it goes under its own unnumbered `###` heading (e.g. `### Out of scope`), after the last requirement — at the level of the requirements when they sit directly under `## Spec`, or of the grouping headings when they are grouped — so it is not read as part of the last requirement.
+        - **Stable numbers.** Once the spec is agreed, requirement numbers never change. An added requirement takes the next free number; a reworded one keeps its number (its short name may change); a removed one keeps its heading, with its text replaced by a note saying it was removed and why. A spec agreed in the older list format is amended in that format, by the same rules, with list items in place of headings.
 
     - Sign-off strategy (the quality bar per sign-off category — see `### Sign-off criteria` — agreed at `/feature-spec`)
 

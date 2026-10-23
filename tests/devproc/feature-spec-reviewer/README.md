@@ -40,6 +40,12 @@ sign-off criterion harder to audit.
 "One shared baseline" is a statement about the text, not about the files: the
 baseline `## Requirements`, `## Spec` and `## Sign-off strategy` are copied
 **byte-for-byte into every case in both suites**, not referenced from one place.
+The exceptions are the cases that carry the same `## Spec` content in another
+form on purpose: in this suite, `unheaded-requirements` (the requirements as
+numbered bold list items) and `headed-requirements-control` (the requirements
+as `####` headings under a grouping `###` heading); in the design suite, the
+cases listed in its
+[README](../feature-design-reviewer/README.md#what-the-untargeted-sections-are).
 So a weakness in that text is a weakness in every case file of both suites at once.
 
 This matters more than it used to. Since the clarity criterion checks *every*
@@ -54,14 +60,19 @@ one that fails outright, because the natural response is to re-run it.
 Two rules follow:
 
 - A defect found in shared baseline text must be fixed in **every file carrying
-  that section, across both suites** — not only in `control.md`.
+  that section, across both suites** — not only in `control.md`. In the cases
+  that carry `## Spec` in another form (above), the fix is applied in their
+  own form.
 - A case's `.expected.md` must **not** be widened to tolerate a baseline defect.
-  Widening hides the defect in one case and leaves it live in the rest.
+  Widening hides the defect in one case and leaves it live in the rest. The
+  design suite records one exception, for a defect that cannot be fixed; see
+  its [README](../feature-design-reviewer/README.md#what-the-untargeted-sections-are).
 
 ## Cases
 
 Every case but one mutates `## Spec`, `## Sign-off strategy`, or neither (the
-control). The one exception is `deferred-requirements`, which mutates
+control; `headed-requirements-control` is a second control, altering only the
+form of `## Spec`). The one exception is `deferred-requirements`, which mutates
 `## Requirements` instead — it is built specifically to exercise the retained
 `## Requirements` check named above (source-issue content captured, not
 deferred to). Its `.expected.md` states which section it targets and why that
@@ -77,6 +88,8 @@ section, rather than `## Spec`, is the clean/dirty line for that case.
 | `premature-design` | Scope discipline |
 | `deferred-requirements` | Complete and clear — the retained `## Requirements` capture check |
 | `undifferentiated-docs-review` | Delivery criteria — the docs review bar must say which kinds run |
+| `unheaded-requirements` | Requirement format — numbered requirements written as list items, not headings |
+| `headed-requirements-control` | None — `control` with its requirements as `####` headings; must pass, with no finding about the format |
 
 ## Running the tests
 

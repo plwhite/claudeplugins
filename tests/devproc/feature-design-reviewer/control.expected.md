@@ -11,6 +11,16 @@ observation about this file — not an invented fault.
 
 **Expected verdict:** `READY FOR USER REVIEW`
 
+## Tolerated finding
+
+One exception, recorded in `NOTES.md` ("Design-fixture baseline: a gap only
+some cases noticed") and in this suite's README: a finding, at any severity and
+with or without `[decision]`, that the reused query-builder / column-definition
+modules cannot be confirmed to exist is tolerated, because the fixture's product
+is not this repository. Where it is a MAJOR, the verdict is `NEEDS WORK`, and
+that verdict is also accepted. Any other MAJOR or BLOCKING finding still fails
+the case.
+
 ## Why this file should pass
 
 - **Complete and clear** — every item in `## Spec` is covered by a sub-task: row
