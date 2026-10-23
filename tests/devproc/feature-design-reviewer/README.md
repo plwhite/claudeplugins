@@ -18,7 +18,11 @@ background and traces design coverage against `## Spec`, but does not review
 either as an artefact in its own right, so:
 
 - `## Requirements`, `## Spec`, and `## Sign-off strategy` are identical clean
-  baseline text in every case, and must draw no BLOCKING or MAJOR finding.
+  baseline text in every case, and must draw no BLOCKING or MAJOR finding (apart
+  from the tolerated finding below) — except that `headed-requirements-control`
+  and `old-format-control` carry the same `## Spec` content in another form
+  (see [Cases](#cases)). A fix to the baseline `## Spec` is applied to those two in their own
+  form.
 - A case targeting `## Design` leaves `## Sub-tasks` at baseline, and vice
   versa — except where a single flaw genuinely spans both, which is recorded in
   that case's `.expected.md`.
@@ -37,8 +41,11 @@ design reuses a query-builder module and column definitions that the reviewer
 cannot confirm exist, because the fixture describes a fictional product, not
 this repository; a reviewer may raise a MAJOR `[decision]` finding about it.
 That finding may be tolerated in the expectations of any case that uses the
-shared baseline, and nothing else is widened that way. No wording of the
-fixture can make a fictional product's modules confirmable, and the reviewer
+shared baseline, including the controls; where it is a MAJOR, the `NEEDS WORK`
+verdict it forces is accepted too, and nothing else is widened that way. This is
+the one departure from the spec suite's rule against widening an `.expected.md`
+for a baseline defect. It is made because this defect cannot be fixed: no
+wording of the fixture can make a fictional product's modules confirmable, and the reviewer
 rule behind the finding is right for real plans, so the fixture is not changed
 and the reviewer is not weakened.
 
@@ -78,12 +85,20 @@ against an untargeted section" rule is too weak for this case — the bar is tha
 | `missing-final-signoff` | Delivery criteria — end-of-feature gates left in strategy prose instead of a "Final sign-off criteria" sub-task |
 | `misordered-criteria` | Delivery criteria — a sub-task's boxes listed out of performed order |
 | `unwritten-signoff-steps` | Delivery criteria — a substantial sign-off whose steps are written down nowhere |
-| `old-format-control` | None — `control` with `## Sub-tasks` in the old numbered-list format; must pass, with no finding about the format |
+| `old-format-control` | None — `control` with `## Sub-tasks` and `## Spec` in the old numbered-list format; must pass, with no finding about the format of either |
+| `headed-requirements-control` | None — `control` with `## Spec` requirements as `####` headings; must pass, with coverage traced from them and no finding about the format |
 | `no-spec` | The missing-`## Spec` guard — one BLOCKING `[decision]` finding and nothing else |
 
 `## Sub-tasks` in every case except `old-format-control` uses the heading format
 (`### N. Name`, description first, boxes beneath). `old-format-control` keeps the
 older numbered-list format so that the reviewer's acceptance of it stays tested.
+Its `## Spec` likewise states the requirements as numbered bold list items
+(`1. **Name.** text`) rather than headings, so that acceptance of the older spec
+format is tested too. `headed-requirements-control` states them as `#### N. Name`
+headings under a grouping `###` heading, the format the `Spec` entry in
+`devproc/skills/feature-init/FEATUREMODEL.md` sets. The other cases leave the requirements as the baseline's
+unnumbered bullet list, which also confirms a short unnumbered spec is not
+flagged.
 
 ## Running the tests
 

@@ -75,6 +75,8 @@ Read the project's `features/FEATUREMODEL.md` for the feature model this project
 
 A `## Spec` built mostly or entirely from marked proposals, because the input was thin, is not itself a clarity fault. Judge it against `### Readability` the same as any other spec: a short, well-structured spec passes; a long, disorganised one does not.
 
+**Requirement format.** Where `## Spec` numbers its requirements, each must be its own `N. Name` heading at the level set by the `Spec` entry under `### Documents to support the model` in `features/FEATUREMODEL.md` — read the format, and what counts as a numbered requirement, there rather than from here. Numbered requirements written as list items, or otherwise not each their own heading, are a **MAJOR** finding marked **[rewrite]**: the numbering is what makes a requirement referable, and the heading is what puts it in the document outline. A short spec that states its must-do content as an unnumbered paragraph or list has no numbered requirements, and that is **not** a finding.
+
 ### 2. Complete and clear
 
 This criterion asks whether the substance is **present**. Whether it is well
