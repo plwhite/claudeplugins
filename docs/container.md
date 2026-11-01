@@ -1,6 +1,14 @@
 # Container mode
 
-Container mode runs Claude inside an isolated Docker container with full permissions ("YOLO" mode). Claude can install tools, modify files, and take any action it needs — but the blast radius is limited to the mounted project directory. This is useful when you want Claude to work autonomously on a task without the friction of sandbox restrictions or permission prompts.
+Container mode runs Claude inside a restricted Docker container with full permissions ("YOLO" mode). Claude can install tools, modify files, and take any action it needs inside the container — but it has no git credentials configured, and its writes on the host are limited to the mounted project directory. It can still reach the web. This is useful when you want Claude to work autonomously on a task without the friction of sandbox restrictions or permission prompts.
+
+This page covers
+- [building the image](#build-the-image),
+- [running the container](#run-the-container),
+- [attaching to Claude](#attach-to-claude),
+- [refreshing credentials](#refresh-credentials-mid-session),
+- [resuming after a stop](#resume-after-the-container-stops), and
+- [stopping and removing the container](#stop-and-remove-the-container).
 
 The container:
 
@@ -10,7 +18,8 @@ The container:
 - Uses a "YOLO" `~/.claude/` config: `--dangerously-skip-permissions`, bypass-permissions mode, onboarding skipped.
 - Copies in your Claude login credentials (from `~/.claude/.credentials.json`) automatically when the container starts.
 - Passes `GH_TOKEN` through so Claude can read GitHub issues — see [GitHub access](#github-access).
-- Does not pass git remote credentials, and is instructed only to run local read operations (`git status`, `git diff`, `git log`) inside the container.
+- Has no git credentials configured, and is instructed only to run local read operations (`git status`, `git diff`, `git log`) inside the container.
+- Has outbound network access, so Claude can read from the web and download packages.
 
 ## Prerequisites
 
@@ -45,6 +54,10 @@ This starts a detached container named `claude-<project-dirname>`, mounts the pr
 
 `claude-run` fails if a container for the project already exists, whether running or stopped. The message points to what fits the container's state: attach with `claude-attach` if it is running, [resume it with `--resume`](#resume-after-the-container-stops) if it is stopped, or [start fresh](#stop-and-remove-the-container) with `claude-stop` and then `claude-run`.
 
+### If the login check fails
+
+`claude-run` and `claude-creds-refresh` both run a quick check of your Claude login on the host, before they change anything. If the check fails, the script prints Claude's output and stops. If the output shows a login or credentials error, run `claude` on the host, use `/login`, exit `claude`, and run the same command again.
+
 ### GitHub access
 
 Skills such as `/feature-spec` read GitHub issues with `gh`, which is installed in the image. The host's `gh` login is *not* copied in, so authentication comes from the **`GH_TOKEN` environment variable**, which `claude-run` passes into the container. It is expected to be set.
@@ -72,7 +85,7 @@ By default the container runs an ordinary Claude session. To instead run Claude 
 bash /some/path/claudeplugins/bin/claude-run --manager
 ```
 
-This is the natural pairing with container mode: the manager works through sub-tasks autonomously inside the isolated container, while still checking in with you at the boundary you set.
+This is the natural pairing with container mode: the manager works through sub-tasks autonomously inside the restricted container, while still checking in with you at the boundary you set.
 
 To run as a different top-level agent, name it explicitly:
 
@@ -134,7 +147,7 @@ Or with an explicit path:
 bash /some/path/claudeplugins/bin/claude-creds-refresh /path/to/project
 ```
 
-This forces a host-side token refresh (in case the host's own copy is also stale), then copies the refreshed credentials into the running container.
+This forces a host-side token refresh (in case the host's own copy is also stale), then copies the refreshed credentials into the running container. If that refresh fails, see [If the login check fails](#if-the-login-check-fails).
 
 A container restarted with `claude-run --resume` gets fresh credentials automatically, so this is only needed for a container that stays running.
 
@@ -152,7 +165,7 @@ Or with an explicit path:
 bash /some/path/claudeplugins/bin/claude-run --resume /path/to/project
 ```
 
-This runs the usual login check, copies fresh credentials into the container, and restarts it. Attach with `claude-attach` as usual: you should see your earlier conversation.
+This runs the usual [login check](#if-the-login-check-fails), copies fresh credentials into the container, and restarts it. Attach with `claude-attach` as usual: you should see your earlier conversation.
 
 The conversation that comes back is the one the session was in when the container stopped. If you switched conversations with `/clear` or `/resume`, it is the one that was active last. It is never another conversation that happened to run inside the container, such as the short throwaway run a container started with `--manager` or `--agent` makes at startup to load the plugins.
 

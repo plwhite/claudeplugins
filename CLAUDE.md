@@ -4,7 +4,7 @@
 
 No feature in progress.
 
-`spec-requirement-headings` completed 2026-10-23 — numbered requirements in a plan's `## Spec` are their own `N. Name` headings with stable numbers, enforced by `feature-spec-reviewer` (#75). See `features/COMPLETED.md` for detail.
+`minor-tooling-tweaks` completed 2026-11-01 — the container's `CLAUDE.md` and user docs now describe its access accurately, and a failed login check says how to recover (#77). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -92,7 +92,7 @@ When adding a suite here, give it a `README.md`, add a bullet above, add a row t
 
 Location: `docker/` (image definition) and `bin/` (wrapper scripts)
 
-Docker-based isolation mode that runs Claude with full permissions inside a container, with the project directory mounted read-write.
+Docker-based mode that runs Claude with full permissions inside a container, with the project directory mounted read-write.
 
 Contents:
 - `docker/Dockerfile` — Ubuntu base with Claude Code, python3, tmux; bakes in plugins and a YOLO `~/.claude/` config

@@ -5,6 +5,10 @@ developed. Headings must end with the date of completion in YYYY-MM-DD format.
 
 ---
 
+### Minor tooling tweaks [minor-tooling-tweaks] — 2026-11-01
+
+The container's global `CLAUDE.md` now says what the container can reach and holds: it can read from the web, it has only the Claude login and an optional `GH_TOKEN` intended for reading issues, and `/workspace` is the host's directory mounted read-write, not a copy (#77). A failed login check in `bin/claude-run` and `bin/claude-creds-refresh` now prints a recovery instruction on every failure, worded conditionally because the cause cannot be detected reliably. The user docs call the container "restricted" rather than "isolated" and say what that means, while the container's `CLAUDE.md` drops the adjective and states the specifics. Detail in [features/plans/minor-tooling-tweaks.md](plans/minor-tooling-tweaks.md).
+
 ### Make sure requirements are in a section [spec-requirement-headings] — 2026-10-23
 
 Where a plan's `## Spec` numbers its requirements, each is now its own `N. Name` heading, at `###` directly under `## Spec` or at `####` under a grouping heading. Its number never changes once the spec is agreed, and a spec whose requirements are only a few lines may stay unnumbered (#75). The rule is stated once in the canonical `FEATUREMODEL.md`. `/feature-spec` and `/feature-design` apply it; `feature-spec-reviewer` flags unheaded numbered requirements as MAJOR, and `feature-design-reviewer` traces requirements by heading while accepting the older list format. New reviewer fixtures pin both behaviours, and `docs/workflow.md` owns the user-facing explanation. Detail in [features/plans/spec-requirement-headings.md](plans/spec-requirement-headings.md).
