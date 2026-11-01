@@ -10,7 +10,7 @@ This repository contains descriptions and tooling for a set of best practices us
 
 - The `devproc` plugin, containing skills and agents to support and enforce the workflow via Claude slash commands.
 
-- A Docker container that runs Claude with full permissions inside an isolated environment, for when you want Claude to work autonomously without sandbox restrictions.
+- A Docker container that runs Claude with full permissions, for when you want Claude to work autonomously without sandbox restrictions. The container itself is restricted: no git credentials are configured, and writes on the host are limited to the mounted project directory.
 
 ## Instructions
 
@@ -29,7 +29,7 @@ This repository contains descriptions and tooling for a set of best practices us
 | [docs/setup.md](docs/setup.md) | Environment setup: sandbox, git hook, sensitive-file deny-list, `gh`, devproc install, `.claudeignore` |
 | [docs/workflow.md](docs/workflow.md) | Task-oriented guide: managing features from backlog to completion, including per-feature sign-off criteria and automated spec/design review |
 | [docs/capabilities.md](docs/capabilities.md) | Semi-autonomous workflow management, code review, documentation review, and internal docs hygiene |
-| [docs/container.md](docs/container.md) | Container mode: running Claude with full permissions in an isolated Docker container |
+| [docs/container.md](docs/container.md) | Container mode: running Claude with full permissions in a restricted Docker container |
 | [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |
 | [setup-files/README.md](setup-files/README.md) | Files copied into place during setup (`.claudeignore`, git-write hook): destination and purpose |
 | [tests/README.md](tests/README.md) | Maintainer test fixtures for the `devproc` plugin's reviewer agents and the `/review-docs` skill, kept outside the shipped plugin directory: four suites under `tests/devproc/`, each with its own `README.md`, plus a regression harness in `tests/devproc/harness/` |

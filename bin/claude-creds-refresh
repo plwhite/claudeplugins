@@ -13,6 +13,8 @@ check_output="$(mktemp)"
 if ! claude -p hello --model haiku > "$check_output"; then
     echo "Failed"
     cat "$check_output"
+    # Printed on every failure, since the cause cannot be detected reliably. Keep in sync with bin/claude-run.
+    echo "If this is a login or credentials error, run claude on this machine (not in a container), use /login, exit claude, and run this command again."
     exit 1
 fi
 
