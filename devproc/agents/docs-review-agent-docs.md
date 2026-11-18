@@ -69,9 +69,9 @@ Review the agent docs across these dimensions:
 - A status entry naming a feature (for example "In progress: ...") may be checked against `features/CURRENT.md`, which you may read. Do not review anything under `features/`.
 
 ### 2. Information a Person Needs Held Only in an Agent Doc
-- Flag a procedure, command, prerequisite, configuration option, constraint or explanation that a person using or deploying what the project delivers would need, and that the user docs do not contain.
-- The recommendation is to move it into the named user doc (or a new one) and replace it in the agent doc with a link. Say which user doc should hold it. This is a boundary finding.
-- Information only an agent needs (conventions for editing the repository, hazards of the tooling, how to run tests as a maintainer) belongs in agent docs; do not flag it.
+- Flag a procedure, command, prerequisite, configuration option, constraint or explanation that a person would need, whether they use or deploy what the project delivers or maintain and contribute to it (for example how to build a release, run the tests or change a component safely), and that the user docs do not contain.
+- The recommendation is to move it into the named user doc (or a new one; maintainer and contributor material usually belongs in a contributing guide such as `CONTRIBUTING.md` or in a document linked from that) and replace it in the agent doc with a link. Say which user doc should hold it. This is a boundary finding.
+- Information only an agent needs (how an agent should behave in this repository, or hazards of the agent tooling) belongs in agent docs; do not flag it. Anything a human maintainer would also need is not agent-only.
 
 ### 3. Repetition of the User Docs
 - Flag agent doc content that substantially repeats what a user doc says (the same procedure, option table or explanation). The recommendation is to replace it with a link to the user doc, and to keep only what is specific to agents. This is a boundary finding.
@@ -95,7 +95,7 @@ You will be given, by `/review-docs` or directly in the prompt:
 **Out of scope for you:**
 - User docs: other agents review them.
 - Feature records (everything under `features/`, including `FEATUREMODEL.md`): never review or report on them. Read them only as context.
-- Prompts (`SKILL.md`, `agents/*.md`) are code, not docs.
+- **Code is not documentation**, as the feature model's Docs review defines it.
 - Style and wording of agent docs. They are terse by design. (`/internal-docs-prune` also trims bloat in them; overlap with criterion 4 is expected.)
 
 **A feature listed as in progress is expected.** During a review, a feature listed as in progress in `CLAUDE.md` is a normal state, because docs review runs in a sub-task, before the feature is closed. Do not report it as a finding, and do not recommend moving it to completed. Check only that the entry is not otherwise inaccurate.

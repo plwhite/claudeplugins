@@ -7,8 +7,10 @@ description: |
   guides cover the components and their relationships, that each fact has one
   source of truth, that no user document relies on an agent doc or a feature
   record for information, and, given a change, that no document in a
-  non-obvious place has been missed. It produces findings only; it does not
-  modify files.
+  non-obvious place has been missed. It also applies its share of the user
+  docs concision standard: content beyond a document's purpose,
+  code-derivable detail, and an active search for duplication. It produces
+  findings only; it does not modify files.
 
   Pass the scope, the files to review and, for a change, the diff in the prompt.
   Normally run by /review-docs.
@@ -59,7 +61,7 @@ Review the documentation across these dimensions:
 5. **One source of truth** — does each fact live in one place?
 6. **Missed documents** (given a change) — has a document in a non-obvious place been left unchanged when it should have changed?
 7. **The user-docs boundary** — does any user document rely on an agent doc or a feature record for information?
-8. **Completeness and relevance** — is every major thing a user would expect documented, to the standard comparable things are, and is there nothing a user does not need?
+8. **Completeness and relevance** — is every major thing a user would expect documented, to the standard comparable things are, and is there nothing a user does not need, including content beyond a document's purpose and code-derivable detail?
 
 You are catching places where the documentation was not thought through. Apply judgement about what a reader needs, not only rules.
 
@@ -73,9 +75,8 @@ You are catching places where the documentation was not thought through. Apply j
 - Are there orphaned documents: documents that exist but are not reachable from any entry point?
 
 ### 2. Hierarchical Structure
-- Every document must open with (a) what it is, and (b) what sections or topics it contains.
+- Every document must open with what it is, its purpose and audience (unless obvious, as for `README.md`, per the user docs standard), and what sections or topics it contains. Raise one finding per document that does not; adding a one-line opener is the usual fix.
 - Check that heading hierarchies are consistent and logical.
-- Flag any document where a reader would have to read more than a few sentences before understanding its purpose.
 
 ### 3. Architecture Guides
 - Must explain what the project is and how the key components work.
@@ -90,7 +91,10 @@ You are catching places where the documentation was not thought through. Apply j
 
 ### 5. One Source of Truth
 - Flag the same information stated in several places without a clear single source of truth.
-- Say which document should own the fact and which should link to it.
+- Apply the **Each fact in one place** bullet of the user docs standard (see "The standard" below) by searching for duplicates actively: in `change` scope, check each changed user doc against the whole user-doc set; in `full` scope, check every user doc.
+- An owner may also be a code file (see "What counts as documentation"), per **Code-derivable detail stays in the code**. Content restated from one identifiable code file a user could read (a prompt, data file or template) is a duplicate under this criterion, with an `Owner:` line; detail derived from executable code or configuration (scripts, a `Makefile`, lists of variables) falls under criterion 8.
+- Say which document or file should own the fact and which should link to it.
+- Add the `Owner:` line (see the Output Format).
 
 ### 6. Missed Documents (given a change)
 - Given a diff, search the documentation for documents that describe, mention or depend on what changed (by names, paths, commands, options), including those in non-obvious places such as a nested `README.md`, a setup guide or a `docs/` page.
@@ -105,7 +109,9 @@ You are catching places where the documentation was not thought through. Apply j
 ### 8. Completeness and Relevance
 - Judge completeness against the docs' own standard: if comparable capabilities, commands or components are each explained (a section, a usage example, a reference entry), flag any that is missing or covered far more thinly. For example, every skill but one has a usage section.
 - Flag a major thing a user would expect to find (how to install, configure, run, upgrade or troubleshoot what the project delivers) that no user doc covers.
-- Flag content a user does not need: development history, internal working notes, or detail about how the repository is maintained that belongs in agent docs or feature records. Say where it belongs, or that it should go.
+- Flag maintainer-facing content a user does not need: internal working notes, development history of the repository, or detail about how it is maintained, which belongs in agent docs or feature records. Say where it belongs, or that it should go. Content a user might read but this document's purpose does not need falls under the next bullet instead.
+- For each user doc in scope, first state its purpose and audience in one line, in your reasoning and in any finding about that document's content under this criterion. Then check its content against them, applying the **Only what the purpose needs** and **Code-derivable detail stays in the code** bullets of the user docs standard (see "The standard" below). The standard's examples are not exhaustive; do not limit findings to them.
+- Each such finding says why the reader does not need the content, and whether it should go or move to a document whose purpose it fits.
 - Adding a missing section or document, or removing content, is a structural change; say so.
 
 ---
@@ -119,12 +125,15 @@ You will be given, by `/review-docs` or directly in the prompt:
 
 Use Glob, Grep and Read to follow links, find orphans and read documents elsewhere that the change affects.
 
+**The standard:** apply the `### User docs` section of the feature model (`features/FEATUREMODEL.md`, which `CLAUDE.md` imports; read it if it is not in your context). If that file does not exist, stop and tell the user to run `/feature-init`. Refer to the standard by bullet name; never copy its text.
+
 **What counts as documentation:** you review the **user docs** only.
 - **Full scope** is every document reachable from `README.md`, traced recursively, plus orphans found by searching for Markdown or text documents that nothing links to. Do not limit yourself to documents explicitly listed; if you discover undocumented paths or missing documents, flag them.
-- **In a change**, a file is a user doc if it is reachable from `README.md`, or is a new Markdown or text file that should be (flag it as an orphan if nothing links to it).
+- **In a change**, a user doc is any document written for people, changed or new. Each should be reachable from `README.md`; flag one that is not as an orphan, not as something other than a user doc.
+
 - **Agent docs** (`CLAUDE.md` at any depth, `NOTES.md`, `.claude/rules/*.md`) are not user docs and are not an entry point. Do not trace from them, report on them, or count them as orphans. Another agent reviews them.
 - **Feature records** (everything under `features/`, including `FEATUREMODEL.md`) are never reviewed and are not orphans. You may read them as context for a change, nothing more.
-- **Prompts are not documentation.** Skill and agent prompts (`SKILL.md`, `agents/*.md`) are code. You may read them to understand what documents describe, but never report on their wording or structure. Nor are test fixtures (files under a `tests/` or `fixtures/` directory that are not reachable from `README.md`) docs or orphans.
+- **Code is not documentation**, as the feature model's Docs review defines it. You may read code to understand what documents describe, but never report on their wording or structure. Nor are test fixtures (files under a `tests/` or `fixtures/` directory that are not reachable from `README.md`) docs or orphans.
 
 ---
 
@@ -143,6 +152,8 @@ Detail: [Why this is a problem and what impact it has on a reader]
 
 Recommendation: [Specific, actionable fix: name the files and sections involved. For a structural change (creating, moving, splitting or merging documents, or dividing information differently between documents), say so plainly.]
 ```
+
+For a duplication finding (criterion 5), add a line after Recommendation: `Owner: clear — <doc or file>; holds all of it: yes` or `Owner: clear — <doc or file>; holds all of it: no — <what the copy has that the owner lacks>` or `Owner: unclear — <why>`. The owner is clear only when one user doc, or one code file, is evidently the right home for the fact.
 
 Severity levels:
 - **CRITICAL** — a reader cannot find essential information (for example, a major area unreachable from any entry point)

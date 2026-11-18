@@ -21,9 +21,9 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 | Agent | `dev-process-manager` | Top-level orchestrator: drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user (`claude --agent dev-process-manager`) |
 | Agent | `feature-spec-reviewer` | Reviews a feature spec before a human reads it: `## Spec` clarity against the readability standard, auditable delivery criteria, blocking issues; ends with a verdict |
 | Agent | `feature-design-reviewer` | Reviews a feature design and sub-task plan before a human reads it: `## Spec` coverage, design clarity against the readability standard, recorded rationale, auditable sub-task criteria, blocking issues; ends with a verdict |
-| Agent | `docs-review-architectural` | Architectural docs review of the user docs: entry points, orphans, links, hierarchy, one source of truth, docs elsewhere that should have changed, user docs relying on agent docs (`opus`) |
+| Agent | `docs-review-architectural` | Architectural docs review of the user docs: entry points, orphans, links, hierarchy, one source of truth, docs elsewhere that should have changed, user docs relying on agent docs, and concision (`opus`) |
 | Agent | `docs-review-accuracy` | Accuracy docs review: user docs still match the code and its behaviour (`sonnet`) |
-| Agent | `docs-review-style` | Style docs review of the user docs: clarity, procedural form, consistency (`sonnet`) |
+| Agent | `docs-review-style` | Style docs review of the user docs: clarity (including wordiness), procedural form, consistency (`sonnet`) |
 | Agent | `docs-review-agent-docs` | Agent docs review: `CLAUDE.md`, `NOTES.md` and `.claude/rules/*.md` match the repository, hold nothing a person needs, and link to the user docs rather than repeat them (`sonnet`) |
 | Agent | `internal-docs-reviewer` | Reviews internal Claude-facing docs for `redundant`, `stale`, or `judgment` findings, each tagged with a gating class and action, without modifying files |
 | Agent | `code-review-architectural` | Architectural review: module boundaries, coupling, design fit (`opus`) |
@@ -41,7 +41,7 @@ Run `/feature-init` once per workspace before using any other skills. This copie
 
 | File | Purpose |
 |------|---------|
-| `features/FEATUREMODEL.md` | The project's installed copy of the feature-model text (lifecycle, sign-off criteria, supporting documents), refreshed from the plugin's canonical copy by `/feature-init` and imported by `CLAUDE.md`, so it loads every session |
+| `features/FEATUREMODEL.md` | The project's installed copy of the feature-model text (lifecycle, sign-off criteria, readability and user docs standards, supporting documents), refreshed from the plugin's canonical copy by `/feature-init` and imported by `CLAUDE.md`, so it loads every session |
 | `features/CURRENT.md` | Feature(s) currently in progress (normally exactly one) |
 | `features/PENDING.md` | Features waiting for development |
 | `features/DEFERRED.md` | Features explicitly deferred, including those blocked by a dependency |
@@ -225,7 +225,7 @@ Invoked automatically at the end of `/feature-design`, before the design is pres
 
 ### docs-review-architectural
 
-Reviews the structure of the user docs as a whole (`opus`): that every document is reachable from `README.md`, links resolve, each document states its purpose up front, architecture guides cover the components and their relationships, each fact has one source of truth, that no user doc relies on an agent doc or a feature record for information, and — given a change — that no document in a non-obvious place has been missed. Stateless; produces findings only and never modifies files. Invoked by `/review-docs`.
+Reviews the structure of the user docs as a whole (`opus`): that every document is reachable from `README.md`, links resolve, each document states its purpose up front, architecture guides cover the components and their relationships, each fact has one source of truth, that no user doc relies on an agent doc or a feature record for information, and — given a change — that no document in a non-obvious place has been missed. It also checks concision: content beyond a doc's purpose, code-derivable detail and duplication (see [Concision checks](../docs/capabilities.md#concision-checks)). Stateless; produces findings only and never modifies files. Invoked by `/review-docs`.
 
 ---
 
@@ -237,7 +237,7 @@ Checks that the user docs still match the code and its behaviour (`sonnet`): tha
 
 ### docs-review-style
 
-Reviews how the user docs read (`sonnet`): clarity, procedural form and consistency. Clarity is a separate criterion from style, since a reader who cannot extract the meaning has hit a failure of the document's purpose rather than a matter of taste. Stateless; produces findings only and never modifies files. Invoked by `/review-docs`.
+Reviews how the user docs read (`sonnet`): clarity, procedural form and consistency. Clarity is a separate criterion from style, since a reader who cannot extract the meaning has hit a failure of the document's purpose rather than a matter of taste. Clarity includes wordiness, as the concision standard defines it (see [Concision checks](../docs/capabilities.md#concision-checks)). Stateless; produces findings only and never modifies files. Invoked by `/review-docs`.
 
 ---
 

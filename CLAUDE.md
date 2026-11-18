@@ -4,7 +4,7 @@
 
 No feature in progress.
 
-`minor-tooling-tweaks` completed 2026-11-01 — the container's `CLAUDE.md` and user docs now describe its access accurately, and a failed login check says how to recover (#77). See `features/COMPLETED.md` for detail.
+`concise-user-docs` completed 2026-11-19 — a concision standard for user docs (`### User docs` in the feature model) that Claude writes from and `/review-docs` checks (#79). See `features/COMPLETED.md` for detail.
 
 This repository contains small "plugin" folders that package:
 - skills (prompt/behavior docs)
@@ -39,14 +39,14 @@ Contents:
 - `devproc/skills/review-full/SKILL.md` — full-codebase code review; auto-applies code-level findings, escalates architectural changes
 - `devproc/skills/review-component/SKILL.md` — code review scoped to a described component (resolves natural-language description to files)
 - `devproc/skills/review-branch/SKILL.md` — code review scoped to files changed in the current branch (uses git diff for scope and context)
-- `devproc/skills/review-docs/SKILL.md` — docs review scoped to the whole doc set, the current change, or a described area; runs the four docs review agents, auto-applies minor in-doc fixes, escalates significant findings
+- `devproc/skills/review-docs/SKILL.md` — docs review scoped to the whole doc set, the current change, or a described area; runs the four docs review agents (passing the `### User docs` standard to two), auto-applies minor in-doc fixes, escalates significant findings
 - `devproc/skills/internal-docs-prune/SKILL.md` — prune internal Claude-facing docs (root and nested `CLAUDE.md` files, `NOTES.md`, `.claude/rules/*.md`): spawn `internal-docs-reviewer`, auto-apply redundant/stale findings without content loss, escalate or defer judgment findings
 - `devproc/agents/dev-process-manager.md` — top-level Opus orchestrator (`claude --agent dev-process-manager`); drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user
 - `devproc/agents/feature-spec-reviewer.md` — reviews a feature spec (`## Spec` and sign-off strategy, including clarity against the `### Readability` standard) before a human reads it, ending with a `READY FOR USER REVIEW` / `NEEDS WORK` verdict
 - `devproc/agents/feature-design-reviewer.md` — reviews a feature design (`## Design`) and its sub-task plan (`## Spec` coverage, design clarity, recorded rationale, auditable, ordered criteria with non-obvious steps written down) before a human reads it, ending with the same verdict
-- `devproc/agents/docs-review-architectural.md` — user docs structure review agent (`opus`)
+- `devproc/agents/docs-review-architectural.md` — user docs structure and concision (purpose, code-derivable detail, duplication) review agent (`opus`)
 - `devproc/agents/docs-review-accuracy.md` — user docs-match-code review agent (`sonnet`)
-- `devproc/agents/docs-review-style.md` — user docs clarity and consistency review agent (`sonnet`)
+- `devproc/agents/docs-review-style.md` — user docs clarity (incl. wordiness) and consistency review agent (`sonnet`)
 - `devproc/agents/docs-review-agent-docs.md` — agent docs review agent (`sonnet`): `CLAUDE.md`, `NOTES.md` and `.claude/rules/*.md` match the repo, hold nothing a person needs, and link to the user docs
 - `devproc/agents/internal-docs-reviewer.md` — reviews internal Claude-facing docs for redundant, stale, or judgment-call content, producing gated findings (action + class) without modifying files
 - `devproc/agents/code-review-architectural.md` — architectural review agent (`opus`)
@@ -56,7 +56,9 @@ Contents:
 
 See `devproc/README.md` for full usage documentation.
 
-> **Maintainer note:** to change the feature model, edit the canonical `devproc/skills/feature-init/FEATUREMODEL.md` and re-run `/feature-init`, never `features/FEATUREMODEL.md` — see [CONTRIBUTING.md](CONTRIBUTING.md#changing-the-feature-model). In a session, `/feature-init` reads the installed plugin copy, so refresh that first. (The obligation is kept out of `FEATUREMODEL.md` itself, since that file is copied verbatim into consumer projects where the twin does not exist.)
+**In this repository the plugin is the code.** The skills and agents are written for any project they run in, where their prompts and `FEATUREMODEL.md` are not part of the repository. Here, everything under `devproc/` (including its Markdown prompts and `FEATUREMODEL.md`) is the code under development: treat it as code, not docs. When editing a skill or agent, keep its instructions general; never write them as if the project they run in is this one.
+
+> **Maintainer note:** to change the feature model, edit the canonical `devproc/skills/feature-init/FEATUREMODEL.md` and re-run `/feature-init`; never edit `features/FEATUREMODEL.md`, which `/feature-init` overwrites. See [CONTRIBUTING.md](CONTRIBUTING.md#making-changes) for what else a plugin change touches. In a session, `/feature-init` reads the installed plugin copy, so refresh that first. (The obligation is kept out of `FEATUREMODEL.md` itself, since that file is copied verbatim into consumer projects where the twin does not exist.)
 
 ## setup-files directory
 
@@ -69,7 +71,7 @@ Contents:
 - `setup-files/block-git-writes.sh` — `PreToolUse` hook that blocks Bash `git` write commands
 - `setup-files/README.md` — destination, purpose, and back-link to setup.md per file
 
-When adding a new file here, also add an entry to `setup-files/README.md` and a "copy from `/some/path/claudeplugins/setup-files/...`" instruction in `docs/setup.md`.
+When adding a file here, follow [CONTRIBUTING.md](CONTRIBUTING.md#making-changes).
 
 ## tests directory
 
@@ -86,7 +88,7 @@ Contents:
 
 Each suite pairs deliberately flawed inputs with recorded `.expected.md` outputs, and carries its own `README.md` explaining how to run it. `tests/README.md` indexes the area.
 
-When adding a suite here, give it a `README.md`, add a bullet above, add a row to `tests/README.md`, and check whether `tests/devproc/harness/run.sh` can cover it.
+When adding a suite here, follow [CONTRIBUTING.md](CONTRIBUTING.md#making-changes) and add a bullet above.
 
 ## Container mode
 

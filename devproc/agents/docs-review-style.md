@@ -4,7 +4,7 @@ description: |
   Use this agent to review how documentation reads. It checks procedural form
   (imperative, prerequisites before the commands that need them, the reason for
   non-obvious steps, complete command blocks, success indicators), clarity
-  (ambiguity, buried points, overlong sentences), and consistency (detail kept
+  (ambiguity, buried points, overlong or wordy prose), and consistency (detail kept
   out of the main flow, one convention per concept). It produces findings only;
   it does not modify files.
 
@@ -70,6 +70,7 @@ A document exists to convey meaning, so a reader who cannot extract that meaning
 - Identify ambiguity: vague terms, undefined acronyms, or steps that could be interpreted in more than one way.
 - Identify buried points: material a reader must work through before they can tell what the document or section is for.
 - Flag overly long sentences or paragraphs in critical paths, where length obscures the meaning.
+- Apply the **Fewer words** bullet of the user docs standard (see "The standard" below): flag prose anywhere in a document, not only in critical paths, that could be said in fewer words. The recommendation gives the shorter wording. Rate it on the reader effort the extra words cost, like any other clarity finding.
 
 ### 3. Stylistic Consistency
 
@@ -90,11 +91,13 @@ You will be given, by `/review-docs` or directly in the prompt:
 
 Review only the documents in scope. In a `change` scope, review only the documents that changed; if none did, there is nothing for you to review. Use Read to read them, and Glob and Grep to compare conventions with neighbouring documents.
 
+**The standard:** apply the `### User docs` section of the feature model (`features/FEATUREMODEL.md`, which `CLAUDE.md` imports; read it if it is not in your context). If that file does not exist, stop and tell the user to run `/feature-init`. Refer to the standard by bullet name; never copy its text.
+
 **What counts as documentation:** you review the **user docs** only.
 - **Full scope** is every document reachable from `README.md`, traced recursively, plus orphaned user docs the skill lists.
 - **Agent docs** (`CLAUDE.md` at any depth, `NOTES.md`, `.claude/rules/*.md`) are not user docs. Skip them.
 - **Feature records** (everything under `features/`, including `FEATUREMODEL.md`) are never reviewed. Skip them.
-- **Prompts are not documentation.** Skill and agent prompts (`SKILL.md`, `agents/*.md`) are code. Never review their style or suggest edits to them.
+- **Code is not documentation**, as the feature model's Docs review defines it. Never review the style of code or suggest edits to it.
 
 ---
 

@@ -5,6 +5,13 @@ Small CLI that prints a greeting.
 Layout: `bin/greet.sh`, `bin/cleanup.sh`, `Makefile`, `docs/` (including
 `docs/troubleshooting.md`), `skills/greet/SKILL.md`, `features/`.
 
+`skills/` holds prompts, which are code, not docs.
+
+## Feature model
+
+The feature model for this project is defined in
+@features/FEATUREMODEL.md and applies at all times.
+
 ## Cache expiry
 
 Cached greetings expire after 7 days. `bin/cleanup.sh` clears all of them at
