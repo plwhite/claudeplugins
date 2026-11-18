@@ -32,6 +32,7 @@ This repository contains descriptions and tooling for a set of best practices us
 | [docs/container.md](docs/container.md) | Container mode: running Claude with full permissions in a restricted Docker container |
 | [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |
 | [setup-files/README.md](setup-files/README.md) | Files copied into place during setup (`.claudeignore`, git-write hook): destination and purpose |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Proposing changes, and what a change to the plugin, container, setup files or tests must also update |
 | [tests/README.md](tests/README.md) | Maintainer test fixtures for the `devproc` plugin's reviewer agents and the `/review-docs` skill, kept outside the shipped plugin directory: four suites under `tests/devproc/`, each with its own `README.md`, plus a regression harness in `tests/devproc/harness/` |
 
 ## Plugins
@@ -40,4 +41,4 @@ This repository contains descriptions and tooling for a set of best practices us
 |--------|-------------|
 | [devproc](devproc/README.md) | Feature lifecycle, workflow orchestration, code review, documentation review, and internal docs hygiene: spec, design, implement, review, and close features |
 
-Plugins are registered in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json). See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines. Each entry names the plugin and points to its source directory. A new plugin needs both an entry here and its own directory with a `.claude-plugin/plugin.json` manifest.
+Plugins are registered in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json). See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines. Each entry names the plugin and points to its source directory.

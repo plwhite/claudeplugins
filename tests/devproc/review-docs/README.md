@@ -9,10 +9,11 @@ called `greeter`, with faults planted in it.
 ## What it tests
 
 The default `change` scope over a git repository. `setup.sh` builds a scratch
-repository from `fixture/`: a committed baseline (`fixture/baseline/`), then a
-working-tree change (`fixture/change/`, overlaid on it) that is never staged
-or committed, including one untracked new doc, one renamed doc and a
-modified feature record.
+repository from `fixture/`. It commits a baseline (`fixture/baseline/` plus
+`features/FEATUREMODEL.md`, copied from the canonical file in `devproc/`), then
+overlays `fixture/change/` as a working-tree change that is never staged or
+committed: two untracked new docs, one renamed doc and a modified feature
+record.
 The fixture holds all three classes of document (user docs, agent docs,
 feature records).
 
@@ -26,18 +27,29 @@ the reviewing agents no hints.
 | `docs/setup.md` links `troubleshooting.md`, which was renamed to `docs/help.md` | broken in-repo link in a changed doc | **architectural** flags it; **applied** as a minor fix (link repointed to `help.md`) | 4 |
 | `docs/caching.md` is new and nothing links to it | orphan, untracked | **architectural** flags it; adding a link from a doc is a minor fix and is **applied** | 5 |
 | `docs/setup.md` gives the prerequisites (bash 4, make) in step 3, after the commands that need them | procedure in a changed doc | **style** flags it | 6 |
-| `docs/setup.md` and `docs/config.md` both document the installation prefix, each pointing at the other | same information split inconsistently between two changed docs | **architectural**, **escalated** (significant), not applied; the duplication is still present after the run | 7 |
+| `docs/setup.md` and `docs/config.md` both document the installation prefix, each with a different, overlapping slice (see the note after the table) | duplicate whose owner is unclear: neither doc holds all the prefix detail, and each is a plausible home (a how-to and a reference) | **architectural** flags it as a duplicate with no clear owner; **escalated** (significant), not applied; both slices are still present after the run | 7 |
 | `skills/greet/SKILL.md` is modified in the change | prompt file | unchanged by the run | 8 |
 | `features/CURRENT.md` and `CLAUDE.md` list `colour-output` as in progress | tracking state | no agent reports it | 9 |
+| `features/CURRENT.md` (modified in the change) links `plans/colour-output.md`, which does not exist | fault in a feature record | no agent reports it; the file is not edited | 9 |
 | `docs/caching.md` (a user doc) tells the reader to see `CLAUDE.md` for when cached greetings expire; that information is in `CLAUDE.md` only | user doc relying on an agent doc | **architectural** flags it as a boundary finding; **escalated** (significant), not applied; the sentence is still present after the run | 10 |
 | `CLAUDE.md` holds a procedure for building a release tarball (`make dist VERSION=...`) that no user doc mentions | information a person needs held only in an agent doc | **agent docs** flags it as a boundary finding; **escalated**, not applied; the section is still in `CLAUDE.md` after the run | 11 |
 | `CLAUDE.md`'s layout lists `docs/troubleshooting.md`, which the change renamed to `docs/help.md` | stale path in an agent doc | **agent docs** flags it; correcting the path is a minor fix and may be **applied** | 12 |
-| `features/CURRENT.md` (modified in the change) links `plans/colour-output.md`, which does not exist | fault in a feature record | no agent reports it; the file is not edited | 9 |
+| `docs/architecture.md` (new, linked from `docs/config.md`) gives numbered steps for switching to French greetings (not held in any other doc) | procedure in an architecture guide; no other doc owns the steps, so only the **Only what the purpose needs** rule of the `### User docs` standard applies | **architectural** flags it; removal or move is **escalated**, not applied | 13 |
+| `docs/architecture.md` repeats, word for word, the `bin/cleanup.sh` paragraph of `docs/usage.md` (unchanged) | duplicate with a clear owner, `docs/usage.md` | **architectural** flags it; the finding reads `Owner: clear — docs/usage.md; holds all of it: yes`, and replacing the copy with a link is **applied** | 14 |
+| `docs/architecture.md` lists every variable, flag and builtin the scripts and `Makefile` use | exhaustive code-derivable list | **architectural** flags it, saying why the reader does not need it; removal is **escalated**, not applied | 15 |
+| `docs/help.md` pads the wrong-language item to several lines | wordiness | **style** flags it; tightening that keeps the information may be **applied** | 16 |
+| `docs/help.md` explains the history of the cache location in a how-to item | history in a how-to guide | **architectural** flags it; removal is **escalated**, not applied | 17 |
+| **Controls:** `docs/config.md` has one precedence sentence that is needed (`PREFIX` comes from the command line, else the environment, else the default); `docs/setup.md` step 1 gives a short reason for a non-obvious step; `docs/help.md` ends with a four-item checklist the reader runs through; `docs/architecture.md`'s Configuration section is a one-sentence summary linking `config.md` | exceptions to the concision rules | no agent reports any of them as a finding | 18 |
+| `docs/setup.md` restates, in full, the behaviour and four rules held in `skills/greet/SKILL.md` | a user doc copying content held in a code file (a shipped prompt) that the reader does not need verbatim | **architectural** flags it, with `Owner: clear — skills/greet/SKILL.md; holds all of it: yes`; replacing the copy with a brief summary or link is **applied**; `SKILL.md` is unchanged | 19 |
 
-The stale-path row (item 12) is also why the agent docs kind runs at all: the change does not
-touch `CLAUDE.md`, but `CLAUDE.md` describes the doc that the change renamed
-(`docs/troubleshooting.md`), so the skill must run the agent docs kind. Pass
-rule item 1 checks that it was invoked.
+Item 7: both docs state the default, `$PREFIX/bin` and the `PATH`
+requirement. Only `docs/setup.md` adds that root is needed for the default and that
+`make install` creates the directory. Only `docs/config.md` adds that `PREFIX` is a `make`
+variable and the environment-versus-command-line rule.
+
+Item 12 is also why the agent docs kind must run: the change does not touch
+`CLAUDE.md`, but `CLAUDE.md` describes the renamed `docs/troubleshooting.md`.
+Pass rule item 1 checks that the kind was invoked.
 
 ## Prerequisites
 
@@ -123,13 +135,15 @@ breach item 8 or 9.
 4. **architectural** flags the broken `troubleshooting.md` link, and
    `docs/setup.md` now links `help.md` (applied).
 5. **architectural** flags `docs/caching.md` as an orphan, and a link to it
-   now exists in a reachable doc (applied).
+   now exists in a reachable doc (applied). `docs/architecture.md` is not
+   reported as an orphan, since `docs/config.md` links it.
 6. **style** flags the prerequisites in `docs/setup.md` coming after the
    commands that need them.
-7. **architectural** flags the duplicated installation-prefix information
-   between `docs/setup.md` and `docs/config.md`, and it is **escalated, not
-   applied** (the report lists it as significant/unapplied; the duplication is
-   still present).
+7. **architectural** flags the overlapping installation-prefix information
+   between `docs/setup.md` and `docs/config.md` as a duplicate. It is
+   **escalated, not applied**: its `Owner:` line is `Owner: unclear`,
+   `Owner: clear — ...; holds all of it: no`, or absent, never
+   `holds all of it: yes`, and both slices are still present.
 8. `skills/greet/SKILL.md` is unchanged:
    its hash matches the one recorded before the run.
 9. Feature records and the status are left alone. All of these hold:
@@ -150,9 +164,45 @@ breach item 8 or 9.
     section is still in `CLAUDE.md`, and no user doc gained it.
 12. **agent docs** flags the stale `docs/troubleshooting.md` path in
     `CLAUDE.md`'s layout. It may be applied as well as flagged.
+13. **architectural** flags the French-greeting steps in `docs/architecture.md`.
+    Removing them is **escalated, not applied**: they are still present after
+    the run.
+14. **architectural** flags the `cleanup.sh` paragraph duplicated from
+    `docs/usage.md`, with
+    `Owner: clear — docs/usage.md; holds all of it: yes`. The copy in
+    `docs/architecture.md` is replaced by a link (applied), and the paragraph
+    is still in `docs/usage.md`.
+15. **architectural** flags the exhaustive list in `docs/architecture.md`,
+    giving the reason. Removing it is **escalated, not applied**.
+16. **style** flags the padded wrong-language item in `docs/help.md`.
+    Tightening it, keeping the information, may be applied.
+17. **architectural** flags the cache-history text in `docs/help.md`. Removing
+    it is **escalated, not applied**.
+18. No agent flags a control on the ground its exception covers, in the report
+    or the raw findings:
+    - the precedence sentence in `config.md`: not as wordiness;
+    - the short reason in `setup.md` step 1: not as off-purpose (history or why);
+    - the checklist in `help.md`: not as code-derivable detail or enumeration;
+    - the linked summary in `architecture.md`: not as duplication or off-purpose.
 
-## When the skill or an agent changes
+    An unrelated defect found in a control's text is a fixture bug to
+    fix, not a failure.
+19. **architectural** flags the `skills/greet/SKILL.md` content copied into
+    `docs/setup.md`, with
+    `Owner: clear — skills/greet/SKILL.md; holds all of it: yes`
+    (required; any other `Owner:` line fails). The copied section is gone or
+    is at most two lines including a link to `skills/greet/SKILL.md`, and
+    `SKILL.md` is unchanged (item 8's hash).
 
-Re-run the suite after the Refresh steps. If a change makes an item fail,
+## Not covered
+
+The skill's two stop conditions, a missing `features/FEATUREMODEL.md` and a
+`CLAUDE.md` without the import, are not exercised: the fixture always has both.
+
+## When the skill, an agent or the standard changes
+
+Re-run the suite after the Refresh steps, including after a change to the
+`### User docs` section of `devproc/skills/feature-init/FEATUREMODEL.md`, which
+items 13–19 depend on. If a change makes an item fail,
 either the change is wrong or the expectation needs deliberately revising;
 record which, rather than adjusting quietly.

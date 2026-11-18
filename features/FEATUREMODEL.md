@@ -35,7 +35,7 @@ the most likely sign-offs:
 - **Testing** — manual or automated checks that the work behaves correctly.
 - **Documentation** — user and architectural docs updated to reflect the change.
 - **Code review** — review of the code, by an agent (e.g. a light per-sub-task agent review, or a full `/review-branch`) or by the user.
-- **Docs review** — review of the documentation, by an agent (`/review-docs`) or by the user. This is a review activity like code review — checking what was done, not writing it — and it has its own category because it is the sign-off most routinely missed. It has four kinds, and the strategy sets a bar for each kind or skips it explicitly. The first three review the **user docs** (`README.md` and every document reachable from it, which people use to work with what the project delivers); the fourth reviews the **agent docs** (`CLAUDE.md`, `NOTES.md`, `.claude/rules/*.md`, which are for Claude only). Feature records (everything under `features/`, including this model) are never docs-reviewed:
+- **Docs review** — review of the documentation, by an agent (`/review-docs`) or by the user. This is a review activity like code review — checking what was done, not writing it — and it has its own category because it is the sign-off most routinely missed. It has four kinds, and the strategy sets a bar for each kind or skips it explicitly. The first three review the **user docs** (documents written for people to read; all should be reachable from `README.md`, and one that is not is still a user doc, missing its link); the fourth reviews the **agent docs** (`CLAUDE.md`, `NOTES.md`, `.claude/rules/*.md`, which are for Claude only). Feature records (everything under `features/`, including this model) and **code** (any file a program or model consumes, such as source, binaries, prompts, templates or data files, even when it is Markdown; the project's agent docs may say which files these are) are never docs-reviewed:
     - **Accuracy** — the docs still match the code and its behaviour. Warranted whenever any doc changes, or might need to.
     - **Architectural** — the documentation set still hangs together: its structure, its links, and any docs in non-obvious places that the change should have touched. Warranted whenever there is any risk that the structure should change, a link might break, or a doc has been missed.
     - **Style** — the docs read clearly and consistently. Warranted whenever any doc prose is added or changed, other than a trivial edit that manifestly cannot affect how it reads.
@@ -181,6 +181,49 @@ make a failure concrete enough to point at and fix; they are not the bar
 itself, and passing all six while still failing the outcome is still a
 failure — so nobody games the checklist in place of writing something a
 human can read.
+
+### User docs
+
+This section is the **canonical statement of what concise user docs look
+like**. Claude follows it when writing user docs, and the docs review agents
+apply it rather than carrying their own copies. User docs are as defined under
+`### Sign-off criteria`, Docs review; agent docs and feature records are out of
+its scope.
+
+Every document has a **purpose** and an **audience**, each statable in one
+line, and everything in it serves that purpose for that audience. Unless they
+are obvious (as for a `README.md`), open the document by stating both: "This
+is the deployment guide, for people deploying or reconfiguring the system."
+The rules below follow from that.
+
+- **Fewer words.** Say each thing in as few words as stays clear. Use a long
+  or complex sentence only where it is the clearest way to say something that
+  needs it.
+- **Only what the purpose needs.** Leave out what does not serve the
+  document's purpose, or move it to a document whose purpose it fits. For
+  example:
+    - a how-to guide does not give history or reasoning beyond a short reason
+      for a non-obvious step;
+
+    - an architecture guide does not get into how-to steps behind the high level (for example, it might say "this is done with the command-line tools in the procedure at ...");
+
+
+    - an overview of what a product does says what things do and how to use
+      them, not how they are built.
+- **Code-derivable detail stays in the code.** This is detail a reader could
+  get from the code or configuration, and that matters only to someone
+  working with that code or configuration. Leave it out unless the
+  document's audience needs it, naming the few items that matter for the
+  document's purpose rather than rehashing the code. (A full list is right
+  where the audience needs every item, such as a one-line-per-item list of a
+  tool's checks in a doc for the person running it.) Where a readable file in
+  the repository (such as a data file or template) holds what the audience
+  needs, prefer a brief summary and a link to that file. User docs must not
+  link to files under `features/`, which are feature records.
+- **Each fact in one place.** State a fact in the document that owns it;
+  elsewhere, give at most a brief summary and a link. Overviews and
+  architecture guides are where duplication collects, so check them against
+  what they summarise.
 
 ### Resuming after a session restart
 

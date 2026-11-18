@@ -107,13 +107,30 @@ Four kinds of review exist, each run by its own stateless, findings-only agent. 
 - **Style** (`docs-review-style`, `sonnet`) — the user docs read clearly and consistently, and procedures are written as procedures.
 - **Agent docs** (`docs-review-agent-docs`, `sonnet`) — the agent docs still match the repository (file lists, paths, commands, descriptions of components), nothing a person needs is held only in them, and they link to the user docs rather than repeating them. It also asks whether they are fit for purpose: an agent finds everything it needs, and nothing it does not, such as history of completed work. A feature listed as in progress is expected, since the review runs before the feature closes. Style and bloat in agent docs are not its concern; they are left to [`/internal-docs-prune`](#internal-docs-hygiene).
 
+### Concision checks
+
+`/review-docs` checks that user docs are concise, against the `### User docs` section of the [feature model](../devproc/skills/feature-init/FEATUREMODEL.md). Claude follows the same standard when writing user docs. Two agents each check part of it:
+
+- **Style** flags prose that could say the same in fewer words.
+- **Architectural** flags content beyond a doc's purpose, code-derivable detail, and duplication. It searches for duplicates actively (changed docs against the whole set, or every doc in `full` scope). How findings are handled is under [Applied and escalated](#applied-and-escalated).
+
 ### Applied and escalated
 
-**Applied automatically:** minor fixes inside a single existing doc — a wording fix, a wrong command or path, a broken link repointed, a missing link added. The agents then re-run over the changed docs, up to five passes in all. From the second pass on, only CRITICAL or MAJOR findings and corrections to an earlier fix are applied, so prose review does not churn; anything else is listed in the report as not applied.
+**Applied automatically:** minor fixes inside a single existing doc:
 
-**Escalated to you for confirmation:** significant findings — creating, deleting, moving or splitting a doc, changing how information is divided between docs, rewriting a section, or a mismatch where the code may be what is wrong. Two kinds are always escalated: every boundary finding (a user doc relying on an agent doc or feature record, information a person needs held only in an agent doc, or agent doc content repeating the user docs), because each changes which class of document holds the information; and removing content from an agent doc, unless it exactly duplicates what is kept.
+- a wording fix, a corrected command or path, a repointed or added link, or wording tightened without losing information;
+- a duplicate whose owner is clear and holds all of the copy: the copy becomes a short statement and a link to the owner.
 
-**Never edited:** skill and agent prompts, which are code, not docs.
+The agents then re-run over the changed docs, up to five passes in all. From the second pass on, only CRITICAL or MAJOR findings and corrections to an earlier fix are applied, so prose review does not churn; anything else is listed in the report as not applied.
+
+**Escalated to you for confirmation:** significant findings:
+
+- creating, deleting, moving or splitting a doc, or changing how information is divided between docs;
+- rewriting a section;
+- any other removal of content, including a duplicate whose owner is unclear or lacks part of the copy;
+- a mismatch where the code may be what is wrong.
+
+Two kinds are always escalated: every boundary finding (a user doc relying on an agent doc or feature record, information a person needs held only in an agent doc, or agent doc content repeating the user docs), because each changes which class of document holds the information; and removing content from an agent doc, unless it exactly duplicates what is kept.
 
 ### As a sign-off
 

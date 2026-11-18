@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in contributing!
+Thanks for your interest in contributing! This page covers how to propose changes, and what a change in this repository must also update.
 
 ## Pull requests
 
@@ -11,11 +11,19 @@ If you’d like to propose a change, it helps to:
 - Keep PRs small and focused.
 - Explain the motivation and any trade-offs.
 - Update documentation when behavior changes.
-- If you change `feature-spec-reviewer`, `feature-design-reviewer`, `internal-docs-reviewer` or one of the four `docs-review-*` agents under `devproc/agents/`, or the `review-docs` skill, re-run its fixture suite — see [tests/README.md](tests/README.md). The code-review agents and `dev-process-manager` have no fixture suite.
 
-## Changing the feature model
+## Making changes
 
-The feature-model text has one canonical copy, `devproc/skills/feature-init/FEATUREMODEL.md`, which `/feature-init` copies into every workspace that uses the plugin. This repository uses the plugin on itself, so it also has an installed copy at `features/FEATUREMODEL.md`. To change the model, edit the canonical file and re-run `/feature-init` here, which refreshes the installed copy to match. Never edit `features/FEATUREMODEL.md` by hand; it is overwritten on the next run.
+This section is for anyone changing this repository, and lists dependencies between its parts that are easy to miss.
+
+- **The `devproc` plugin.** All plugin changes are under `devproc/`. Check every skill and agent there for impact, especially `devproc/skills/feature-init/FEATUREMODEL.md`, which they all rely on. `/feature-init` copies that file into every project that uses the plugin, and the skills and agents refer to its sections by heading (for example `### User docs`), so keep its location and section headings stable. Edit that canonical file, not an installed copy. After a change:
+    - Refresh the installed plugin from this repository, then re-run `/feature-init` here to apply your changes.
+    - If you changed a reviewer agent, the `review-docs` skill or the `### User docs` section, re-run the matching test suite listed in [tests/README.md](tests/README.md).
+- **The container.** Container code is in `docker/` and `bin/`. The image also bakes in the plugin, so rebuild it with `claude-build` after changing `docker/` or `devproc/`. A running container keeps its old image until you run `claude-stop`, then `claude-run`. See [docs/container.md](docs/container.md).
+- **New plugins.** A new plugin needs its own directory with a `.claude-plugin/plugin.json` manifest and an entry in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json).
+- **Setup files.** When adding a file to `setup-files/`, add an entry to `setup-files/README.md` and a "copy from" instruction in `docs/setup.md`.
+- **Test suites.** When adding a suite under `tests/`, follow [Adding a suite](tests/README.md#adding-a-suite).
+- **Documentation.** Update each user doc the change affects. User docs are `README.md` and every document reachable from it, such as `devproc/README.md`.
 
 ## Issues
 

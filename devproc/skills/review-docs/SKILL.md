@@ -6,6 +6,12 @@ argument-hint: [full | change (default) | an area, e.g. "the container docs"] [k
 
 Run a documentation review.
 
+Before proceeding, check that `features/FEATUREMODEL.md` exists **and** that
+`CLAUDE.md` loads it via a live import — an un-backticked
+`@features/FEATUREMODEL.md` line in ordinary prose, outside any fenced code
+block. If either is missing, tell the user to run `/feature-init` first and
+stop.
+
 The invocation is: $ARGUMENTS
 
 ## Step 1 — Determine the scope
@@ -20,9 +26,9 @@ Read the scope from $ARGUMENTS:
 
 Four kinds of review exist, each with its own agent. The first three review **user docs**; the fourth reviews **agent docs** (Step 3 defines both):
 
-- **architectural** — `docs-review-architectural`: structure of the user docs (entry points, orphans, broken links, hierarchy, one source of truth, docs elsewhere that should have changed) and the boundary check that no user doc relies on an agent doc or feature record
+- **architectural** — `docs-review-architectural`: structure of the user docs (entry points, orphans, broken links, hierarchy, one source of truth, docs elsewhere that should have changed) and the boundary check that no user doc relies on an agent doc or feature record; also concision: content beyond a doc's purpose, code-derivable detail, and duplication
 - **accuracy** — `docs-review-accuracy`: user docs still match the code and its behaviour
-- **style** — `docs-review-style`: how the user docs read (clarity, procedural form, consistency)
+- **style** — `docs-review-style`: how the user docs read (clarity, including wordiness; procedural form; consistency)
 - **agent docs** — `docs-review-agent-docs`: agent docs still match the repository, hold nothing a person needs, and link to the user docs rather than repeat them
 
 Run all four unless $ARGUMENTS names a subset by these kind names (e.g. "accuracy only", "architectural and style", "agent docs only"). The agent docs kind is skipped, and reported as skipped, only when no agent doc exists, or in `change` scope when no agent doc is in the change and nothing the change touches (a file, path, command or component) is described by one. When in doubt, run it.
@@ -36,7 +42,7 @@ Run all four unless $ARGUMENTS names a subset by these kind names (e.g. "accurac
 - **Feature records**: everything under `features/`, including `FEATUREMODEL.md` (plugin content that `/feature-init` overwrites) and `features/tmp/`. Never reviewed and never edited by this skill. Agents may read them only as context.
 - **No class**: test fixtures, which may hold `CLAUDE.md`, `NOTES.md` or docs with deliberately planted faults, and non-project trees (`.git/`, `node_modules/`, git-ignored output). A test fixture is a file under a `tests/` or `fixtures/` directory of the repository that is not reachable from `README.md`; a doc reachable from `README.md` is a user doc wherever it lives. Never review or edit files in no class, even when a name matches.
 
-**Prompts are code, not docs.** Skill and agent prompts (`SKILL.md`, `agents/*.md`) belong to no class, are never edited by this skill, and may be read by the accuracy and architectural agents as the thing docs describe.
+**Code is not docs**, as the feature model's Docs review defines it. Code belongs to no class, is never edited by this skill, and may be read by the accuracy and architectural agents as the thing docs describe.
 
 The boundary runs one way: agent docs may rely on user docs; user docs must never rely on agent docs or feature records. A user doc that *describes* such files as something the project or its tooling creates is not relying on them.
 
@@ -63,19 +69,20 @@ Invoke the selected agents via the Agent tool, in parallel, passing each the sco
 
 For each finding, classify it as one of:
 
-- **Minor**: a tweak inside one existing doc — a wording fix, a wrong command or path corrected, a broken link repointed, a missing link added, a small reorder. Applied without asking, whichever agent raised it.
-- **Significant**: creating, deleting, moving or splitting a doc; changing how information is divided between docs; rewriting a section rather than tweaking it; or an accuracy finding saying the *code*, not the doc, may be wrong. These require user confirmation before applying.
+- **Minor**: a tweak inside one existing doc — a wording fix, a wrong command or path corrected, a broken link repointed, a missing link added, a small reorder, tightening wording within a sentence or paragraph while keeping all its information, or adding a one-line opening statement of a doc's purpose and audience. Applied without asking, whichever agent raised it.
+- **Minor, by exception — a clear-owner duplicate**: a duplication finding whose line reads `Owner: clear — <doc or file>; holds all of it: yes`, where the copy is in a user doc and the owner is a user doc or a code file. Replace the copy with a short statement and a link (or delete it where a link already exists). A code-file owner is not a change of class: the agent has judged that the doc's audience does not need the restated content. An owner under `features/`, or an agent doc, is never valid; treat that finding as significant. This is the one removal applied without asking, an exception to the division-of-information rule below; any other `Owner:` line, or none, makes the finding significant.
+- **Significant**: creating, deleting, moving or splitting a doc; changing how information is divided between docs; rewriting a section rather than tweaking it; removing information (a sentence carrying a fact, a list, a paragraph, a section) or moving it to another document; or an accuracy finding saying the *code*, not the doc, may be wrong. These require user confirmation before applying.
 
 Two kinds of finding are always significant, never auto-applied:
 
 - **Boundary findings**, because each changes which class of document holds a piece of information: a user doc relying on an agent doc or feature record, information a person needs held only in an agent doc, and agent doc content repeating the user docs. Report them as boundary findings.
 - **Removing content from an agent doc** (for example history an agent does not need), unless it is an exact duplicate of what is kept.
 
-When in doubt, treat a finding as significant. If a finding has a minor part that stands whichever way a linked significant decision goes, split it: apply the minor part and escalate the rest. In particular, **a link broken by a rename or move is always repointed to where the content now lives (a minor fix), even when the new name or location is itself questioned and escalated**; if the user later reverses the rename, repointing the link again is part of that decision. A finding that would require editing a prompt is significant.
+When in doubt, treat a finding as significant. If a finding has a minor part that stands whichever way a linked significant decision goes, split it: apply the minor part and escalate the rest. In particular, **a link broken by a rename or move is always repointed to where the content now lives (a minor fix), even when the new name or location is itself questioned and escalated**; if the user later reverses the rename, repointing the link again is part of that decision. A finding that would require editing code is reported, never applied.
 
 ## Step 6 — Apply minor findings
 
-Apply all minor findings now, file by file. Do not ask for confirmation.
+Apply all minor findings now, file by file. Do not ask for confirmation. If an accuracy finding shows a duplicated copy disagrees with its owner, still apply the accuracy fix, and escalate the duplicate as `holds all of it: no`. Otherwise, where a clear-owner duplicate removal and another minor fix touch the same passage, apply the removal and drop the other fix.
 
 ## Step 7 — Iterate to convergence
 
@@ -83,10 +90,10 @@ The run in Steps 4–6 is pass 1. Each further pass re-runs the selected agents 
 
 From the second pass on, apply only:
 
-- **regressions from an earlier fix**: a finding that a fix applied in an earlier pass is wrong or broke something (a false statement, a broken link, a contradiction), whatever its severity; and
+- **regressions from an earlier fix**: a finding that a fix applied in an earlier pass is wrong, broke something (a false statement, a broken link, a contradiction), or introduced a repeated fact or a padded clause, whatever its severity; and
 - **new CRITICAL or MAJOR findings**.
 
-Every other finding first raised after pass 1 (new MINOR and SUGGESTION findings, including further wording preferences about an earlier fix) is not applied: list it in the report as "not applied (raised after pass 1)". Significant findings seen in any pass are collected for the Step 8 report and the Step 9 escalation, not re-raised each pass.
+Every other finding first raised after pass 1 (new MINOR and SUGGESTION findings, including a rewording of an earlier fix that neither adds information nor removes repetition) is not applied: list it in the report as "not applied (raised after pass 1)". Significant findings seen in any pass are collected for the Step 8 report and the Step 9 escalation, not re-raised each pass.
 
 ## Step 8 — Report
 

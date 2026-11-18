@@ -5,6 +5,10 @@ developed. Headings must end with the date of completion in YYYY-MM-DD format.
 
 ---
 
+### Claude written docs are often rather verbose [concise-user-docs] — 2026-11-19
+
+Added a concision standard for user docs, `### User docs` in the feature model: every doc states its purpose and audience and carries only what serves them, in few words, leaving code-derivable detail to the code and keeping each fact in one place. Claude writes from it, and `/review-docs` checks it through the style and architectural agents, auto-applying tightening and clear-owner duplicate removals and escalating other removals. Along the way, `/review-docs` was made to require `/feature-init` like every other skill, "code is not docs" was defined once in the feature model in project-general terms, maintainer information was recognised as a person's need (with `CONTRIBUTING.md` gaining a "Making changes" section), and the `/review-docs` suite gained concision faults and controls. See #79.
+
 ### Minor tooling tweaks [minor-tooling-tweaks] — 2026-11-01
 
 The container's global `CLAUDE.md` now says what the container can reach and holds: it can read from the web, it has only the Claude login and an optional `GH_TOKEN` intended for reading issues, and `/workspace` is the host's directory mounted read-write, not a copy (#77). A failed login check in `bin/claude-run` and `bin/claude-creds-refresh` now prints a recovery instruction on every failure, worded conditionally because the cause cannot be detected reliably. The user docs call the container "restricted" rather than "isolated" and say what that means, while the container's `CLAUDE.md` drops the adjective and states the specifics. Detail in [features/plans/minor-tooling-tweaks.md](plans/minor-tooling-tweaks.md).

@@ -92,7 +92,7 @@ Use Glob, Grep and Read to read the code, scripts and configuration the document
 - **Full scope** is every document reachable from `README.md`, traced recursively, plus orphaned user docs the skill lists.
 - **Agent docs** (`CLAUDE.md` at any depth, `NOTES.md`, `.claude/rules/*.md`) are not user docs; another agent checks them. Do not report on them. A stale agent doc is not a finding here.
 - **Feature records** (everything under `features/`, including `FEATUREMODEL.md`) are never reviewed. You may read them as context for a change, nothing more.
-- **Prompts are not documentation.** Skill and agent prompts (`SKILL.md`, `agents/*.md`) are code. Read them as the code that documents describe, and check documents against them, but never report on their wording or structure as documents.
+- **Code is not documentation**, as the feature model's Docs review defines it. Read code as the thing documents describe, and check documents against them, but never report on their wording or structure as documents.
 
 A change that touches no document is normal. It is the case you most need to catch: search for documents describing the changed code.
 
