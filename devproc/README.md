@@ -2,14 +2,14 @@
 
 Skills and agents for feature lifecycle management, workflow orchestration, code review, documentation review, and internal docs hygiene.
 
-For task-oriented guides to using these capabilities, see [docs/workflow.md](../docs/workflow.md) and [docs/capabilities.md](../docs/capabilities.md).
+This is the reference for the plugin's skills and agents, for people using the plugin. It covers setup and the files the plugin creates, then one entry per skill and agent. For task-oriented guides to using these capabilities, see [docs/workflow.md](../docs/workflow.md) and [docs/capabilities.md](../docs/capabilities.md).
 
 ## Contents
 
 | Type | Name | Description |
 |------|------|-------------|
-| Skill | `feature-init` | One-time setup: copies the canonical `FEATUREMODEL.md` shipped with the skill to `features/FEATUREMODEL.md`, ensures `CLAUDE.md`'s `## Feature model` section holds the `@features/FEATUREMODEL.md` import, and creates the `features/` directory including a `features/tmp` scratch directory (git-ignored in a tracked workspace) |
-| Skill | `feature-spec` | Create a new feature in `features/PENDING.md`, capture the input as `## Requirements` and write `## Spec` — what the feature must do — from a GitHub issue, a one-line description, or material staged in `features/tmp`, and agree the sign-off strategy |
+| Skill | `feature-init` | One-time setup: installs the feature model, imports it from `CLAUDE.md`, and creates the `features/` directory |
+| Skill | `feature-spec` | Create a new feature in `features/PENDING.md`, capture its input and write its spec, and agree the sign-off strategy |
 | Skill | `feature-design` | Move a feature to `features/CURRENT.md` and write its design and sub-task plan, with per-sub-task sign-off criteria |
 | Skill | `feature-checkpoint` | Sync all documentation and tracking to the current state |
 | Skill | `feature-end` | Mark a feature complete and move it to Completed |
@@ -17,25 +17,40 @@ For task-oriented guides to using these capabilities, see [docs/workflow.md](../
 | Skill | `review-component` | Code review scoped to a described component or area |
 | Skill | `review-branch` | Code review scoped to files changed in the current branch |
 | Skill | `review-docs` | Docs review scoped to the whole documentation set, the current change, or a described area; runs the four docs review agents, auto-applies minor in-doc fixes, escalates significant findings |
-| Skill | `internal-docs-prune` | Prune internal Claude-facing docs (root and nested `CLAUDE.md` files, `NOTES.md`, `.claude/rules/*.md`) — spawns `internal-docs-reviewer`, auto-applies redundant/stale findings, escalates or defers judgment findings |
+| Skill | `internal-docs-prune` | Prune internal Claude-facing docs (`CLAUDE.md`, `NOTES.md`, `.claude/rules/*.md`) of redundant, stale and borderline content |
 | Agent | `dev-process-manager` | Top-level orchestrator: drives the feature workflow by spawning teammates per sub-task, reviewing their work, and checking in with the user (`claude --agent dev-process-manager`) |
 | Agent | `feature-spec-reviewer` | Reviews a feature spec before a human reads it: `## Spec` clarity against the readability standard, auditable delivery criteria, blocking issues; ends with a verdict |
 | Agent | `feature-design-reviewer` | Reviews a feature design and sub-task plan before a human reads it: `## Spec` coverage, design clarity against the readability standard, recorded rationale, auditable sub-task criteria, blocking issues; ends with a verdict |
-| Agent | `docs-review-architectural` | Architectural docs review of the user docs: entry points, orphans, links, hierarchy, one source of truth, docs elsewhere that should have changed, user docs relying on agent docs, and concision (`opus`) |
-| Agent | `docs-review-accuracy` | Accuracy docs review: user docs still match the code and its behaviour (`sonnet`) |
-| Agent | `docs-review-style` | Style docs review of the user docs: clarity (including wordiness), procedural form, consistency (`sonnet`) |
-| Agent | `docs-review-agent-docs` | Agent docs review: `CLAUDE.md`, `NOTES.md` and `.claude/rules/*.md` match the repository, hold nothing a person needs, and link to the user docs rather than repeat them (`sonnet`) |
-| Agent | `internal-docs-reviewer` | Reviews internal Claude-facing docs for `redundant`, `stale`, or `judgment` findings, each tagged with a gating class and action, without modifying files |
+| Agent | `docs-review-architectural` | Structure and concision of the user docs (`opus`) |
+| Agent | `docs-review-accuracy` | User docs still match the code (`sonnet`) |
+| Agent | `docs-review-style` | How the user docs read (`sonnet`) |
+| Agent | `docs-review-agent-docs` | Agent docs (`CLAUDE.md`, `NOTES.md`, `.claude/rules/*.md`) review (`sonnet`) |
+| Agent | `internal-docs-reviewer` | Finds stale, redundant or borderline content in internal Claude-facing docs |
 | Agent | `code-review-architectural` | Architectural review: module boundaries, coupling, design fit (`opus`) |
 | Agent | `code-review-simplicity` | Simplicity review: unnecessary complexity, duplication, dead code (`sonnet`) |
 | Agent | `code-review-general` | General review: correctness, error handling, robustness, performance (`sonnet`) |
 | Agent | `code-review-nitty` | Nitty review: naming, comments, control flow clarity, micro-robustness (`sonnet`) |
 
+## How the skills and agents fit together
+
+Most agents are not run directly: a skill runs them as sub-agents. The `dev-process-manager` agent is the exception, being run as the session itself.
+
+| Skill or agent | Runs |
+|----------------|------|
+| `/feature-spec` | `feature-spec-reviewer` |
+| `/feature-design` | `feature-design-reviewer` |
+| `/review-full`, `/review-component`, `/review-branch` | `code-review-simplicity`, `code-review-general` and `code-review-nitty`, plus `code-review-architectural` when requested |
+| `/review-docs` | `docs-review-architectural`, `docs-review-accuracy`, `docs-review-style` and `docs-review-agent-docs` |
+| `/internal-docs-prune` | `internal-docs-reviewer` |
+| `dev-process-manager` (session agent) | A teammate per sub-task, plus the `/feature-*` and review skills, which run the agents above |
+
+`/feature-init`, `/feature-checkpoint` and `/feature-end` run no agents.
+
 ## Setup
 
-These skills run from the **workspace** — the directory holding `CLAUDE.md`, `NOTES.md` and `features/`. Usually the workspace is itself a git repository (a *tracked workspace*); it may instead be a plain directory with one or more repositories beneath it (an *untracked workspace*), in which case feature tracking sits at the top of the workspace, outside every repository, and no `.gitignore` is written. `/feature-init` installs the full definition as `features/FEATUREMODEL.md` § `### The workspace`; [docs/workflow.md](../docs/workflow.md#where-the-workspace-is) covers it for users.
+Run these skills from the **workspace**, the directory holding `CLAUDE.md`, `NOTES.md` and `features/`; see [Where the workspace is](../docs/workflow.md#where-the-workspace-is).
 
-Run `/feature-init` once per workspace before using any other skills. This copies the canonical `FEATUREMODEL.md` shipped with the skill to `features/FEATUREMODEL.md`, ensures `CLAUDE.md`'s `## Feature model` section holds the `@features/FEATUREMODEL.md` import, and creates the `features/` directory, whose feature list is split across four files by status (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) so the large completed list need not be read into context every session. It also creates a `features/tmp/` scratch directory for staging requirements material as input to `/feature-spec` (git-ignored in a tracked workspace). Safe to re-run — it refreshes `features/FEATUREMODEL.md` from the shipped canonical copy (so the model always matches the plugin version) and leaves your feature-list files and plans in place.
+Run `/feature-init` once per workspace before any other skill; see [feature-init](#feature-init).
 
 ### Feature tracking files
 
@@ -47,7 +62,7 @@ Run `/feature-init` once per workspace before using any other skills. This copie
 | `features/DEFERRED.md` | Features explicitly deferred, including those blocked by a dependency |
 | `features/COMPLETED.md` | Completed features, dated — the large list kept out of routine context |
 | `features/plans/<slug>.md` | Per-feature plan with requirements, spec, sign-off strategy, design, sub-tasks (with sign-off checkboxes), handoff state, and a review record |
-| `features/tmp/` | Scratch space for staging requirements material as input to `/feature-spec` — git-ignored in a tracked workspace; only the tracked `README.md` persists — not a store for tracking requirements |
+| `features/tmp/` | Scratch space for staging requirements material as input to `/feature-spec`, not a store for tracking requirements. Git-ignored in a tracked workspace. Contents are removed once captured; only the tracked `README.md` stays |
 | `NOTES.md` | Non-obvious technical findings recorded continuously |
 | `CLAUDE.md` | High-level project status only — no implementation detail |
 
@@ -59,7 +74,11 @@ Run `/feature-init` once per workspace before using any other skills. This copie
 
 **Invoke with:** `/feature-init`
 
-One-time project setup. Copies the canonical `FEATUREMODEL.md` shipped alongside this skill into the project as `features/FEATUREMODEL.md`, ensures `CLAUDE.md`'s `## Feature model` section carries the live un-backticked `@features/FEATUREMODEL.md` import — adding the section if none exists, otherwise replacing a body that is not already the live import (the full model text embedded inline, or an inert backticked or Markdown-link mention of the path) with the import line, and leaving a section that already holds the live import alone; any hand-added non-model prose in the section is preserved either way — and creates the `features/` directory with its four status files (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`) and a `features/plans/` subdirectory. It also scaffolds `features/tmp/` — a scratch directory where you can stage requirements material as input to `/feature-spec` — creating or updating `.gitignore` to ignore it in a tracked workspace. In an untracked workspace it writes no `.gitignore` and does not inspect one an earlier run may have left — it reports that the step was skipped and why. Safe to re-run — it refreshes `features/FEATUREMODEL.md` from the canonical copy and preserves your feature-list files and plans.
+One-time project setup. It copies the canonical `FEATUREMODEL.md` shipped with the skill into the project as `features/FEATUREMODEL.md`, ensures `CLAUDE.md`'s `## Feature model` section contains the `@features/FEATUREMODEL.md` import line, and creates `features/` with its four status files (`CURRENT.md` / `PENDING.md` / `DEFERRED.md` / `COMPLETED.md`), a `plans/` subdirectory and a `tmp/` scratch directory for staging requirements material as input to `/feature-spec`.
+
+In a tracked workspace it also creates or updates `.gitignore` to ignore `features/tmp/`. In an untracked workspace it neither writes nor inspects a `.gitignore`, and reports that it skipped the step, and why.
+
+Safe to re-run: it refreshes `features/FEATUREMODEL.md` from the canonical copy, so the model always matches the plugin version, and preserves your feature-list files and plans.
 
 ---
 
@@ -67,19 +86,11 @@ One-time project setup. Copies the canonical `FEATUREMODEL.md` shipped alongside
 
 **Invoke with:** `/feature-spec <description>`
 
-The first step of the lifecycle: create a feature and specify *what* it must do. Adds a new entry at the top of `features/PENDING.md`, deriving a lowercase-hyphenated slug from the description and appending it as a tag on the heading (e.g. `### My feature [my-feature]`). The list entry is kept to one or two sentences — the specification belongs in the plan file. It always creates the plan file `features/plans/<slug>.md`, whose `## Requirements` section captures the input faithfully — verbatim from the source issue (entire description plus any design/requirements-relevant comments), from the description you gave, or from material staged in `features/tmp` — so a later session can resume from the plan file alone. That third route ([docs/workflow.md](../docs/workflow.md) covers the mechanics) is used when you point `/feature-spec` at `features/tmp` or it auto-detects material there, and the directory is cleared once captured (the tracked `README.md` stays).
+The first step of the lifecycle: create a feature and specify *what* it must do. Adds a new entry at the top of `features/PENDING.md`, deriving a lowercase-hyphenated slug from the description and appending it as a tag on the heading (e.g. `### My feature [my-feature]`). The list entry is kept to one or two sentences — the specification belongs in the plan file. It always creates the plan file `features/plans/<slug>.md`: its `## Requirements` section captures the input (a GitHub issue, your description, or material staged in `features/tmp`) and its `## Spec` section states what the feature must do. See [Specify a feature](../docs/workflow.md#specify-a-feature) and [Requirements and Spec are different jobs](../docs/workflow.md#requirements-and-spec-are-different-jobs).
 
-From that input, `/feature-spec` writes a `## Spec` section: what the feature must do, stated so it stands alone for a reader with no background on the feature, per the `### Readability` standard in the feature model that `/feature-init` installs. It clarifies ambiguities in `## Requirements` and fills gaps with explicitly-marked proposals — `## Requirements` itself is not held to that standard, since reorganising the user's own words to read better is how their meaning gets lost. Where the input is a bare one-line description, `## Requirements` records it verbatim (never a placeholder) and `## Spec` is written entirely from marked proposals; a small, well-understood feature can still reach `READY FOR USER REVIEW` this way and is not penalised for having thin input.
+It also agrees the feature's **sign-off strategy**, recorded in the plan file's `## Sign-off strategy` section; see [The sign-off strategy](../docs/workflow.md#the-sign-off-strategy).
 
-Unless a spec's requirements are only a few lines, it numbers them, each as its own `N. Name` heading that shows in your editor's outline, and the numbers stay stable once agreed. See [Requirements and Spec are different jobs](../docs/workflow.md#requirements-and-spec-are-different-jobs) for the layout and the numbering rules.
-
-It also agrees the feature's **sign-off strategy** — the quality bar for testing, documentation, code review, docs review, and user review across the whole feature (e.g. full test coverage vs none; production docs vs internal notes) — and records it in the plan file's `## Sign-off strategy` section, including the bar for any end-of-feature gates (e.g. one `/review-branch` before the feature closes). Review sign-offs always state whether an agent or the user performs them. Deciding *not* to do one of these is legitimate, but it is an explicit, up-front choice you can comment on here. Strategy records the bar; `/feature-design` is what turns any end-of-feature gates into an actual checklist (see below). (The canonical statement of the sign-off model lives in the `### Sign-off criteria` section of `features/FEATUREMODEL.md`, which `/feature-init` writes; the skills and review agents defer to it.)
-
-Before the spec reaches you, the `feature-spec-reviewer` agent reviews it. Findings it marks `[rewrite]` are fixed for you; findings it marks `[decision]` are put to you as questions rather than guessed at. You are told what the review changed and what its verdict was. Skip it with an explicit instruction (`--no-review`, or "skip review"), in which case the report says so.
-
-If you have asked for an unattended run, the verdict stands in for your sign-off — but only on `READY FOR USER REVIEW` with no `[decision]` finding; anything else stops and asks you regardless. A skipped review cancels unattended mode rather than compounding with it.
-
-Every run appends a line to the plan file's `## Review record`, including one reading `N/A — skipped on the user's instruction`. That makes the section trustworthy evidence of what has been checked: an absent line means the stage has not run, not that nobody bothered to write it down.
+Before the spec reaches you, the `feature-spec-reviewer` agent reviews it, and every run is logged in the plan file's `## Review record`; see [Review before you read it](../docs/workflow.md#review-before-you-read-it).
 
 **Example:**
 ```
@@ -96,15 +107,11 @@ Every run appends a line to the plan file's `## Review record`, including one re
 
 The second step of the lifecycle: decide *how* the feature will be built. Moves the named feature from `features/PENDING.md` to `features/CURRENT.md`, then fleshes out `features/plans/<slug>.md` — preserving the `## Requirements` and `## Spec` sections written by `/feature-spec`, writing the Design section, and adding the sub-task list, each sub-task its own `### N. Name` heading so it shows in an editor's outline. Each sub-task carries sign-off checkboxes derived from the sign-off strategy and agreed with you here; see [Sub-tasks and their sign-off criteria](../docs/workflow.md#sub-tasks-and-their-sign-off-criteria). A missing plan file, `## Requirements`, or `## Spec` stops the skill with a pointer to `/feature-spec`. `## Design` must open with an overview of how the design works as a whole, before any detailed section — followable by a reader who knows only `## Requirements` and `## Spec` — per the same `### Readability` standard.
 
-Design work can turn up problems with the spec that `/feature-spec` did not anticipate — the canonical case being "this cannot be done exactly as specced, but a cheap alternative is X". `/feature-design` may then amend `## Spec`, but never silently: every amendment is put to you for approval, and once approved is logged as its own line in `## Review record`. Requirement numbers never change in an amendment (see [the numbering rules](../docs/workflow.md#requirements-and-spec-are-different-jobs)). In unattended mode, a proposed amendment stops the run and waits for your answer, on the same footing as a `[decision]` review finding.
+Design work can turn up problems with the spec. `/feature-design` may then amend `## Spec`, but only with your approval; see [Design a feature](../docs/workflow.md#design-a-feature).
 
 A sub-task is later complete only when all its boxes are ticked. The plan file includes a `## Handoff` section kept current so any session can resume without context from the previous one. Producing the design does not begin implementation — that is a separate step with no slash command. If only one feature is pending, the argument can be omitted.
 
-Before the design reaches you, the `feature-design-reviewer` agent reviews it — `## Spec` coverage, recorded rationale, auditable sub-task criteria, and anything blocking implementation. Findings it marks `[rewrite]` are fixed for you; findings it marks `[decision]` are put to you as questions. Skip it with an explicit instruction (`--no-review`, or "skip review"), in which case the report says so.
-
-If you have asked for an unattended run, the verdict stands in for your sign-off and implementation may begin without you having seen the design — but only on `READY FOR USER REVIEW` with no `[decision]` finding; anything else stops and asks you regardless. A skipped review cancels unattended mode.
-
-As at spec time, every run appends a line to the plan file's `## Review record`, beneath the spec-stage line rather than replacing it — the section is the feature's review history. When a design is accepted unattended, the `## Handoff` summary says so too, so a resuming session sees it without going looking.
+Before the design reaches you, the `feature-design-reviewer` agent reviews it, and the run is logged in `## Review record` beneath the spec-stage line. See [Review before you read it](../docs/workflow.md#review-before-you-read-it).
 
 **Example:**
 ```
@@ -136,7 +143,7 @@ Runs a full checkpoint, verifies all sub-tasks are complete with every sign-off 
 
 **Invoke with:** `/review-full [including architectural review]`
 
-Runs a code review over the entire codebase. Always runs the simplicity, general, and nitty agents in parallel. Code-level findings are applied automatically and the cycle repeats until no new findings appear (capped at 5 iterations). Adds the architectural agent if requested.
+Runs a code review over the entire codebase, adding architectural review if requested. See [docs/capabilities.md](../docs/capabilities.md#code-review) for how findings are applied.
 
 ---
 
@@ -166,9 +173,7 @@ Runs a code review scoped to files changed in the current feature branch, derive
 
 **Invoke with:** `/review-docs [full | change | an area] [kinds]`
 
-Runs a docs review over the whole documentation set (`full`), the docs touched by or describing the current change (`change`, the default), or a described area (e.g. "the container docs"), as free text. It runs four agents, architectural, accuracy and style over the user docs and agent docs over `CLAUDE.md`, `NOTES.md` and `.claude/rules/*.md`, or the subset you name (e.g. "accuracy only"). Minor fixes inside a single doc are applied automatically; significant findings are escalated to you. See [docs/capabilities.md](../docs/capabilities.md#documentation-review) for the classes of document, what each kind checks, what is applied and what escalated, and when each kind is warranted.
-
-Test fixtures live in `tests/devproc/review-docs/` in the plugin's source repository; they are not shipped with the installed plugin. The regression harness does not cover this suite — see `tests/devproc/review-docs/README.md` for how to run it by hand.
+Runs a docs review over the whole documentation set (`full`), the docs touched by or describing the current change (`change`, the default), or a described area (e.g. "the container docs"), as free text. It runs four agents: architectural, accuracy and style over the user docs, and agent docs over `CLAUDE.md`, `NOTES.md` and `.claude/rules/*.md`. You can name a subset (e.g. "accuracy only"). Minor fixes inside a single doc are applied automatically; significant findings are escalated to you. See [docs/capabilities.md](../docs/capabilities.md#documentation-review) for the classes of document, what each kind checks, and what is applied and what escalated.
 
 **Example:**
 ```
@@ -183,7 +188,7 @@ Test fixtures live in `tests/devproc/review-docs/` in the plugin's source reposi
 
 **Invoke with:** `/internal-docs-prune [unattended]`
 
-Prunes this repository's internal, Claude-facing documentation — root and nested `CLAUDE.md` files, `NOTES.md`, and `.claude/rules/*.md` — as distinct from user-facing `docs/`, which it never touches. It spawns the read-only `internal-docs-reviewer` agent and applies its findings by gating class: `redundant` and `stale` are auto-applied, `judgment` is escalated to you (interactive, the default) or deferred (unattended). It owns the record of settled `judgment` calls (kept under `.claude/agent-memory/devproc-internal-docs-reviewer/`, since the agent is stateless) so repeat runs don't re-ask about calls you already decided. Reports a summary of what was deleted, moved, condensed, and retained. See [docs/capabilities.md](../docs/capabilities.md#internal-docs-hygiene) for the gating model, the no-content-loss move semantics, and idempotency.
+Prunes the internal, Claude-facing docs (root and nested `CLAUDE.md` files, `NOTES.md`, `.claude/rules/*.md`) using the `internal-docs-reviewer` agent, and reports what was deleted, moved, condensed and retained. See [docs/capabilities.md](../docs/capabilities.md#internal-docs-hygiene) for what it applies and what it asks about.
 
 **Example:**
 ```
@@ -199,82 +204,74 @@ Prunes this repository's internal, Claude-facing documentation — root and nest
 
 **Run as the session agent with:** `claude --agent dev-process-manager` (or, in container mode, `claude-run --manager` — equivalently `claude-run --agent dpm` — see [docs/container.md](../docs/container.md)).
 
-A top-level Opus orchestrator for the feature workflow. Unlike the review agents — which are sub-agents invoked by a skill — this agent *is* the session you talk to. It establishes the feature being worked on (specifying and designing one itself if asked), agrees an autonomy boundary with you (e.g. "do sub-tasks 1–4, then check with me"), then for each sub-task spawns a teammate (normally Sonnet), briefs it to run `/feature-checkpoint` on completion, reviews the actual changes before accepting them — accepting a sub-task only once all its sign-off boxes are ticked — and shuts the teammate down. Inside an unattended boundary it never starts a new sub-task you have not agreed. It pauses for you at requirement/design decisions and when you ask to review something. See [docs/capabilities.md](../docs/capabilities.md#dev-process-manager) for the task-oriented guide.
+A top-level Opus orchestrator for the feature workflow. Unlike the review agents, which are sub-agents invoked by a skill, it *is* the session you talk to: it spawns a teammate per sub-task, reviews its work, and checks in with you at the boundary you set. See [docs/capabilities.md](../docs/capabilities.md#dev-process-manager).
 
 ---
 
 ### feature-spec-reviewer
 
-Reviews a feature specification — the `## Spec` and `## Sign-off strategy` sections of a plan file, reading `## Requirements` as input rather than reviewing it as an artefact in its own right — and reports what a human would otherwise have to catch. It checks that everything in `## Requirements` is accounted for in `## Spec`, that `## Spec` is clear against the `### Readability` standard, that every sign-off category is present and worded auditably, that blocking issues are surfaced, and that the spec states *what* without pre-empting the design. One narrow check does apply to `## Requirements` itself: that it genuinely captured the source material rather than deferring to it, instead of leaving a fresh session to re-read the source issue. It also checks that a spec which numbers its requirements gives each its own heading; a short unnumbered spec is accepted.
+Reviews a feature specification (the `## Spec` and `## Sign-off strategy` sections of a plan file) for completeness against `## Requirements`, clarity against the `### Readability` standard, auditable sign-off criteria and blocking issues. Each finding is marked `[rewrite]` (fixable by rewording) or `[decision]` (it needs your answer), and the output ends with `VERDICT: READY FOR USER REVIEW` or `VERDICT: NEEDS WORK`. It never modifies files. See [Review before you read it](../docs/workflow.md#review-before-you-read-it).
 
-Findings are classified BLOCKING / MAJOR / MINOR / SUGGESTION, and each is marked `[rewrite]` (the calling skill can fix it by rewording) or `[decision]` (it needs an answer from the user). Output ends with an explicit `VERDICT: READY FOR USER REVIEW` or `VERDICT: NEEDS WORK` — ready only when there are no BLOCKING and no MAJOR findings. It never modifies files.
-
-Invoked automatically at the end of `/feature-spec`, before the spec is presented. Test fixtures for the agent live in `tests/devproc/feature-spec-reviewer/` in the plugin's source repository; they are not shipped with the installed plugin. Run the suite with `tests/devproc/harness/run.sh feature-spec-reviewer`.
+Invoked automatically at the end of `/feature-spec`, before the spec is presented.
 
 ---
 
 ### feature-design-reviewer
 
-Reviews a feature design and its sub-task plan — the `## Design` and `## Sub-tasks` sections of a plan file. It traces every item in `## Spec` to the part of the design that delivers it, checks that `## Design` opens with an overview and is clear against the `### Readability` standard, that decisions are recorded with their rationale (and that rejected alternatives are noted), that each sub-task's sign-off criteria are auditable and no weaker than the agreed strategy, that any end-of-feature gate the strategy defines is materialised as an explicit "Final sign-off criteria" sub-task rather than left only in strategy prose, that ticking every sub-task would actually complete the feature, and that the breakdown is sensibly sized and ordered. It also flags criteria listed out of the order they are performed, and sign-offs whose steps are substantial or non-obvious but not written down. It traces each numbered requirement (as a heading, or as an item in an older list-format spec), and accepts the older list format for both `## Spec` and `## Sub-tasks`. A part of `## Spec` revealed to be impossible as written is BLOCKING rather than a silently dropped requirement — the reviewer-side counterpart of `/feature-design`'s spec-amendment route. It reads `## Requirements` and `## Sign-off strategy` as context but does not review them — that is `feature-spec-reviewer`'s job.
+Reviews a feature design and its sub-task plan (the `## Design` and `## Sub-tasks` sections of a plan file): that the design delivers every `## Spec` requirement, opens with an overview, is clear and records its rationale, and that each sub-task's sign-off criteria are auditable and no weaker than the agreed strategy. Findings and verdict use the same scheme as `feature-spec-reviewer`. It never modifies files and does not propose a replacement design. See [Review before you read it](../docs/workflow.md#review-before-you-read-it).
 
-Findings and verdict use the same scheme as `feature-spec-reviewer`: BLOCKING / MAJOR / MINOR / SUGGESTION, each marked `[rewrite]` or `[decision]`, ending in `VERDICT: READY FOR USER REVIEW` or `VERDICT: NEEDS WORK`. It never modifies files, and does not propose a replacement design of its own.
-
-Invoked automatically at the end of `/feature-design`, before the design is presented. Test fixtures live in `tests/devproc/feature-design-reviewer/` in the plugin's source repository; they are not shipped with the installed plugin. Run the suite with `tests/devproc/harness/run.sh feature-design-reviewer`.
+Invoked automatically at the end of `/feature-design`, before the design is presented.
 
 ---
 
 ### docs-review-architectural
 
-Reviews the structure of the user docs as a whole (`opus`): that every document is reachable from `README.md`, links resolve, each document states its purpose up front, architecture guides cover the components and their relationships, each fact has one source of truth, that no user doc relies on an agent doc or a feature record for information, and — given a change — that no document in a non-obvious place has been missed. It also checks concision: content beyond a doc's purpose, code-derivable detail and duplication (see [Concision checks](../docs/capabilities.md#concision-checks)). Stateless; produces findings only and never modifies files. Invoked by `/review-docs`.
+Reviews the structure and concision of the user docs (`opus`). See [The four kinds](../docs/capabilities.md#the-four-kinds) and [Concision checks](../docs/capabilities.md#concision-checks). Invoked by `/review-docs`.
 
 ---
 
 ### docs-review-accuracy
 
-Checks that the user docs still match the code and its behaviour (`sonnet`): that what a document states, shows or instructs is still true of the implementation. Stateless; produces findings only and never modifies files. Invoked by `/review-docs`.
+Checks that the user docs still match the code and its behaviour (`sonnet`). See [The four kinds](../docs/capabilities.md#the-four-kinds). Invoked by `/review-docs`.
 
 ---
 
 ### docs-review-style
 
-Reviews how the user docs read (`sonnet`): clarity, procedural form and consistency. Clarity is a separate criterion from style, since a reader who cannot extract the meaning has hit a failure of the document's purpose rather than a matter of taste. Clarity includes wordiness, as the concision standard defines it (see [Concision checks](../docs/capabilities.md#concision-checks)). Stateless; produces findings only and never modifies files. Invoked by `/review-docs`.
+Reviews how the user docs read (`sonnet`): clarity, procedural form and consistency. Clarity includes wordiness. See [The four kinds](../docs/capabilities.md#the-four-kinds) and [Concision checks](../docs/capabilities.md#concision-checks). Invoked by `/review-docs`.
 
 ---
 
 ### docs-review-agent-docs
 
-Reviews the agent docs (`sonnet`): `CLAUDE.md` at any depth, `NOTES.md` and `.claude/rules/*.md`. It checks that they still match the repository (file lists, paths, commands, descriptions of components), that nothing a person needs is held only in them, that they link to the user docs rather than repeat them, and that they are fit for purpose: everything an agent needs, nothing it does not. A feature listed as in progress is expected, not a finding. Style and bloat are left to `internal-docs-reviewer`. Stateless; produces findings only and never modifies files. Invoked by `/review-docs`.
+Reviews the agent docs (`sonnet`): `CLAUDE.md` at any depth, `NOTES.md` and `.claude/rules/*.md`. See [The four kinds](../docs/capabilities.md#the-four-kinds). Invoked by `/review-docs`.
 
 ---
 
 ### internal-docs-reviewer
 
-Reviews a repository's internal, Claude-facing documentation — root and nested `CLAUDE.md` files, `NOTES.md`, and `.claude/rules/*.md` — for content that has gone stale, become redundant with a canonical source elsewhere, or is of borderline enough value that a human should decide. It enforces each file's own stated rules (e.g. `CLAUDE.md`'s "high-level status only", `NOTES.md`'s "non-obvious findings only") plus two fixed criteria per file type — audience relevance and duplication for `CLAUDE.md`; currency and durability for `NOTES.md` — and never touches user-facing `docs/`, `README.md`, or `CONTRIBUTING.md`.
-
-Every finding carries an exact anchor, a gating class (`redundant` / `stale` / `judgment`), and an action (`delete` / `move` → destination / `condense`) — the contract `/internal-docs-prune` parses to decide what to apply automatically and what to escalate. `redundant` findings are always `delete` (the content already exists at its canonical source). It never modifies files itself, and it is stateless: it re-reports every borderline `judgment` call on each run, leaving the skill to suppress those already decided.
-
-Invoked by `/internal-docs-prune`. Test fixtures live in `tests/devproc/internal-docs-reviewer/` in the plugin's source repository; they are not shipped with the installed plugin. The regression harness does not cover this suite — see `tests/devproc/internal-docs-reviewer/README.md` for how to run these cases by hand.
+Reviews internal, Claude-facing docs for stale, redundant or borderline content. Every finding carries an exact anchor, a gating class (`redundant` / `stale` / `judgment`) and an action (`delete` / `move` / `condense`), which `/internal-docs-prune` parses to decide what to apply. It never modifies files and is stateless. Invoked by `/internal-docs-prune`; see [Internal docs hygiene](../docs/capabilities.md#internal-docs-hygiene).
 
 ---
 
 ### code-review-architectural
 
-Reviews module boundaries, coupling between components, consistency with the established design, and public interface quality. Uses `opus`. Invoked when architectural review is requested. Produces findings classified as ARCHITECTURAL (requires confirmation), CONCERN, or SUGGESTION.
+Reviews module boundaries, coupling between components, consistency with the established design, and public interface quality. Uses `opus`. Invoked when architectural review is requested. Produces findings classified as ARCHITECTURAL (requires confirmation), CONCERN, or SUGGESTION. See [Code review](../docs/capabilities.md#code-review).
 
 ---
 
 ### code-review-simplicity
 
-Identifies unnecessary complexity: dead code, duplication, over-engineering, redundant abstractions, and verbose logic. Uses `sonnet`. Produces findings classified as MAJOR, MINOR, or SUGGESTION.
+Identifies unnecessary complexity: dead code, duplication, over-engineering, redundant abstractions, and verbose logic. Uses `sonnet`. Produces findings classified as MAJOR, MINOR, or SUGGESTION. See [Code review](../docs/capabilities.md#code-review).
 
 ---
 
 ### code-review-general
 
-Checks correctness, error handling, edge cases, performance hot spots, and security at system boundaries. Uses `sonnet`. Produces findings classified as CRITICAL, MAJOR, MINOR, or SUGGESTION.
+Checks correctness, error handling, edge cases, performance hot spots, and security at system boundaries. Uses `sonnet`. Produces findings classified as CRITICAL, MAJOR, MINOR, or SUGGESTION. See [Code review](../docs/capabilities.md#code-review).
 
 ---
 
 ### code-review-nitty
 
-Reviews low-level code quality: naming, comments (missing, wrong, or redundant), control flow clarity, and micro-robustness issues within individual functions. Uses `sonnet`. Produces findings classified as MAJOR, MINOR, or SUGGESTION.
+Reviews low-level code quality: naming, comments (missing, wrong, or redundant), control flow clarity, and micro-robustness issues within individual functions. Uses `sonnet`. Produces findings classified as MAJOR, MINOR, or SUGGESTION. See [Code review](../docs/capabilities.md#code-review).

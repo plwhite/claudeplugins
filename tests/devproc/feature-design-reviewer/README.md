@@ -17,12 +17,12 @@ criteria derive from. The agent reads `## Requirements` and `## Spec` for
 background and traces design coverage against `## Spec`, but does not review
 either as an artefact in its own right, so:
 
-- `## Requirements`, `## Spec`, and `## Sign-off strategy` are identical clean
-  baseline text in every case, and must draw no BLOCKING or MAJOR finding (apart
-  from the tolerated finding below) — except that `headed-requirements-control`
-  and `old-format-control` carry the same `## Spec` content in another form
-  (see [Cases](#cases)). A fix to the baseline `## Spec` is applied to those two in their own
-  form.
+- `## Requirements`, `## Spec` and `## Sign-off strategy` are identical clean
+  baseline text in every case, and draw no BLOCKING or MAJOR finding (apart
+  from the tolerated finding below). The exceptions are
+  `headed-requirements-control` and `old-format-control`, which carry `## Spec`
+  in another form (see [Cases](#cases)); apply a baseline `## Spec` fix to them
+  in their own form.
 - A case targeting `## Design` leaves `## Sub-tasks` at baseline, and vice
   versa — except where a single flaw genuinely spans both, which is recorded in
   that case's `.expected.md`.
@@ -37,42 +37,15 @@ design text instead; likewise, the cases targeting `## Sub-tasks`, and
 `old-format-control`, carry their own sub-task text.
 
 There is one recorded exception to fixing baseline weaknesses. The baseline
-design reuses a query-builder module and column definitions that the reviewer
-cannot confirm exist, because the fixture describes a fictional product, not
-this repository; a reviewer may raise a MAJOR `[decision]` finding about it.
-That finding may be tolerated in the expectations of any case that uses the
-shared baseline, including the controls; where it is a MAJOR, the `NEEDS WORK`
-verdict it forces is accepted too, and nothing else is widened that way. This is
-the one departure from the spec suite's rule against widening an `.expected.md`
-for a baseline defect. It is made because this defect cannot be fixed: no
-wording of the fixture can make a fictional product's modules confirmable, and the reviewer
-rule behind the finding is right for real plans, so the fixture is not changed
-and the reviewer is not weakened.
+design reuses a query-builder module and column definitions the reviewer cannot
+confirm exist, because the product is fictional. A MAJOR `[decision]` finding
+about them, and the `NEEDS WORK` verdict it forces, may be tolerated in any case
+using the shared baseline, including the controls; nothing else is widened this
+way. It is the one departure from the spec suite's rule against widening an
+`.expected.md`, made because no wording can make fictional modules confirmable,
+and the reviewer rule behind the finding is right for real plans.
 
 ## Cases
-
-`unclear-design` and `unexplained-design` are deliberately kept distinct
-rather than folded together: `unclear-design`'s rationale is present but
-tangled into the main line so it cannot be followed, and its design opens
-with no overview; `unexplained-design`'s rationale is simply absent. A design
-can fail either without the other, so the two checks — Clarity and Complete
-and clear — each get their own case.
-
-One exception to the one-flaw rule: `unexplained-design` tests both halves of
-"complete and clear" at once — decisions asserted without rationale, *and* a
-requirement covered by no part of the design or sub-tasks. They are distinct
-defects and a design can have either without the other, so the case passes only
-when **both** required findings are present. Splitting it into two fixtures
-would be defensible; it is kept as one because the two failures share a root
-cause in practice — a design written too quickly to record its own reasoning.
-
-A second, larger exception: `no-spec` deletes `## Spec` entirely rather than
-mutating one section, to exercise the guard that stops the agent reviewing a
-design against a nonexistent spec. Because the guard means `## Design` and
-`## Sub-tasks` are not reviewed **at all**, the normal "no BLOCKING or MAJOR
-against an untargeted section" rule is too weak for this case — the bar is that
-**nothing** about either section is reported, at any severity. See that case's
-`.expected.md` for why.
 
 | Case | Check under test |
 |------|------------------|
@@ -89,24 +62,50 @@ against an untargeted section" rule is too weak for this case — the bar is tha
 | `headed-requirements-control` | None — `control` with `## Spec` requirements as `####` headings; must pass, with coverage traced from them and no finding about the format |
 | `no-spec` | The missing-`## Spec` guard — one BLOCKING `[decision]` finding and nothing else |
 
-`## Sub-tasks` in every case except `old-format-control` uses the heading format
-(`### N. Name`, description first, boxes beneath). `old-format-control` keeps the
-older numbered-list format so that the reviewer's acceptance of it stays tested.
-Its `## Spec` likewise states the requirements as numbered bold list items
-(`1. **Name.** text`) rather than headings, so that acceptance of the older spec
-format is tested too. `headed-requirements-control` states them as `#### N. Name`
-headings under a grouping `###` heading, the format the `Spec` entry in
-`devproc/skills/feature-init/FEATUREMODEL.md` sets. The other cases leave the requirements as the baseline's
-unnumbered bullet list, which also confirms a short unnumbered spec is not
-flagged.
+Notes on particular cases:
+
+- `unclear-design` and `unexplained-design` are deliberately kept distinct
+  rather than folded together: `unclear-design`'s rationale is present but
+  tangled into the main line so it cannot be followed, and its design opens
+  with no overview; `unexplained-design`'s rationale is simply absent. A design
+  can fail either without the other, so the two checks — Clarity and Complete
+  and clear — each get their own case.
+- **Exception to the one-flaw rule:** `unexplained-design` tests both halves of
+  "complete and clear" at once — decisions asserted without rationale, *and* a
+  requirement covered by no part of the design or sub-tasks — and passes only
+  when **both** required findings are present. It is kept as one case because
+  the two failures share a root cause in practice: a design written too quickly
+  to record its own reasoning.
+- **A larger exception:** `no-spec` deletes `## Spec` entirely, to exercise the
+  guard that stops the agent reviewing a design against a nonexistent spec.
+  Because the guard means `## Design` and `## Sub-tasks` are not reviewed **at
+  all**, the bar is that **nothing** about either section is reported, at any
+  severity. See that case's `.expected.md` for why.
+- `unresolved-design-question` expects the agent to search the codebase for a
+  `ReportStreamService` and find nothing. An agent that reports the dependency
+  as unverified without having looked has reached the right answer by the wrong
+  route — acceptable, but worth noticing if the agent's tool access changes.
+
+Spec and sub-task formats:
+
+- `old-format-control` — `## Sub-tasks` in the older numbered-list format, and
+  `## Spec` requirements as numbered bold list items (`1. **Name.** text`), so
+  that the reviewer's acceptance of both older formats stays tested.
+- `headed-requirements-control` — `## Spec` requirements as `#### N. Name`
+  headings under a grouping `###` heading, the format the `Spec` entry in
+  [`FEATUREMODEL.md`](../../../devproc/skills/feature-init/FEATUREMODEL.md)
+  sets.
+- All other cases — `## Sub-tasks` in the heading format (`### N. Name`,
+  description first, boxes beneath), and the baseline's unnumbered bullet list
+  of requirements, which also confirms a short unnumbered spec is not flagged.
 
 ## Running the tests
 
 To run the whole suite, use the regression harness:
 `../harness/run.sh feature-design-reviewer` (see
 [`../harness/README.md`](../harness/README.md)). It issues the invocations
-documented below and writes each case's output to `harness/out/`. That path is
-relative to this directory; the script itself can be run from anywhere.
+documented below and writes each case's output to `../harness/out/`. The
+script itself can be run from anywhere.
 
 To run a single case by hand, **invoke the agent through the CLI from the
 repository root**, not through the in-session `Agent` tool:
@@ -117,17 +116,7 @@ claude -p --agent feature-design-reviewer 'Review tests/devproc/feature-design-r
 
 One fresh agent invocation per case, then compare against `<case>.expected.md`.
 
-The CLI route matters for a regression run specifically. In-session `Agent`
-spawns have been observed to stop delivering their output partway through a
-session, returning an empty idle notification instead of a review — and a
-dozen-plus-invocation run is expensive to re-do once a silent failure is
-noticed. With the CLI, stdout either carries a verdict line or it does not.
-
-A review you never saw is **unrun, not passed** — never record a case as
-passing on the strength of an invocation that returned nothing.
-
-Note that `unresolved-design-question` expects the agent to search the codebase
-for a `ReportStreamService` and find nothing. An agent that reports the
-dependency as unverified without having looked has reached the right answer by
-the wrong route — acceptable, but worth noticing if the agent's tool access
-changes.
+For why to use the CLI rather than the in-session `Agent` tool, and why a
+review you never saw is unrun rather than passed, see
+[Running the tests](../feature-spec-reviewer/README.md#running-the-tests) in
+the `feature-spec-reviewer` README.

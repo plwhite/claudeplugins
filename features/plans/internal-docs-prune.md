@@ -280,6 +280,27 @@ fixtures, since it cannot be checked by inspecting the agent's output alone.
   status-cap as one rule stated in three places, checked for agreement — rather
   than three independently worded rules.
 
+### Documentation placement (sub-task 4)
+
+`internal-docs-reviewer` was grouped next to the docs review agents in both
+`devproc/README.md`'s Contents table and its `## Agent reference` section
+(rather than at the end, alphabetically, or beside the code-review agents) —
+the two are thematically paired (both are read-only findings-only review
+agents over documentation), even though one covers internal docs and the
+other user-facing docs. Same reasoning for the equivalent root `CLAUDE.md`
+contents-list placement.
+
+`docs/workflow.md`'s new `## Keep internal docs tidy` section was placed at
+the very end, after `## Complete a feature`, rather than folded into the
+"Complete a feature" section or inserted earlier in the lifecycle — it isn't
+a lifecycle step, it's an ongoing hygiene task, so it reads better as a
+standalone bookend than as a sub-point of any one stage. Its heading anchor
+(`#keep-internal-docs-tidy`) is linked from `docs/capabilities.md`, and the
+new capabilities.md section's anchor (`#internal-docs-hygiene`) is linked back
+from workflow.md — checked both resolve under GitHub's heading-to-anchor
+convention (lowercase, spaces to hyphens) since Markdown doesn't fail loudly
+on a broken in-repo anchor.
+
 ## Sub-tasks
 
 1. ✓ (2026-07-24) **`internal-docs-reviewer` agent + fixtures** — Write the read-only agent (scope, enforced rules, two-tag findings contract, project memory) and its test fixtures under `devproc/tests/internal-docs-reviewer/`, then validate it.

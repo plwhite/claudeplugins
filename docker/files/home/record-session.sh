@@ -24,15 +24,14 @@ id_file="$HOME/.claude/container-session-id"
 tmp_file=$(mktemp "$id_file.XXXXXX")
 trap 'rm -f "$tmp_file"' EXIT
 
-# python3 parses the JSON because the image has no jq.
-python3 -c '
-import json, sys
-event = json.load(sys.stdin)
-values = [event.get("session_id"), event.get("transcript_path")]
-if not all(isinstance(v, str) and v and "\n" not in v for v in values):
-    sys.exit("record-session.sh: hook input lacks a usable session_id or transcript_path")
-print(values[0])
-print(values[1])
+# Each value must be a non-empty string with no newline, since the file holds
+# one value per line.
+jq -r '
+  [.session_id, .transcript_path]
+  | if all(type == "string" and length > 0 and (contains("\n") | not))
+    then .[]
+    else "record-session.sh: hook input lacks a usable session_id or transcript_path\n" | halt_error(1)
+    end
 ' > "$tmp_file"
 
 mv "$tmp_file" "$id_file"

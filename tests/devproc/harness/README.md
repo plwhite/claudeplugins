@@ -20,14 +20,14 @@ scope limit of this harness, not an oversight.
   error otherwise.
 - The fixture suites must be present under `tests/devproc/`.
 - **Budget for the agent invocations.** A bare `./run.sh` runs every case in
-  both suites (19 at the time of writing), three at a time, each with a
-  900-second ceiling.
-  Run `-n` first to confirm the case list without spending anything.
+  both suites, each an agent invocation (concurrency and timeout: see
+  [Usage](#usage)). Run `-n` first to list the cases without spending
+  anything.
 
 ## Usage
 
-Run from anywhere — the script resolves all paths relative to its own
-location, not the caller's working directory.
+Run from `tests/devproc/harness/`, or call `run.sh` by its full path from
+anywhere: the script resolves all paths relative to its own location.
 
 ```
 ./run.sh                                 # every case in both suites
@@ -73,17 +73,11 @@ exit code) if any case didn't.
 
 ## Reading the output
 
-Compare `out/<suite>__<case>.txt` against `../<suite>/<case>.expected.md`.
-The pass rule is the one each suite's own `README.md` defines — this
-harness only runs the cases and captures their output, it does not itself
-judge pass/fail:
-
-- `../feature-spec-reviewer/README.md` — a case passes when every finding
-  listed under **Required findings** is reported at the stated severity or
-  higher, nothing under **Must not report** appears, and the verdict
-  matches.
-- `../feature-design-reviewer/README.md` — same rule (it explicitly follows
-  the `feature-spec-reviewer` README's conventions).
+Compare `out/<suite>__<case>.txt` against `../<suite>/<case>.expected.md`,
+using the pass rule in the suite's own README
+([feature-spec-reviewer](../feature-spec-reviewer/README.md),
+[feature-design-reviewer](../feature-design-reviewer/README.md)). This harness
+only runs the cases and captures their output; it does not judge pass/fail.
 
 A run that produced no output for a case (e.g. the invocation errored or hit
 the 900-second timeout) is **unrun, not passed** — check `out/` for a file
@@ -94,15 +88,3 @@ before treating a case as covered.
 Re-run every case in the affected suite (`./run.sh <suite>`) and compare
 each `out/` file against its `.expected.md`. See the suite `README.md` files
 for what a changed result means.
-
-## Background
-
-This script replaces three ad-hoc scripts that used to live in
-`features/tmp/regression/` (git-ignored, so not present in a clean checkout):
-`run.sh`, `runall.sh`, `rerun.sh`. Those duplicated the same prompt block three
-times, hardcoded `cd /workspace`, and named their case lists by hand — which
-had already drifted from the fixtures on disk (one listed 5 of the
-`feature-spec-reviewer` suite's 7 cases, another 6, so "run everything"
-silently skipped cases). This script fixes all three problems: one prompt
-definition, no absolute paths, and a case list read from the fixture
-directories on every run.

@@ -1,6 +1,6 @@
 # Capabilities
 
-This document describes additional capabilities provided by `devproc` beyond the [core feature workflow](workflow.md).
+This document describes the capabilities `devproc` provides beyond the [core feature workflow](workflow.md), for people using the plugin: the [Dev Process Manager](#dev-process-manager), [code review](#code-review), [documentation review](#documentation-review) and [internal docs hygiene](#internal-docs-hygiene).
 
 ---
 
@@ -14,7 +14,7 @@ Run it as the session agent:
 claude --agent dev-process-manager
 ```
 
-In [container mode](container.md) the same agent is selected with a shorthand (`--agent dpm` is accepted as an equivalent short alias):
+In [container mode](container.md) use `--manager` (or `--agent dpm`, an alias for `--agent dev-process-manager`):
 
 ```
 claude-run --manager
@@ -28,7 +28,11 @@ What it does:
 - **Agrees an autonomy boundary.** It settles with you up front how far to run unattended, then proceeds without asking at every step until it reaches that boundary.
 - **Delegates each sub-task to a teammate.** For each sub-task it spawns a teammate (normally Sonnet), briefs it with the single sub-task, its sign-off criteria, and the context it needs, and requires it to run `/feature-checkpoint` when done.
 - **Reviews the work.** It inspects the actual changes rather than trusting the teammate's report, running a code review where warranted, and sends corrections back if needed. It accepts a sub-task as done only once all of its sign-off boxes are ticked.
-- **Handles new work found mid-run.** It never starts a new sub-task you have not agreed. New work that affects the flow of work in progress (a remaining planned sub-task depends on it, or would be done differently because of it) stops the run and asks you; other new sub-tasks are proposed in the report at the boundary; small contained fixes are made and listed in that report without stopping. Anything that would rework another component halts the run, whatever it is called. See [workflow.md](workflow.md#when-the-sub-task-list-changes).
+- **Handles new work found mid-run.** It never starts a new sub-task you have not agreed. See [workflow.md](workflow.md#when-the-sub-task-list-changes).
+  - New work that affects the flow of work in progress (a remaining planned sub-task depends on it, or would be done differently because of it) stops the run and asks you.
+  - Other new sub-tasks are proposed in the report at the boundary.
+  - Small contained fixes are made and listed in that report without stopping.
+  - Anything that would rework another component halts the run, whatever it is called.
 - **Closes teammates down** once their task is verified complete, and **checks in with you** at requirement/design decisions, when you asked to review something, or when it hits a blocker.
 
 This lets you delegate a batch of work and stay in control of the high-level direction, with the manager keeping the overall context on track while teammates handle the detail. It uses more tokens than driving sub-tasks yourself, in exchange for autonomy.
@@ -45,7 +49,7 @@ Code review should normally be run after every feature is complete, and occasion
 
 ### Review options
 
-- Review all changes in the current branch relative to `main`.
+- Review all changes in the current branch relative to the base branch (`main`, else `master`).
 
     ```
     /review-branch
@@ -66,7 +70,7 @@ Code review should normally be run after every feature is complete, and occasion
 
 ### Architectural review
 
-If you want a deeper structural assessment (using `opus` in a slow pass), you can request architectural review. If your brief is not clear, Claude will request clarification if architectural review is required. For example:
+For a deeper structural assessment, ask for architectural review. It uses `opus` and is slower. If your request does not make clear whether you want it, Claude asks. For example:
 
 ```
 /review-branch including architectural review
@@ -98,11 +102,13 @@ A project has three classes of document, and docs review treats them differently
 
 A user doc that only describes agent docs or feature records as something the project creates (as the plugin guide describes the `features/` layout) is not relying on them.
 
+**Code** — source, prompts, templates and data files, even when written in Markdown — is not documentation: docs review never reviews or edits it, though the accuracy and architectural agents read it as the thing the docs describe.
+
 ### The four kinds
 
-Four kinds of review exist, each run by its own stateless, findings-only agent. All four run unless you name a subset, except that in `change` scope the agent docs kind is skipped (and reported as skipped) when no agent doc is in the change and nothing the change touches is described by one. The first three review the user docs and the fourth the agent docs:
+Four kinds of review exist, each run by its own stateless, findings-only agent. All four run unless you name a subset. In `change` scope the agent docs kind is also skipped, and reported as skipped, when no agent doc is in the change and nothing the change touches is described by one. The first three kinds review the user docs; the fourth reviews the agent docs:
 
-- **Architectural** (`docs-review-architectural`, `opus`) — the user docs still hang together: entry points, orphaned documents, broken links, hierarchy, one source of truth per fact, and docs in non-obvious places that a change should have touched. It asks whether the user docs are fit for purpose: everything a user would expect is documented, to the standard comparable features are, and nothing a user does not need is there. It also flags a user doc that relies on an agent doc or a feature record for information.
+- **Architectural** (`docs-review-architectural`, `opus`) — the user docs still hang together: entry points, orphaned documents, broken links, hierarchy, one source of truth per fact, and docs in non-obvious places that a change should have touched. It also checks that the user docs are fit for purpose (everything a user would expect is documented, to the standard of comparable features, and nothing unneeded is there) and flags a user doc that relies on an agent doc or feature record.
 - **Accuracy** (`docs-review-accuracy`, `sonnet`) — the user docs still match the code and its behaviour.
 - **Style** (`docs-review-style`, `sonnet`) — the user docs read clearly and consistently, and procedures are written as procedures.
 - **Agent docs** (`docs-review-agent-docs`, `sonnet`) — the agent docs still match the repository (file lists, paths, commands, descriptions of components), nothing a person needs is held only in them, and they link to the user docs rather than repeating them. It also asks whether they are fit for purpose: an agent finds everything it needs, and nothing it does not, such as history of completed work. A feature listed as in progress is expected, since the review runs before the feature closes. Style and bloat in agent docs are not its concern; they are left to [`/internal-docs-prune`](#internal-docs-hygiene).
@@ -134,20 +140,13 @@ Two kinds are always escalated: every boundary finding (a user doc relying on an
 
 ### As a sign-off
 
-**Docs review** is one of the five sign-off categories in the feature model. A feature's sign-off strategy sets a bar for each kind, or skips it explicitly, and each sub-task can carry `Docs review (agent): /review-docs ...` or `Docs review (user): ...` checkboxes. It is normally run once, as a box in the "Final sign-off criteria" sub-task, like any other sign-off. `/feature-end` runs no docs review of its own.
-
-Run each kind as follows. Skip one only for a trivial change that manifestly cannot need it; when in doubt, run it, since a review that finds nothing costs a few tokens and a missed one can leave errors in.
-
-- **Accuracy** — whenever any user doc changes, or might need to.
-- **Architectural** — whenever there is any risk that the documentation structure should change, a link might break, or a doc in a non-obvious place has been missed.
-- **Style** — whenever any doc prose is added or changed, other than a trivial edit (a typo, a path or version bump) that manifestly cannot affect how it reads.
-- **Agent docs** — whenever an agent doc changes, or the change touches anything an agent doc describes (a file it lists, a path, a command, a component).
+**Docs review** is one of the five sign-off categories; a feature's sign-off strategy sets a bar for each kind or skips it explicitly. See [The sign-off strategy](workflow.md#the-sign-off-strategy) for the strategy, and the feature model's `### Sign-off criteria` section in [FEATUREMODEL.md](../devproc/skills/feature-init/FEATUREMODEL.md) for when each kind is warranted.
 
 ---
 
 ## Internal docs hygiene
 
-The internal, Claude-facing documentation a project accumulates — `CLAUDE.md` (root and nested), `NOTES.md`, and `.claude/rules/*.md` — grows through append-only workflows: status sections that duplicate `features/COMPLETED.md`, post-mortems of bugs long since fixed, notes that no longer match the code. `/internal-docs-prune` finds and clears this drift. It complements `/review-docs` above: the agent docs kind of `/review-docs` checks that these docs are correct and respect the boundary with the user docs, normally as a feature sign-off, while `/internal-docs-prune` removes accumulated bloat and history, run periodically. This tool never touches `docs/`, `README.md`, or `CONTRIBUTING.md`.
+The internal, Claude-facing documentation a project accumulates — `CLAUDE.md` (root and nested), `NOTES.md`, and `.claude/rules/*.md` — grows through append-only workflows: status sections that duplicate `features/COMPLETED.md`, post-mortems of bugs long since fixed, notes that no longer match the code. Run `/internal-docs-prune` periodically to clear this drift. It complements `/review-docs`: the agent docs kind of `/review-docs` checks that the agent docs are correct and respect the user-docs boundary, usually as a feature sign-off, while `/internal-docs-prune` removes accumulated bloat and history. This tool never touches `docs/`, `README.md`, or `CONTRIBUTING.md`.
 
 Run it with:
 
@@ -158,13 +157,13 @@ Run it with:
 
 What it does:
 
-- **Spawns the read-only `internal-docs-reviewer` agent** over the in-scope files. The agent enforces each file's own stated rules (e.g. `CLAUDE.md`'s "high-level status only", `NOTES.md`'s "non-obvious findings only") plus two fixed criteria per file type — audience relevance and duplication for `CLAUDE.md`; currency and durability for `NOTES.md` — and never invents requirements beyond these. It never edits anything; it only produces findings.
-- **Gates each finding by class.** Every finding carries a gating class that determines how much authority the skill has to act on it unattended:
-  - `redundant` — content verifiable elsewhere (e.g. a status entry duplicating `features/COMPLETED.md`). Applied automatically, always as a plain deletion: the content already lives at its canonical source, so there is nothing to move or condense.
-  - `stale` — contradicted by the current code or repository state. Applied automatically; the action varies with the finding (`delete`, `condense`, or occasionally `move`, as the agent proposes).
-  - `judgment` — subjective enough that a human should decide. In interactive mode (the default), each is presented to you, and if you simply confirm, the agent's own proposed action is taken — its `condense` text, or, for a `judgment` + `move`, the proposed move — but never `delete`. In unattended mode, they are left untouched and listed in the summary for later review. Settled interactive decisions are remembered (see below), so a later run does not re-ask about the same call.
-- **Moves content without loss.** A `move` finding relocates content to one of three destinations (`features/COMPLETED.md`, a named plan file, or a named `.claude/rules/` file) by writing the destination, verifying the text landed there, and only then removing it from the source — a move never drops content, even if interrupted.
-- **Reports and, optionally, commits.** The run ends with a summary of what was deleted, moved, condensed, and retained. Committing stays user-gated; if you ask Claude to commit the result, it uses the `docs(prune):` prefix so prune commits are discoverable by prefix in history.
-- **Idempotent.** Run it again right after and it should surface no new `redundant` or `stale` findings. `judgment` calls you settled interactively are remembered — the skill keeps a record of them under `.claude/agent-memory/devproc-internal-docs-reviewer/` (namespaced by the agent it pairs with, though the skill, not the stateless reviewer agent, owns it) and suppresses an already-decided call on later runs unless its anchor text has since changed, so repeat runs don't re-litigate them. Only genuinely unresolved calls (deferred in unattended mode, or newly arisen) resurface.
+- **Spawns the read-only `internal-docs-reviewer` agent** over the in-scope files. The agent enforces each file's own stated rules (e.g. `CLAUDE.md`'s "high-level status only", `NOTES.md`'s "non-obvious findings only") and only produces findings.
+- **Gates each finding by class:**
+  - `redundant` — content that already lives at its canonical source (e.g. a status entry duplicating `features/COMPLETED.md`). Deleted automatically.
+  - `stale` — contradicted by the current code or repository state. Applied automatically with the action the agent proposes: `delete`, `condense` or, occasionally, `move`.
+  - `judgment` — subjective enough that a human should decide. In interactive mode (the default), each is put to you; if you confirm, the agent's proposed `condense` or `move` is taken, but never `delete`. In unattended mode they are left untouched and listed in the summary.
+- **Moves content without loss.** A `move` relocates content to `features/COMPLETED.md`, a named plan file, or a named `.claude/rules/` file, and never drops it, even if interrupted.
+- **Reports and, optionally, commits.** The run ends with a summary of what was deleted, moved, condensed, and retained. Committing stays user-gated; if you ask Claude to commit the result, it uses the `docs(prune):` prefix.
+- **Idempotent.** Run it again right after and it should surface no new `redundant` or `stale` findings. `judgment` calls you settled are remembered, in `.claude/agent-memory/devproc-internal-docs-reviewer/`, and are not re-asked unless their anchor text changes; only unresolved calls resurface.
 
-Run it periodically, or whenever `CLAUDE.md` or `NOTES.md` feels like it's carrying more than it should — see [workflow.md](workflow.md#keep-internal-docs-tidy) for when.
+See [workflow.md](workflow.md#keep-internal-docs-tidy) for when to run it.

@@ -23,6 +23,8 @@ plugin-name/
     agent-name.md        ← frontmatter: name, description
 ```
 
+The repository's marketplace manifest, listing its plugins, is `.claude-plugin/marketplace.json` at the root.
+
 ## devproc plugin
 
 Location: `devproc/`
@@ -58,7 +60,7 @@ See `devproc/README.md` for full usage documentation.
 
 **In this repository the plugin is the code.** The skills and agents are written for any project they run in, where their prompts and `FEATUREMODEL.md` are not part of the repository. Here, everything under `devproc/` (including its Markdown prompts and `FEATUREMODEL.md`) is the code under development: treat it as code, not docs. When editing a skill or agent, keep its instructions general; never write them as if the project they run in is this one.
 
-> **Maintainer note:** to change the feature model, edit the canonical `devproc/skills/feature-init/FEATUREMODEL.md` and re-run `/feature-init`; never edit `features/FEATUREMODEL.md`, which `/feature-init` overwrites. See [CONTRIBUTING.md](CONTRIBUTING.md#making-changes) for what else a plugin change touches. In a session, `/feature-init` reads the installed plugin copy, so refresh that first. (The obligation is kept out of `FEATUREMODEL.md` itself, since that file is copied verbatim into consumer projects where the twin does not exist.)
+> **Maintainer note:** to change the feature model, edit the canonical `devproc/skills/feature-init/FEATUREMODEL.md` and re-run `/feature-init`; never edit `features/FEATUREMODEL.md`, which `/feature-init` overwrites. See [CONTRIBUTING.md](CONTRIBUTING.md#making-changes) for what else a plugin change touches. In a session, `/feature-init` reads the installed plugin copy, so refresh that first ([CONTRIBUTING.md](CONTRIBUTING.md#refresh-the-installed-plugin-in-place)). (The obligation is kept out of `FEATUREMODEL.md` itself, since that file is copied verbatim into consumer projects where the twin does not exist.)
 
 ## setup-files directory
 
@@ -68,7 +70,7 @@ Files referenced by `docs/setup.md` that users copy into their environments rath
 
 Contents:
 - `setup-files/.claudeignore` — recommended `.claudeignore` for project roots
-- `setup-files/block-git-writes.sh` — `PreToolUse` hook that blocks Bash `git` write commands
+- `setup-files/block-git-writes.sh` — `PreToolUse` hook that allows only read-only `git` commands in Bash and blocks the rest (needs `jq`)
 - `setup-files/README.md` — destination, purpose, and back-link to setup.md per file
 
 When adding a file here, follow [CONTRIBUTING.md](CONTRIBUTING.md#making-changes).
@@ -97,14 +99,16 @@ Location: `docker/` (image definition) and `bin/` (wrapper scripts)
 Docker-based mode that runs Claude with full permissions inside a container, with the project directory mounted read-write.
 
 Contents:
-- `docker/Dockerfile` — Ubuntu base with Claude Code, python3, tmux; bakes in plugins and a YOLO `~/.claude/` config
+- `docker/Dockerfile` — Ubuntu base with Claude Code, `gh`, `jq`, python3, tmux; bakes in plugins and a YOLO `~/.claude/` config
 - `docker/files/home/.claude/CLAUDE.md` — global CLAUDE.md inside the container (full-permissions framing)
-- `docker/files/home/.claude/settings.json` — bypass-permissions mode, devproc plugin enabled
+- `docker/files/home/.claude/settings.json` — dangerous-mode prompt suppressed, devproc plugin enabled (bypass comes from `--dangerously-skip-permissions` in `run-claude.sh`)
+- `docker/files/home/.claude.json` — pre-accepts onboarding and trusts `/workspace`, so Claude starts without first-run prompts
+- `docker/files/home/.tmux.conf` — tmux settings for the container session
 - `docker/files/home/entrypoint.sh` — container entrypoint; starts the detached tmux session running `run-claude.sh`
 - `docker/files/home/run-claude.sh` — keep-alive loop that auto-relaunches Claude on exit so the tmux session survives `exit`/Ctrl-D/Ctrl-C; every launch resumes the session recorded by `record-session.sh` (`claude --resume <id>`), or starts fresh if none
 - `docker/files/home/record-session.sh` — `SessionStart` hook (passed to the main session only, via `--settings`) that records the session ID and transcript path in `~/.claude/container-session-id`
 - `bin/claude-build` — builds the `claudedev` image with host UID/GID baked in
-- `bin/claude-run` — starts a detached container for a project directory; `--manager`/`--agent NAME` selects a top-level agent and `--model NAME` (default: derived from the agent's `model:` field) its session model, passed through via `CLAUDE_AGENT`/`CLAUDE_MODEL`; `--resume` restarts the project's stopped container (fresh credentials, original agent/model/token/identity) so the session resumes, and plain `claude-run` fails if the container exists; also passes `GH_TOKEN` into the container (from the environment, or sourced from `~/.config/gh/env` when unset) so `gh` can read issues there
+- `bin/claude-run` — starts a detached container for a project directory; options (`--manager`/`--agent`, `--model`, `--resume`) and `GH_TOKEN` pass-through are covered in [docs/container.md](docs/container.md)
 - `bin/claude-attach` — attaches to the tmux session in a running container
 - `bin/claude-creds-refresh` — refreshes OAuth credentials in a running container mid-session (they are copied in at start, not bind-mounted, so a long session can outlive them)
 - `bin/claude-stop` — stops and removes the container (and with it the conversation, so it cannot be resumed)

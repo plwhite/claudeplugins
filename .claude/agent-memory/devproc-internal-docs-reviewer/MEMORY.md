@@ -78,3 +78,41 @@ are identified by their section heading at decision time.
 
 ### 15. NOTES.md — `incomplete-requirements.md` rename note
 - **Decision:** Condensed to the standing rule (fixture renames use `mv`, not `git mv`); dropped the transient recovery incident.
+
+---
+
+## 2026-11-19
+
+All ten `judgment` findings from this run were resolved with the reviewer's
+proposed action, on the user's confirmation. Anchors are identified by their
+section heading (or opening words) at decision time.
+
+### 16. NOTES.md — `## Sub-task 3 validation runs for `remove-migration-code` (#64)`
+- **Decision:** Condensed and re-headed `## A "no run mentions X" validation criterion over-triggers (`remove-migration-code`, #64)` — kept only the lesson about wording criteria against the tool-call transcript.
+
+### 17. NOTES.md — `## Container session keep-alive (#17)`
+- **Decision:** Condensed to two sentences — mechanics left to `run-claude.sh` comments; kept why `--resume <id>` replaced `--continue` and why a bare `--resume` is wrong.
+
+### 18. NOTES.md — `## Check what a backwards-compatibility carve-out actually protects (#57)`
+- **Decision:** Condensed to the three general lessons.
+
+### 19. NOTES.md — "Fix: `claude-run` derives the model from the agent's own definition…" (in the `--agent` model entry)
+- **Decision:** Condensed to one sentence; the gotcha paragraph above stays.
+
+### 20. NOTES.md — `## First container run installs plugins; `--agent` fails until then`
+- **Decision:** Condensed to a pointer to the `run-claude.sh` warm-up comment plus the retry observation.
+
+### 21. NOTES.md — `## internal-docs-prune documentation placement (sub-task 4)`
+- **Decision:** Moved verbatim to `features/plans/internal-docs-prune.md` as `### Documentation placement (sub-task 4)` (written, verified, then removed).
+
+### 22. NOTES.md — "Only `incomplete-spec` (ex-`incomplete-requirements`) and `premature-design` needed deliberate rewording…"
+- **Decision:** Condensed to one sentence.
+
+### 23. NOTES.md — "`/feature-spec` once wrote a "no requirements beyond the summary" placeholder…" (in `## A one-line description is requirements (#57)`)
+- **Decision:** Condensed to the two-sentence standing rule; the "Two lessons" paragraph stays.
+
+### 24. NOTES.md — gh sandbox entry, the `sandbox.network.allowedDomains` JSON block
+- **Decision:** Condensed to a pointer to `docs/setup.md` `### Sandbox configuration`; the rest of the entry stays.
+
+### 25. CLAUDE.md — `bin/claude-run` bullet in `## Container mode`
+- **Decision:** Condensed to a one-line bullet pointing to `docs/container.md`.
