@@ -17,13 +17,18 @@ The flaw is recorded **only** in the `.expected.md` file. The fixture itself
 never names what is wrong with it, so the agent cannot read the answer off the
 input.
 
-Every fixture carries four sections: `## Requirements` (the input, captured
-faithfully — the agent reads it for context and checks only that source-issue
-content was genuinely captured there rather than deferred to, never that it
-reads well), `## Spec` (what the feature must do — the section held to
-`### Readability` and the primary object under review), `## Sign-off strategy`,
-and an empty `## Design` placeholder reading "*To be fleshed out by
-`/feature-design`*". The placeholder is there because that is the shape
+Every fixture carries four sections:
+
+- `## Requirements` — the input, captured faithfully. The agent reads it for
+  context and checks only that source-issue content was genuinely captured
+  there rather than deferred to, never that it reads well.
+- `## Spec` — what the feature must do: the section held to `### Readability`
+  and the primary object under review.
+- `## Sign-off strategy`.
+- An empty `## Design` placeholder reading "*To be fleshed out by
+  `/feature-design`*".
+
+The placeholder is there because that is the shape
 `/feature-spec` actually leaves a plan file in; the agent does not review it.
 
 Every case is a mutation of one shared baseline (`control.md`), altering a
@@ -37,46 +42,43 @@ sign-off criterion harder to audit.
 
 ### Maintaining the shared baseline
 
-"One shared baseline" is a statement about the text, not about the files: the
-baseline `## Requirements`, `## Spec` and `## Sign-off strategy` are copied
-**byte-for-byte into every case in both suites**, not referenced from one place.
-The exceptions are the cases that carry the same `## Spec` content in another
-form on purpose: in this suite, `unheaded-requirements` (the requirements as
-numbered bold list items) and `headed-requirements-control` (the requirements
-as `####` headings under a grouping `###` heading); in the design suite, the
-cases listed in its
-[README](../feature-design-reviewer/README.md#what-the-untargeted-sections-are).
-So a weakness in that text is a weakness in every case file of both suites at once.
+The baseline `## Requirements`, `## Spec` and `## Sign-off strategy` are
+copied **byte-for-byte into every case in both suites**, not referenced from one
+place. The exceptions are the cases that carry the same `## Spec` content in
+another form on purpose:
 
-This matters more than it used to. Since the clarity criterion checks *every*
-section of *every* fixture against a MAJOR-capable standard, a wording weakness
-anywhere in the shared text can fail any case in either suite. It also tends to
-fail them **nondeterministically** — the two defects found by the 2026-08-10
-regression (a missing `## Design` overview, and a sign-off criterion that tested
-nothing about the stated memory constraint) each passed some cases and failed
-others on byte-identical text. A suite that fails intermittently is worse than
-one that fails outright, because the natural response is to re-run it.
+- in this suite, `unheaded-requirements` (the requirements as numbered bold
+  list items) and `headed-requirements-control` (the requirements as `####`
+  headings under a grouping `###` heading);
+- in the design suite, the cases listed in its
+  [README](../feature-design-reviewer/README.md#what-the-untargeted-sections-are).
 
-Two rules follow:
+When maintaining the baseline:
 
-- A defect found in shared baseline text must be fixed in **every file carrying
-  that section, across both suites** — not only in `control.md`. In the cases
-  that carry `## Spec` in another form (above), the fix is applied in their
-  own form.
-- A case's `.expected.md` must **not** be widened to tolerate a baseline defect.
-  Widening hides the defect in one case and leaves it live in the rest. The
-  design suite records one exception, for a defect that cannot be fixed; see
-  its [README](../feature-design-reviewer/README.md#what-the-untargeted-sections-are).
+- Fix a defect in shared baseline text in **every file carrying that section,
+  across both suites**, not only in `control.md`. In the cases that carry
+  `## Spec` in another form, apply the fix in their own form.
+- Do **not** widen a case's `.expected.md` to tolerate a baseline defect:
+  that hides the defect in one case and leaves it live in the rest. The design
+  suite records one exception, for a defect that cannot be fixed; see its
+  [README](../feature-design-reviewer/README.md#what-the-untargeted-sections-are).
+
+The reason: the clarity criterion checks every section of every fixture, so a
+wording weakness in shared text can fail any case in either suite, and tends to
+fail them nondeterministically (some cases pass and others fail on identical
+text). It must be fixed, not re-run.
 
 ## Cases
 
-Every case but one mutates `## Spec`, `## Sign-off strategy`, or neither (the
-control; `headed-requirements-control` is a second control, altering only the
-form of `## Spec`). The one exception is `deferred-requirements`, which mutates
-`## Requirements` instead — it is built specifically to exercise the retained
-`## Requirements` check named above (source-issue content captured, not
-deferred to). Its `.expected.md` states which section it targets and why that
-section, rather than `## Spec`, is the clean/dirty line for that case.
+Every case mutates `## Spec` or `## Sign-off strategy`, with three exceptions:
+
+- `control` changes nothing.
+- `headed-requirements-control` is a second control, changing only the form of
+  `## Spec`.
+- `deferred-requirements` mutates `## Requirements`, to exercise the check that
+  source-issue content was captured there, not deferred to. Its `.expected.md`
+  says why that section, rather than `## Spec`, is the clean/dirty line for the
+  case.
 
 | Case | Check under test |
 |------|------------------|
@@ -96,8 +98,8 @@ section, rather than `## Spec`, is the clean/dirty line for that case.
 To run the whole suite, use the regression harness:
 `../harness/run.sh feature-spec-reviewer` (see
 [`../harness/README.md`](../harness/README.md)). It issues the invocations
-documented below and writes each case's output to `harness/out/`. That path is
-relative to this directory; the script itself can be run from anywhere.
+documented below and writes each case's output to `../harness/out/`. The
+script itself can be run from anywhere.
 
 To run a single case by hand, or to work interactively, invoke the agent
 directly. **Use the CLI from the repository root**, not the in-session `Agent`
@@ -106,15 +108,6 @@ tool:
 ```
 claude -p --agent feature-spec-reviewer 'Review tests/devproc/feature-spec-reviewer/<case>.md'
 ```
-
-The CLI route matters for a regression run specifically. In-session `Agent`
-spawns have been observed to stop delivering their output partway through a
-session, returning an empty idle notification instead of a review — and a
-dozen-plus-invocation run is expensive to re-do once a silent failure is
-noticed. With the CLI, stdout either carries a verdict line or it does not.
-
-A review you never saw is **unrun, not passed** — never record a case as
-passing on the strength of an invocation that returned nothing.
 
 Then compare its output against `<case>.expected.md`. A case passes when:
 
@@ -125,6 +118,15 @@ Then compare its output against `<case>.expected.md`. A case passes when:
 
 Run each case in a fresh agent invocation. Running several in one context lets
 the agent generalise from earlier cases, which is not what is being tested.
+
+The CLI route matters for a regression run specifically. In-session `Agent`
+spawns have been observed to stop delivering their output partway through a
+session, returning an empty idle notification instead of a review — and a
+dozen-plus-invocation run is expensive to re-do once a silent failure is
+noticed. With the CLI, stdout either carries a verdict line or it does not.
+
+A review you never saw is **unrun, not passed** — never record a case as
+passing on the strength of an invocation that returned nothing.
 
 ## When the agent changes
 

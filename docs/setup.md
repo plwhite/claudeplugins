@@ -1,24 +1,6 @@
 # Setup guide
 
-This guide walks through configuring Claude Code for a productive development workflow. The detailed steps below cover the full configuration; at a high level, you will:
-
-- Check prerequisites and clone this repository to a stable location.
-
-- Set up strong sandbox security so that Claude cannot access files or paths outside your repo.
-
-- Lock down git access so that Claude can only view git status, not push to git.
-
-- Block reads of files that conventionally hold secrets (`.env`, private keys, credentials).
-
-- Install and authenticate the GitHub CLI so Claude can read issues.
-
-- Install the plugin.
-
-- Drop a recommended `.claudeignore` into each workspace to suppress speculative scans of high-noise paths.
-
-- Initialise the plugin in each workspace where you want to use it.
-
-None of these steps are required; this is "how to configure your system in the right way for me", which you may wish to tweak appropriately.
+This guide is for people setting up Claude Code for the `devproc` workflow. It covers [initial setup](#detailed-steps) and [what to do when the plugin changes](#when-the-plugin-changes).
 
 ## Detailed steps
 
@@ -28,7 +10,7 @@ To set everything up, follow the stages below.
 
 2. [Clone this repository](#clone-this-repository) to a stable location — subsequent steps copy files out of it.
 
-3. Configure Claude code to [run sandboxed](#sandbox-configuration).
+3. Configure Claude Code to [run sandboxed, optionally with the git-write hook](#sandbox-configuration).
 
 4. [Block reads of sensitive files](#block-reads-of-sensitive-files).
 
@@ -38,17 +20,19 @@ To set everything up, follow the stages below.
 
 7. [Configure `.claudeignore`](#configure-claudeignore) for each workspace where you use Claude.
 
-8. Initialise the [`devproc` plugin for each workspace](#initialise-devproc-in-each-workspace-for-which-you-want-to-use-it).
+8. [Initialise `devproc` in each workspace](#initialise-devproc-in-each-workspace).
+
+Steps 1, 2, 6 and 8 are needed for `devproc`; steps 3, 4, 5 and 7 are recommended, so adapt them to your needs.
 
 ### Prerequisites
 
 - Linux (WSL should work fine, as should macOS, but only Linux has been tested)
 
-- [Claude Code](https://claude.ai/code) installed, ideally as the vscode extension.
+- [Claude Code](https://claude.ai/code) installed (the VS Code extension is the tested route).
 
-- Various command line tools including `jq`, `bash`, `git`
+- Command-line tools: `bash`, `git` and `jq`.
 
-- Optionally `gh` installed for GitHub access
+- Optionally, `gh` for GitHub access (see [below](#install-and-authenticate-github-cli)).
 
 ### Clone this repository
 
@@ -58,11 +42,11 @@ Several later steps copy files out of this repo (the git-write hook, the `.claud
 git clone https://github.com/plwhite/claudeplugins /some/path/claudeplugins
 ```
 
-Subsequent instructions assume `/some/path/claudeplugins`; substitute your chosen path throughout. The path is reused under [Sandbox configuration](#sandbox-configuration), [Enable the devproc plugin](#enable-the-devproc-plugin), and [Configure .claudeignore](#configure-claudeignore), so a stable location matters.
+Subsequent instructions assume `/some/path/claudeplugins`; substitute your chosen path throughout.
 
 ### Sandbox configuration
 
-Set up Claude Code so that it runs sandboxed on your box, with limited network access and no git write access. *If you want to allow Claude Code to make git changes directly, do not create the hooks file or hooks section.*
+Run Claude Code sandboxed, with limited network access and no git write access.
 
 - Edit `~/.claude/settings.json`. Create it if it does not exist. Add or merge the following:
 
@@ -98,11 +82,13 @@ Set up Claude Code so that it runs sandboxed on your box, with limited network a
   chmod +x ~/.claude/hooks/block-git-writes.sh
   ```
 
-  With this in place, Claude can run read-only commands (`git status`, `git diff`, `git log`, `git show`, `git blame`) freely. Attempts to commit, push, merge, reset, or otherwise modify git state are blocked and must be run manually.
+  *To let Claude make git changes directly, skip this hook step and omit the `hooks` section from the JSON above.*
+
+  With this in place, Claude can run read-only git commands (`git status`, `git diff`, `git log`, `git show`, `git blame` and the like, plus listing forms such as `git branch`, `git tag -l`, `git remote -v`, `git stash list` and `git config --get`) freely. Any other git command — commit, push, checkout, reset, and so on, including aliases — is blocked, and you run it yourself. The hook needs `jq`; without it, nothing is blocked.
 
 ### Block reads of sensitive files
 
-The sandbox restricts where Claude can write, but reads inside the project directory and other allowed paths are unrestricted. A `.env` file, an SSH key checked into the wrong place, or a stray `credentials.json` is therefore visible to Claude — and from there it can leak into tool output, summaries, commit messages, or generated artefacts. Claude Code has a `permissions.deny` mechanism that refuses specific tool actions outright; the configuration below blocks reads of the file patterns that most commonly hold secrets, regardless of where they appear in the tree.
+The sandbox restricts where Claude can write, but reads inside the project directory and other allowed paths are unrestricted. A `.env` file, SSH key or `credentials.json` inside the project is therefore readable by Claude, and from there can leak into tool output, summaries, commit messages or generated artefacts. Claude Code's `permissions.deny` setting refuses specific tool actions outright; the configuration below blocks reads of the file patterns that most commonly hold secrets, wherever they appear in the tree.
 
 - Edit `~/.claude/settings.json` and add or merge the following with the existing top-level keys (`sandbox`, `hooks`, etc.) — do not replace them:
 
@@ -138,11 +124,11 @@ This is defence in depth, not a substitute for keeping secrets out of the workin
 
 ### Install and authenticate GitHub CLI
 
-The GitHub CLI allows Claude Code to read issues, which is very useful if you wish to have it design and implement them. Follow the instructions below to install it in a restricted way that ensures Claude only has limited access.
+The GitHub CLI lets Claude Code read issues, so it can spec and design features from them. Install it with a read-only, issues-only token, so Claude's GitHub access stays limited.
 
 - Install the GitHub CLI `gh`, following the instructions at <https://cli.github.com/>.
 
-- On the [GitHub website](https://www.github.com), create a PAT with read only access to issues (only). Since this is so restricted in what it can do, I normally let it have no expiry time.
+- On the [GitHub website](https://www.github.com), create a PAT with read-only access to issues (only). With so little access, it can safely have no expiry.
 
 - Authenticate using that GitHub PAT.
 
@@ -150,25 +136,17 @@ The GitHub CLI allows Claude Code to read issues, which is very useful if you wi
   gh auth login --with-token <<< "github_pat_yourtoken..."
   ```
 
-- Check that it all works as expected.
+- Check the login from inside a repository with a GitHub remote: `gh issue list` prints the repository's open issues (or nothing, if there are none). An authentication error means the token is wrong or lacks issue access.
 
   ~~~bash
   gh issue list
   ~~~
 
-- Save the same token as `GH_TOKEN` in `~/.config/gh/env`. The `gh auth login` above authenticates the CLI **on this machine only**; [container mode](container.md) does not copy that login in, and instead passes `GH_TOKEN` through to the container. `claude-run` sources this file when `GH_TOKEN` is not already set in your environment, so putting the token here is enough to make GitHub issues readable inside the container.
-
-  ```bash
-  mkdir -p ~/.config/gh
-  printf 'GH_TOKEN=github_pat_yourtoken...\n' > ~/.config/gh/env
-  chmod 600 ~/.config/gh/env
-  ```
-
-  If you would rather export `GH_TOKEN` from your shell profile, that works too and takes precedence over the file. Either way, `GH_TOKEN` is expected to be available when you start a container — see [GitHub access](container.md#github-access).
+- If you will use [container mode](container.md), also save the token as described in [GitHub access](container.md#github-access): `gh auth login` authenticates the CLI on this machine only, and the container does not copy that login in.
 
 ### Enable the devproc plugin
 
-The `devproc` plugin is the heart of this repository, with skills and agents to support the development workflow. The repo was cloned earlier under [Clone this repository](#clone-this-repository); now register it as a local plugin marketplace and enable the plugin.
+The `devproc` plugin is the heart of this repository, with skills and agents to support the development workflow. Register your clone as a local plugin marketplace and enable the plugin.
 
 - Add the following to `~/.claude/settings.json`, replacing the path with wherever you cloned the repo:
 
@@ -188,7 +166,7 @@ The `devproc` plugin is the heart of this repository, with skills and agents to 
   }
   ```
 
-  *Note that this enables the plugin for every repo globally. If that is not what you want to do, and you want to enable it only for some repos, then you should add the `enabledPlugins` stanza to `.claude/settings.local.json` for those repos.*
+  *This enables the plugin in every repo. To enable it only in some, put the `enabledPlugins` stanza in `.claude/settings.local.json` in those repos instead.*
 
 ### Configure .claudeignore
 
@@ -202,9 +180,9 @@ cp /some/path/claudeplugins/setup-files/.claudeignore .
 
 Adapt the patterns to your project as needed — the file is intended as a sensible default, not a fixed list.
 
-### Initialise devproc in each workspace for which you want to use it
+### Initialise devproc in each workspace
 
-Before you use the `devproc` plugins features, it needs certain files and instructions set up. The unit is the **workspace** — the directory holding `CLAUDE.md`, `NOTES.md` and `features/`. That is usually a git repository, but it may instead be a plain directory with one or more repositories beneath it; run `/feature-init` at the top of the workspace either way, not inside a nested repository. See [workflow.md](workflow.md#where-the-workspace-is).
+Before using `devproc`, initialise each **workspace** (the directory holding `CLAUDE.md`, `NOTES.md` and `features/`, usually a git repository). Run `/feature-init` at its top, never inside a nested repository; see [workflow.md](workflow.md#where-the-workspace-is).
 
 To do this, start Claude in your workspace either from the CLI, in the IDE, or using the container, and enter
 
@@ -212,7 +190,24 @@ To do this, start Claude in your workspace either from the CLI, in the IDE, or u
 /feature-init
 ~~~
 
-This is idempotent, and ensures that feature development skills work. If you fail to do this, attempts to use any of these features returns an error.
+`/feature-init` is safe to re-run. Until you run it in a workspace, the feature skills return an error there.
+
+## When the plugin changes
+
+The steps above are one-off, so they do not pick up later changes to `devproc`. When the plugin changes (you pull a new version of this repository, or edit the plugin yourself):
+
+1. Update the plugin Claude runs:
+    - **In [container mode](container.md):** rebuild the image, then replace each project's container:
+
+        ```bash
+        bash /some/path/claudeplugins/bin/claude-build
+        bash /some/path/claudeplugins/bin/claude-stop /path/to/project   # deletes the container and its conversation
+        bash /some/path/claudeplugins/bin/claude-run /path/to/project
+        ```
+
+        The container must be replaced because it keeps the image it was created with; see [Edge cases and limits](container.md#edge-cases-and-limits).
+    - **Otherwise:** pull the changes into your clone (the plugin loads from it; see [Enable the devproc plugin](#enable-the-devproc-plugin)), then start a new Claude Code session. Skills and agents load only at session start.
+2. Re-run `/feature-init` in each workspace, so its installed feature model (`features/FEATUREMODEL.md`) matches the new plugin. It leaves your feature lists and plans in place. In a tracked workspace, `git diff features/FEATUREMODEL.md` then shows what changed.
 
 ## What's next
 

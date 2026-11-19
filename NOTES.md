@@ -37,18 +37,7 @@ remote -v` call and the resolved `owner/repo`).
 
 `gh issue view` and `gh api` time out in sandbox mode even when `WebFetch(domain:api.github.com)` is listed in project permissions. The `WebFetch(...)` permission only covers Claude's WebFetch tool — it has no effect on outbound network access from Bash processes. The sandbox blocks Bash network independently.
 
-The correct configuration is `sandbox.network.allowedDomains` in `~/.claude/settings.json` (global, since `gh` is used across projects):
-
-```json
-{
-  "sandbox": {
-    "enabled": true,
-    "network": {
-      "allowedDomains": ["github.com", "api.github.com"]
-    }
-  }
-}
-```
+The correct configuration is `sandbox.network.allowedDomains` in `~/.claude/settings.json` (global, since `gh` is used across projects), as in `docs/setup.md` `### Sandbox configuration`.
 
 Wildcards are supported (e.g. `*.npmjs.org`). Domain arrays merge across settings scopes, so adding entries globally does not override project-level entries.
 
@@ -84,52 +73,11 @@ The container Dockerfile COPYs the plugin directory (`devproc/`) from the repo. 
 
 `ARG UID`/`ARG GID` are declared without defaults so that a bare `docker build` fails visibly rather than silently using UID 1000. The build script always passes `$(id -u)`/`$(id -g)`.
 
-
 ## Container session keep-alive (#17)
 
-Claude is the tmux session's top-level process, so when it exits (`exit`,
-Ctrl-D, `/quit` or a crash) the pane closes and the session is destroyed — an
-accidental keypress would discard the working session. `run-claude.sh` wraps
-Claude in a loop that **auto-relaunches** it on exit, resuming the session's
-conversation, so the session is always running when you attach. `entrypoint.sh`
-runs `bash /home/claude/run-claude.sh` as the session command.
-
-Non-obvious details:
-
-- Relaunch resumes the **recorded** session with `claude --resume <id>`, not
-  `--continue`. Originally (#17) relaunch used `claude --continue`, which
-  resumes the most recent conversation in the directory; that was replaced in
-  #73 because the agent warm-up and any `claude -p` run inside the container
-  also create conversations in `/workspace`, so "most recent" can be the wrong
-  one. The ID comes from a `SessionStart` hook; see "SessionStart hook records
-  the container's session (#73)" below. (`-r`/`--resume` with no ID opens an
-  interactive picker, wrong for an unattended loop, which is why the ID is
-  always given.) A new container's first launch is a plain `claude`; with no
-  recorded session, a later launch also starts fresh. Only the first launch
-  after a restart shows the "No previous session to resume" prompt; the marker
-  file `~/.claude/container-started`, written when `run-claude.sh` first runs,
-  is what tells a restart from a new container. Later keep-alive relaunches
-  with nothing to resume start fresh silently.
-- **Ctrl-C handling is the subtle part.** Between Claude runs the loop sets
-  `trap '' INT` so Ctrl-C cannot kill the wrapper (and thus the session); it
-  resets `trap - INT` immediately before launching Claude so Claude still gets
-  normal Ctrl-C handling. Without this, a Ctrl-C while the wrapper was between
-  runs terminated the script and destroyed the tmux session irrecoverably — the
-  original keep-alive bug found in testing.
-- A crash-guard avoids a tight respawn loop: if Claude exits within 5s of
-  launch it is treated as a startup crash and the loop waits on a prompt
-  (`while ! read -r _; do sleep 1; done`, which also ignores EOF/Ctrl-D) instead
-  of respawning immediately. A normal exit pauses ~2s then resumes. If the
-  quick exit was a `--resume` launch, the prompt instead offers to retry the
-  resume or start new; `new` deletes the recorded session ID (the transcript
-  stays on disk).
-
-`run-claude.sh` is invoked via `bash`, so unlike `entrypoint.sh` it does not
-need the executable bit set in the Dockerfile.
+`run-claude.sh` keeps the tmux session alive by relaunching Claude on exit; the mechanics (Ctrl-C traps, crash guard, restart marker) are commented in the script. Relaunch always passes the recorded ID to `claude --resume <id>`: `--continue` was dropped in #73 because the agent warm-up and `claude -p` runs also create conversations in `/workspace`, and `-r`/`--resume` with no ID opens an interactive picker, wrong for an unattended loop.
 
 ## setup-files/ as a checked-in resources directory
-
-`setup-files/` (added during `claudeignore-docs`) holds files users copy into their environments rather than recreate from heredocs. The directory name was chosen for direct pairing with `docs/setup.md`. Alternatives considered and rejected: `templates/` (implies edit-before-use, which most files here do not need), `resources/` (too generic), `dotfiles/` (the script isn't a dotfile).
 
 The setup.md "Clone this repository" sub-section is the prerequisite for every `setup-files/` copy step; reorder with care if it ever moves.
 
@@ -149,16 +97,11 @@ TeamDelete) and drive the `/feature-*` skills, so it needs everything. Listing
 tools explicitly would risk omitting one and silently breaking orchestration.
 
 Model is the alias `model: opus` (and teammate briefs specify `sonnet`) rather
-than a pinned id like the review agents' `claude-opus-4-6` — the aliases resolve
-to the latest model in each family at runtime, so the agent never goes stale.
+than a pinned id — the aliases resolve to the latest model in each family at
+runtime, so the agent never goes stale.
 
 Teammate shutdown is via `SendMessage` with `{type: "shutdown_request"}`;
 `TeamDelete` only succeeds once all members have shut down.
-
-The container exposes the agent via `claude-run --manager` (or `--agent NAME`),
-passed through `CLAUDE_AGENT` to `run-claude.sh`, which adds `--agent` to the
-launch args too (first launch, relaunch and `claude-run --resume` restart alike),
-so a resumed session keeps the same agent.
 
 ### `--agent` does not apply the agent's model to the top-level session
 
@@ -170,18 +113,7 @@ session model at startup from `--model` / settings / the account default and
 ignores the agent's `model:`. The container `settings.json` pins no model, so the
 manager fell back to the default.
 
-Fix: `claude-run` derives the model from the agent's own definition and passes it
-explicitly. `derive_model()` reads the `model:` line from
-`devproc/agents/<agent>.md` (found via the repo root resolved with
-`readlink -f`), and the value flows host → `CLAUDE_MODEL` env var →
-`run-claude.sh`, which appends `--model "$CLAUDE_MODEL"` to every launch
-(first, relaunch, and restart via `claude-run --resume`, since it lives in the
-container's environment). The agent definition stays the single source of
-truth — no model is hardcoded in `claude-run`. An explicit `claude-run --model`
-overrides it, and an agent whose definition is not in this repo (so the model
-cannot be derived) falls back to no `--model`, i.e. the previous default
-behaviour. Verified the derivation handles both the alias (`opus`) and pinned
-ids (`claude-opus-4-6`).
+Fix: `claude-run` derives the model from the agent's `model:` line (`derive_model()`) and passes it via `CLAUDE_MODEL` to `run-claude.sh`; an explicit `claude-run --model` overrides it.
 
 ## Docs review agents are stateless (#69, supersedes #23)
 
@@ -322,66 +254,11 @@ notification is not a pass, and a run whose verdict never arrived is unrun.
 
 ## Check what a backwards-compatibility carve-out actually protects (#57)
 
-`/feature-design` step 1b was written to gate on `## Requirements` but
-deliberately *not* on `## Spec`, reasoning that a plan file specced before
-`## Spec` existed must stay designable. The reasoning was sound and the
-conclusion still wrong, because the protected set turned out to be empty:
-`/feature-design` only ever designs a feature listed in `features/PENDING.md`,
-and both `PENDING.md` and `DEFERRED.md` (the only route back into pending) were
-empty. Every legacy plan file was completed or in progress — none could reach
-the skill. The carve-out bought nothing and cost the check that catches the
-lifecycle skills being run out of order.
-
-The generalisable move is cheap: before writing a compatibility carve-out, ask
-what reaches the code path it guards, and check. Here that was two `cat`s. The
-failure mode it permitted was also the worst kind — silent: with no `## Spec`
-and no gate, `/feature-design` would have designed against `## Requirements`
-alone, inventing the statement of what the feature must do that the user was
-supposed to agree, and nothing in the output would have said so.
-
-Two follow-on points found while fixing it. **A stale carve-out leaves
-fingerprints elsewhere** — the same tolerance had propagated into the step-5
-template ("if the file does not exist, create it with all sections", and a
-`## Requirements` placeholder saying the section "may be omitted", both
-contradicting the step-1b stop) and into `docs/workflow.md`, which told users
-Claude fetches the GitHub issue "only if they are missing". Grep for the
-behaviour, not just the rule. **And a reviewer needs its own guard**: the
-skill's stop protects the main path, but `feature-design-reviewer` can be
-invoked standalone, where "does this design implement the spec?" against an
-absent spec is not a weaker review but an incoherent one. It now refuses with a
-single BLOCKING finding rather than falling back to `## Requirements` — a review
-against a standard the agent inferred for itself is worse than no review,
-because it looks like one.
-
-## `/home/claude/claudeplugins` is a live plugin copy, separate from this repo
-
-`/home/claude/claudeplugins` is registered as the `local-plugins` marketplace
-(`~/.claude/settings.json` → `enabledPlugins: {"devproc@local-plugins": true}`,
-`extraKnownMarketplaces.local-plugins.source.path: /home/claude/claudeplugins`)
-— it is **not** a symlink into `/workspace`, just a separate directory that
-happened to start as a copy of `/workspace/devproc`. This is the copy the
-`Skill`/`Agent` tools actually load `devproc:*` skills and agents from in this
-session, so it is where skill-prose changes must be made to be testable/usable
-right away — but it is invisible to git. `git status` in `/workspace` confirms
-`devproc/skills/feature-init/SKILL.md` (Sub-task 1's change) has **no tracked
-diff**: Sub-task 1's scaffolding step and Sub-task 2's `features/tmp` ingestion
-route (this file) exist only under `/home/claude/claudeplugins/devproc/`, not
-under the git-tracked `/workspace/devproc/`.
-
-**Consequence:** skill-prose edits must be made in the git-tracked
-`/workspace/devproc/` (the deliverable), not only the live copy; the live copy
-may drift and that is fine. Diffing the two trees is the check before
-`/feature-end`.
+Before writing a compatibility carve-out, ask what reaches the code path it guards, and check. A `/feature-design` carve-out for plan files without `## Spec` protected an empty set (no such file could reach the skill) while costing the check that catches lifecycle skills run out of order. A stale carve-out leaves fingerprints elsewhere, so grep for the behaviour, not just the rule. A reviewer that can be invoked standalone needs its own guard: a review against a standard the agent inferred for itself is worse than no review, because it looks like one.
 
 ## A one-line description is requirements (#57)
 
-`/feature-spec` once wrote a "no requirements beyond the summary" placeholder
-whenever the description was short, and the reviewer then blocked the spec for
-having no requirements — circular, and it made `READY FOR USER REVIEW`
-unreachable from a one-liner. The placeholder is gone: `## Requirements` records
-a short description verbatim, and a small, well-understood feature can run all
-the way through unattended. The gate exists to stop work no human sanctioned,
-not to impose a minimum length on the sanction.
+`## Requirements` records a short description verbatim; a thin input is not a reason to block a spec. The gate exists to stop work no human sanctioned, not to impose a minimum length on the sanction.
 
 Two lessons. Proposals are judged like anything else — one resting on a
 judgement the user must make blocks, one filling an obvious gap does not;
@@ -416,26 +293,7 @@ for system test, not something the fixtures here can answer.
 
 ## First container run installs plugins; `--agent` fails until then
 
-In a fresh container, the devproc plugin is not installed until Claude's first
-startup processes `extraKnownMarketplaces`/`enabledPlugins` from the baked-in
-`settings.json` — and `--agent` validation happens before that sync completes.
-So `claude --agent dev-process-manager` **always** fails on the very first run
-in a new container (the exact failure `claude-run --manager` hit: entrypoint →
-tmux → `run-claude.sh` makes the agent launch the first-ever invocation).
-Retrying without a successful run in between still fails; one successful
-non-agent run installs the plugins and after that the agent lookup works
-permanently. Confirmed by testing: a manual `claude --agent dev-process-manager`
-in an already-used container works fine.
-
-Fix: `run-claude.sh` does a throwaway warm-up (`claude -p hello > /dev/null`)
-before the keep-alive loop, guarded on an agent being selected — plain
-`claude-run` never hit the bug, and the warm-up costs a model call and a few
-seconds of startup. The warm-up's throwaway conversation is never resumed: the
-first real launch of a new container is a fresh `claude`. Since #73 the warm-up
-conversation is harmless for a different reason: launches resume the session ID
-recorded by the `SessionStart` hook, never the most recent conversation, so a
-warm-up that reruns on a `--resume` restart cannot be picked (see "SessionStart
-hook records the container's session (#73)").
+See the warm-up comment in `docker/files/home/run-claude.sh`. Retrying `--agent` without a successful non-agent run in between still fails.
 
 ## Dogfooding: run the reviewers at spec/design time, not feature-end (#20)
 
@@ -489,27 +347,6 @@ derived copy first; and idempotency is checkable by diffing the pruned output
 against the `idempotent/` fixture. This does not cover spawning the real agent
 and parsing its live prose output.
 
-## internal-docs-prune documentation placement (sub-task 4)
-
-`internal-docs-reviewer` was grouped next to the docs review agents in both
-`devproc/README.md`'s Contents table and its `## Agent reference` section
-(rather than at the end, alphabetically, or beside the code-review agents) —
-the two are thematically paired (both are read-only findings-only review
-agents over documentation), even though one covers internal docs and the
-other user-facing docs. Same reasoning for the equivalent root `CLAUDE.md`
-contents-list placement.
-
-`docs/workflow.md`'s new `## Keep internal docs tidy` section was placed at
-the very end, after `## Complete a feature`, rather than folded into the
-"Complete a feature" section or inserted earlier in the lifecycle — it isn't
-a lifecycle step, it's an ongoing hygiene task, so it reads better as a
-standalone bookend than as a sub-point of any one stage. Its heading anchor
-(`#keep-internal-docs-tidy`) is linked from `docs/capabilities.md`, and the
-new capabilities.md section's anchor (`#internal-docs-hygiene`) is linked back
-from workflow.md — checked both resolve under GitHub's heading-to-anchor
-convention (lowercase, spaces to hyphens) since Markdown doesn't fail loudly
-on a broken in-repo anchor.
-
 ## Memory belongs to the skill, not the agent (#46, code-review resolution)
 
 The requirement "uses project-scoped agent memory to avoid re-litigating
@@ -531,18 +368,6 @@ The key framing: this memory is a **convenience** (it stops the skill re-asking
 about calls the user already ruled on), never a correctness gate. Nothing is
 lost or wrongly applied without it — `redundant`/`stale` gate the real changes,
 and those are re-verified live on every run and never remembered.
-
-Two findings-contract constraints were settled at the same review, both
-following from what the gating classes *mean*:
-- **`redundant` ⇒ `delete` only.** The class means the content is already at
-  its canonical home, so `move` would write a duplicate and there is nothing to
-  condense.
-- **`judgment` + `move` applies on plain confirmation.** The interactive
-  default is the agent's *proposed* action (`condense` or `move`), never
-  `delete`; action and gating class vary independently, so a `judgment` finding
-  can legitimately be a `move`. Invalid class/action pairings
-  (`redundant`+non-`delete`, `judgment`+`delete`) are rejected as defects in the
-  skill's Step 3, so Steps 4/5 can assume a valid action.
 
 ## A sync-marker must not live inside a file that gets copied downstream (`extract-feature-model`, #43)
 
@@ -606,23 +431,14 @@ unnecessarily:
   still-active "Blocking issues" check catches it there. No deliberate
   rewording was needed beyond writing a properly-derived `## Spec`.
 
-Only `incomplete-spec` (ex-`incomplete-requirements`) and `premature-design`
-needed deliberate rewording, because their flaws are properties of *how a
-section is written* (deferring instead of restating; stating *how* instead of
-*what*) that only manifest if that specific section is reviewed for that
-specific thing — and `## Requirements` is no longer reviewed for either.
+`incomplete-spec` and `premature-design` did need deliberate rewording, since `## Requirements` is no longer reviewed for their flaws.
 
 One retained check is easy to lose track of: `feature-spec-reviewer` still
 checks `## Requirements` for one narrow thing — whether source-issue content
 was genuinely *captured* there rather than deferred to (e.g. "see issue #47
-for detail"). None of the five spec-suite fixtures currently exercises that
-specific check in isolation (the old `incomplete-requirements` case exercised
-it before this sub-task, folded into a bundle of other flaws; the new
-`incomplete-spec` deliberately keeps `## Requirements` clean so as to isolate
-the `## Spec`-side flaw it now tests). That check therefore currently has no
-dedicated fixture — a gap, not a defect, and not something this sub-task's
-scope (relocate existing flaws, add the design suite's `no-spec` case) asked
-to fix.
+for detail"). The `deferred-requirements` fixture exercises that check in
+isolation (`incomplete-spec` deliberately keeps `## Requirements` clean so as to
+isolate the `## Spec`-side flaw it tests).
 
 Fixture renames use `mv`, not `git mv` — this repo's rule against git commands
 that change repository state applies to renames too.
@@ -728,35 +544,6 @@ meant to be load-bearing, this boundary is where it will leak, and the
 mitigation that actually worked here was the design recording the
 contradiction loudly enough that a human could catch it afterwards.
 
-## `/feature-init` copies from the installed plugin, not the repo (Sub-task 11, #57)
-
-The maintainer note in `CLAUDE.md` says: to change the feature model, edit the
-canonical `devproc/skills/feature-init/FEATUREMODEL.md` and re-run
-`/feature-init`. That is correct but incomplete, and the gap is a trap.
-
-`/feature-init` is told its own base directory when invoked, and copies
-`FEATUREMODEL.md` from *there*. In this container that is
-`/home/claude/claudeplugins/devproc/skills/feature-init/` — the **installed
-plugin**, not `/workspace/devproc/`. So "edit the canonical file and re-run
-`/feature-init`" only works if the installed plugin has already been refreshed
-from the repo. Edit the repo copy and re-run the skill directly, and it
-overwrites `features/FEATUREMODEL.md` with the *old* text, silently reverting
-the change — and leaving the repo's canonical file and the installed model
-disagreeing, which is the exact drift the single-source-of-truth pattern
-exists to prevent.
-
-This was caught on 2026-08-11 only because the divergence was checked with
-`diff` before the copy rather than after. The failure is quiet: `/feature-init`
-reports success, and the resulting `features/FEATUREMODEL.md` is internally
-consistent — just stale. Nothing downstream notices.
-
-The existing note "`/home/claude/claudeplugins` is a live plugin copy,
-separate from this repo" covers agent *definitions*. This is the
-same root cause with a wider blast radius: it applies to any **data file a
-skill ships and copies**, where the effect is not "you tested old prose" but
-"you reverted a committed change". The working order is: edit the repo, refresh
-the plugin tree from the repo, verify byte-identical, *then* run the skill.
-
 ## An in-session agent being slow is not the same as it being degraded (Sub-task 11, #57)
 
 Four review agents were spawned in one session. The first two returned full
@@ -782,114 +569,9 @@ but only because the duplication was noticed. The fourth agent's CLI fallback
 is what actually produced the architectural review, so the fallback strategy
 was still correct — it was the diagnosis that was premature, not the response.
 
-## `devproc/README.md`'s step-1c description was split across two clauses, not one (`remove-migration-code`, Sub-task 2)
+## A "no run mentions X" validation criterion over-triggers (`remove-migration-code`, #64)
 
-The per-skill `feature-init` reference in `devproc/README.md` described step 1c's
-"no `## Feature model` section" case in an early clause ("ensures `CLAUDE.md`
-carries an un-backticked import (adding a section for it if absent)") and its
-"embedded text / inert mention" case in a later, separate clause nested inside
-the migration sentence ("including an older project whose `CLAUDE.md` still
-embeds the full model text..."). The two clauses were not adjacent and did not
-read as one description of step 1c — worth knowing before editing this passage
-again, since simply deleting the migration sentence's wrapper and keeping its
-embedded-text detail (as a first pass here did) produces a sentence that states
-"ensures `CLAUDE.md` carries the import" twice. The fix was to merge both
-clauses into one, covering all three of step 1c's cases (absent section /
-non-import body, whether embedded text or an inert mention / already correct)
-in a single place.
-
-## Sub-task 3 validation runs for `remove-migration-code` (#64)
-
-Five real CLI invocations (`claude -p --permission-mode bypassPermissions
---verbose --output-format stream-json "/feature-init"`) against throwaway
-`/tmp` workspaces, after refreshing `/home/claude/claudeplugins/devproc/skills/feature-init/SKILL.md`
-from the repo copy and confirming `diff -q` byte-identical (the repo's
-`FEATUREMODEL.md` was already identical to the installed copy, so it did not
-need refreshing).
-
-- **(a) empty directory, git-init'd.** End state matched `## Spec` point 3
-  exactly: `features/FEATUREMODEL.md` byte-identical to the shipped canonical
-  copy, `CLAUDE.md` with the live un-backticked import, all four list files
-  from templates, `features/plans/`, `features/tmp/README.md`, and
-  `.gitignore` with the two lines in the correct order
-  (`features/tmp/*` before `!features/tmp/README.md`). Transcript: zero
-  case-insensitive `migrat` hits. **PASS.**
-- **(b) re-run over (a)'s result, seeded first** with a
-  `### Test feature [test-feature]` entry appended to `features/PENDING.md`
-  and a stub `features/plans/test-feature.md`. Checksummed every file
-  (including `.gitignore`) before and after: `diff` of the two checksum
-  listings was empty — every file, including the seeded entry and stub plan,
-  came out byte-identical, and `features/FEATUREMODEL.md` matched the
-  canonical copy throughout. Zero `migrat` hits. **PASS.**
-- **(c) old layout** — root `FEATURES.md` (with `## In progress` /
-  `## Completed` content) and root `notes/` (two files), git-init'd. The
-  skill's own actions were fully compliant: the new `features/` layout was
-  created exactly as in (a), and `FEATURES.md`/`notes/*.md` came out
-  byte-identical (checksummed before/after). **But the "no run may mention
-  migration in its output" criterion failed, reproducibly.** The general
-  agentic assistant — not any instruction in `SKILL.md`, which is clean, and
-  not any tool call the skill's steps call for — did a routine `ls -la`
-  orientation, noticed the leftover `FEATURES.md`/`notes/`, then on its own
-  initiative `Read`/`cat`'d them and appended unprompted commentary to its
-  final summary ("this repo already has an old-style `FEATURES.md`... Let me
-  know if you'd like help porting that old content..."), using the word
-  "migrate"/"migrating". Repeated once more independently (fresh directory,
-  same fixture) to rule out a fluke: same outcome both times — the model read
-  the old files and volunteered a "flagging, not touching" paragraph offering
-  migration help. This is not a defect in the skill's prose (confirmed via the
-  tool-call transcript: no skill step reads or reasons about these files) but
-  it is real, reproducible model behavior on this exact input, and it is
-  output the design's validation criterion says must not occur. **FAIL on the
-  no-migration-mention criterion; PASS on every file/end-state check.**
-  Flagged to the team lead rather than worked around, since fixing it (e.g.
-  telling the skill to instruct the model not to comment) would reintroduce
-  exactly the kind of added verbiage issue #64 rules out, and the fix isn't
-  obviously a `SKILL.md` wording problem at all.
-
-  **Resolved 2026-08-26: accepted as out of scope by the user.** The criterion
-  failed on its literal wording, but what it was written to detect — the skill
-  advertising or performing migration — is provably absent: the transcript
-  shows only `Read`/`cat` against the leftover files (no write, move or
-  delete), and `FEATURES.md` and both `notes/` files were re-checksummed
-  byte-identical. Every `migrat` hit sits in the general assistant's own
-  closing summary. The lesson worth keeping for future validation criteria:
-  **a "no run mentions X in its output" criterion cannot distinguish the
-  skill's output from the surrounding assistant's own commentary**, so it
-  over-triggers whenever a fixture contains anything the model finds worth
-  remarking on. Word such criteria against the *tool-call transcript* (what
-  the skill did) rather than the run's prose, or scope them to the skill's own
-  emitted text.
-- **(d) untracked directory** (no `git init`; confirmed `git rev-parse
-  --is-inside-work-tree` fails, including up the parent chain). No
-  `.gitignore` written, `features/tmp/README.md` still created, and the skill
-  stated plainly that the `.gitignore` step was skipped because the workspace
-  is not a git repository. Zero `migrat` hits. **PASS.**
-- **(e1) pre-existing `CLAUDE.md`, embedded model text** — `## Feature model`
-  held the full canonical `FEATUREMODEL.md` body inline plus a hand-added
-  "special linter" sentence and an unrelated `## Other section`. After the
-  run: the embedded text was replaced with the live un-backticked import, the
-  hand-added sentence and the other section were left intact and unduplicated.
-  Zero `migrat` hits. **PASS.**
-- **(e2) pre-existing `CLAUDE.md`, inert backticked mention** — `## Feature
-  model` held only `` See `features/FEATUREMODEL.md` for the feature model. ``
-  plus a hand-added "two-factor auth" sentence and an unrelated
-  `## Other section`. After the run: the backticked mention was replaced with
-  the live import, the hand-added sentence and other section preserved. Zero
-  `migrat` hits. **PASS.**
-
-## `features/tmp/regression/` harness scripts are superseded, not just stale (`move-tests-out-of-plugin`)
-
-`features/tmp/regression/run.sh`, `runall.sh`, and `rerun.sh` — a leftover,
-git-ignored regression harness from `clear-specs-and-designs` (#57) — each
-hardcode `devproc/tests/${suite}/${case}.md` in the prompt string passed to
-`claude -p --agent`, a path that no longer exists once `move-tests-out-of-plugin`
-relocated the fixtures to `tests/devproc/`. That feature's requirement 6
-promoted the harness into `tests/devproc/harness/run.sh` — one script, deriving
-its case list from the fixtures on disk rather than the three old scripts'
-hand-maintained (and already-drifted) lists. The `features/tmp/regression/`
-scripts themselves were deliberately left as they are, dead path and all, since
-only the harness concept was promoted, not the files; do not update or run
-them — use `tests/devproc/harness/run.sh` instead.
+A criterion worded against a `claude -p` run's output cannot distinguish the skill's output from the surrounding assistant's own commentary, so it over-triggers whenever a fixture contains anything the model finds worth remarking on (here, leftover `FEATURES.md`/`notes/` files drew unprompted offers of migration help). Word such criteria against the *tool-call transcript* (what the skill did) rather than the run's prose, or scope them to the skill's own emitted text.
 
 ## Appending to `NOTES.md` can silently clobber the paragraph above the insertion point
 
@@ -958,14 +640,6 @@ carry no copies: `docs/workflow.md` is the single home for the sub-task rules,
 `docs/capabilities.md` for the manager's unattended behaviour, and
 `devproc/README.md` links to them.
 
-## `rsync` is not in the container image
-
-The plugin refresh steps use `rsync -a --delete`; it is absent from the image
-and must be installed (`sudo apt-get install -y rsync`) before the first
-refresh. `/feature-init` reads the installed plugin copy, so run before that
-refresh it reports "nothing to do" even after the canonical `FEATUREMODEL.md`
-has been edited.
-
 ## Testing `/review-docs` in print mode (`tests/devproc/review-docs/`)
 
 - A scratch repo built by copying a baseline, committing, then overlaying changed files back-to-back can leave a same-size edit (e.g. `--name` to `--user`) invisible to `git status`/`git diff`: the copied mtime and size match the index's stat cache. `setup.sh` touches the overlaid files and refreshes the index; without that the agents saw a code change that git did not show.
@@ -992,14 +666,6 @@ only); `record-session.sh` writes the session ID and transcript path to
   dialog; `tmux send-keys` needs `Enter` sent as a separate call after the text
   or the prompt can stay unsubmitted.
 
-## `claude-run` container-state check (#73)
-
-`claude-run` treats a `docker inspect --type container` failure as "no
-container" only when its error says "No such"; any other failure (the daemon
-down, say) is reported and exits, so it is never mistaken for a missing
-container. A container in state `created` (a `docker create` whose `start`
-failed) is restartable with `--resume`, the same as `exited`.
-
 ## Design-reviewer `control` flake after the spec-format wording (spec-requirement-headings, sub-task 3)
 
 The reworded coverage check in `feature-design-reviewer` (numbered requirements traced by heading, older spec list format accepted) makes the known query-builder / column-definition MAJOR `[decision]` above show up in the design-suite controls in some runs. The tolerance covers `control`, `old-format-control` and `headed-requirements-control` under the design suite README's existing exception; nothing else is tolerated.
@@ -1011,7 +677,6 @@ The reworded coverage check in `feature-design-reviewer` (numbered requirements 
 ## Design-suite `unclear-design` draws MAJORs against its baseline `## Sub-tasks` (pre-existing)
 
 `feature-design-reviewer` on `tests/devproc/feature-design-reviewer/unclear-design.md` often raises MAJOR `[rewrite]` findings against the untouched baseline `## Sub-tasks`: the endpoint is built before the formatter it streams through, and no criterion checks the filename or column set. It did so in 3 of 3 runs of the pre-change agent and 2 of 4 runs after `spec-requirement-headings` (2026-10-23), so this feature did not cause it. The case still passes, because its `.expected.md` "Must not report" list covers only Requirements, Spec and Sign-off strategy. It does sit against the suite README's rule that a `## Design`-targeted case leaves `## Sub-tasks` clean, and the same text in `control` does not draw it, presumably because the clear design there resolves the ordering. A candidate baseline fix: add the wiring criterion, plus filename and column-set criteria, to every case carrying the baseline sub-tasks.
-
 
 ## Concision controls in the `/review-docs` suite must be genuinely tight (concise-user-docs, sub-task 5)
 

@@ -36,9 +36,8 @@ The flaw is recorded **only** in `<case>.expected.md`. Nothing inside
 
 ## Running the tests
 
-The `../harness/` script does **not** cover this suite — its cases are fixture
-directories reviewed as a stand-in repository root, not single `.md` files, and
-need the different invocation shape below. Run these cases by hand.
+Run these cases by hand: the [harness](../harness/README.md) does not cover
+this suite.
 
 For each case, point the agent at the fixture directory as the repository
 root to review:
@@ -71,14 +70,17 @@ tested.
 A newly written or edited `devproc/agents/internal-docs-reviewer.md` is not
 invocable as an agent *type* in the session that wrote it — available agent
 types are resolved at session start. To validate it anyway in the same
-session, spawn a general-purpose agent, have it read
-`devproc/agents/internal-docs-reviewer.md`, treat the text after the
-frontmatter as its system prompt, and follow it — this exercises the prompt
-(the whole deliverable for a prose agent) but not the frontmatter wiring
-(`tools:`, `model:`, description-based dispatch), which needs a restarted
-session. When doing this, explicitly forbid the test agent from reading the
-`.expected.md` files or this README before it produces its findings — they
-state the flaw under test.
+session:
+
+1. Spawn a general-purpose agent.
+2. Have it read `devproc/agents/internal-docs-reviewer.md`, treat the text
+   after the frontmatter as its system prompt, and follow it.
+3. Forbid it from reading the `.expected.md` files or this README before it
+   produces its findings — they state the flaw under test.
+
+This exercises the prompt (the whole deliverable for a prose agent) but not the
+frontmatter wiring (`tools:`, `model:`, description-based dispatch), which
+needs a restarted session.
 
 ### Project memory during fixture runs
 
@@ -91,8 +93,8 @@ the agent, under `$CLAUDE_PROJECT_DIR/.claude/agent-memory/devproc-internal-docs
 (resolved against the real repository root). These agent fixtures do not touch
 it. Testing the *skill's* suppression behaviour (that a previously-settled
 `judgment` call is not re-raised on a later run) is a skill-level check: seed
-or clear that directory manually around the run, since it is not part of any
-agent fixture.
+or clear that `MEMORY.md` file by hand around a skill run, since it is not part
+of any agent fixture.
 
 ## When the agent changes
 

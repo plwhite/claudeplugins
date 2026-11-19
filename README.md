@@ -12,28 +12,20 @@ This repository contains descriptions and tooling for a set of best practices us
 
 - A Docker container that runs Claude with full permissions, for when you want Claude to work autonomously without sandbox restrictions. The container itself is restricted: no git credentials are configured, and writes on the host are limited to the mounted project directory.
 
-## Instructions
-
-- Follow [docs/setup.md](docs/setup.md) to configure your environment.
-
-- Follow [docs/workflow.md](docs/workflow.md) to follow the feature workflow.
-
-- See [docs/capabilities.md](docs/capabilities.md) for code review and other capabilities.
-
-- See [docs/container.md](docs/container.md) to run Claude in a container with full permissions.
+Start with [docs/setup.md](docs/setup.md). The table below lists all the documentation.
 
 ## Documentation
 
 | Document | What it covers |
 |----------|---------------|
-| [docs/setup.md](docs/setup.md) | Environment setup: sandbox, git hook, sensitive-file deny-list, `gh`, devproc install, `.claudeignore` |
+| [docs/setup.md](docs/setup.md) | Environment setup: sandbox, git hook, sensitive-file deny-list, `gh`, devproc install, `.claudeignore`, and updating when the plugin changes |
 | [docs/workflow.md](docs/workflow.md) | Task-oriented guide: managing features from backlog to completion, including per-feature sign-off criteria and automated spec/design review |
 | [docs/capabilities.md](docs/capabilities.md) | Semi-autonomous workflow management, code review, documentation review, and internal docs hygiene |
 | [docs/container.md](docs/container.md) | Container mode: running Claude with full permissions in a restricted Docker container |
 | [devproc/README.md](devproc/README.md) | devproc plugin reference: all skills, agents, and configuration |
 | [setup-files/README.md](setup-files/README.md) | Files copied into place during setup (`.claudeignore`, git-write hook): destination and purpose |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Proposing changes, and what a change to the plugin, container, setup files or tests must also update |
-| [tests/README.md](tests/README.md) | Maintainer test fixtures for the `devproc` plugin's reviewer agents and the `/review-docs` skill, kept outside the shipped plugin directory: four suites under `tests/devproc/`, each with its own `README.md`, plus a regression harness in `tests/devproc/harness/` |
+| [tests/README.md](tests/README.md) | Maintainer-only test fixtures and a regression harness for the `devproc` reviewer agents and `/review-docs`; not shipped with the plugin |
 
 ## Plugins
 
@@ -41,4 +33,4 @@ This repository contains descriptions and tooling for a set of best practices us
 |--------|-------------|
 | [devproc](devproc/README.md) | Feature lifecycle, workflow orchestration, code review, documentation review, and internal docs hygiene: spec, design, implement, review, and close features |
 
-Plugins are registered in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json). See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines. Each entry names the plugin and points to its source directory.
+Plugins are registered in [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json), which names each plugin and points to its source directory. See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
